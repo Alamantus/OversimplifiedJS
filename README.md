@@ -1,31 +1,31 @@
 OversimplifiedJS
 =============
+A lightweight, modular 2-D game engine for HTML5 canvas &amp; JavaScript    
 (Current Version: 0.5)
-A lightweight, modular 2-D game engine for HTML5 canvas &amp; JavaScript
 
 Getting Started
 -------------
 
-You'll need to get the `index.html`, `Oversimplified.js` _(this is a minified but identical `OversimplifiedJS_source.js`)_, and `start.js` files in this GitHub project and put them either in a local or server directory. OversimplifiedJS is designed to be exactly that&mdash;a little bit too simple for better or worse as you'll probably see below.
+You'll need to get the `index.html`, `Oversimplified.js` _(this is a minified but identical `Oversimplified_source.js`)_, and `start.js` files in this GitHub project and put them either in a local or server directory. OversimplifiedJS is designed to be exactly that&mdash;a little bit too simple for better or worse as you'll probably see below.
 
-Once you have your directory ready, you begin by editing the start.js file. When you open the file, you'll find nothing but a sad, empty start() function. As its name implies, however, this is the function where everything starts! It's the first function called even before the first frame of your game, and it is required in order for OversimplifiedJS to work, so always have a start.js file with a start function in it in the same directory as your index! _(Note, you can edit the OversimplifiedJS.js file to change this expected location, but I'd recommend only doing that if you know how to read JavaScript well enough to not accidentally break something.)_
+Once you have your directory ready, you begin by editing the `start.js` file. When you open the file, you'll find nothing but a sad, empty `start()` function. As its name implies, however, this is the function where everything starts! It's the first function called even before the first frame of your game, and it is required in order for OversimplifiedJS to work, so always have a `start.js` file with a start function in it in the same directory as your index! _(Note, you can edit the `Oversimplified.js` file to change this expected location, but I'd recommend only doing that if you know how to read JavaScript well enough to not accidentally break something.)_
 
-To start making your game, you'll want to make sure all the settings are in order (i.e. step speed, camera settings, controls, etc.). Eventually there will be a Settings namespace where all of these useful settings will be stored and you can just knock it out all in one place, but as of version 0.5, they're a little bit scattered. The default step speed is 1/30, which is to say 30 frames per second. If you want to change this, just access the `DEFAULT_STEP` variable and set it to your preferred default step speed. (Note: you can set step speed per room, as you will see below.) The camera size determines the size of the canvas on the page and is set to 900x650 by default, just because. You can change this by doing this:    
+To start making your game, you'll want to make sure all the settings are in order (i.e. step speed, camera settings, controls, etc.). Eventually there will be a Settings namespace where all of these useful settings will be stored and you can just knock it out all in one place, but as of version 0.5, they're a little bit scattered. The default step speed is 1/30, which is to say 30 frames per second. If you want to change this, just access the `DEFAULT_STEP` variable and set it to your preferred default step speed. (Note: you can set step speed per room, as you will see below.) The camera size determines the size of the canvas on the page and is set to 900x650 by default, just because I frankly didn't know what size it should have been. You can change this by doing this:    
 ```javascript
 camera.width = 1000;
 camera.height = 1000;
 ```
-Just be sure that the camera size isn't inconvenient for your players! The camera also has x and y values that adjust its position in the room, though if your room isn't bigger than the camera, this won't mean anything, as the camera cannot move outside of the room's boundaries.    
-Finally, you'll want to set up controls to use. Controls live in the Controls namespace (which has a convenient alias C that you can use instead) and are created using the syntax `Controls.Add(keycode)`, for example    
+Just be sure that the camera size isn't inconvenient for your players! The camera also has `x` and `y` values that adjust its position in the room, though if your room isn't bigger than the camera, this won't mean anything, as the camera cannot move outside of the room's boundaries.    
+Finally, you'll want to set up controls to use. Controls live in the `Controls` namespace (which has a convenient alias `C` that you can use instead) and are created using the syntax `Controls.Add(keycode)`, for example    
 ```javascript
 var leftKey = Controls.Add(Keycode.left);
 var rightKey = Controls.New(Keycode.right);
 var upKey = C.Add(Keycode.up);
 var downKey = C.New(Keycode.down);
 ```    
-Note the four different ways of doing the same thing for your convenience. You can find all of the keycode shortcuts on [this page in the wiki](https://github.com/Alamantus/OversimplifiedJS-Engine/wiki/Keycodes). Now that you have controls, you can access them by their properties `down`, `held`, and `up`, which return true or false based on hopefully self-explanatory conditions.
+Note the four different ways of doing the same thing for your convenience. You can find all of the keycode shortcuts on [this page in the wiki](https://github.com/Alamantus/OversimplifiedJS-Engine/wiki/Keycodes). Now that you have controls, you can access them by their properties `down`, `held`, and `up`, which return 'true` or `false` based on hopefully self-explanatory conditions.
 
-Next you'll want to start creating rooms. You create rooms in the Rooms namespace (which has a convenient alias R) The first room that Oversimplifed expects is called "Default", but you can create that room and access it with a variable like this.    
+Next you'll want to start creating rooms. You create rooms in the `Rooms` namespace (which has a convenient alias `R`) The first room that Oversimplifed expects is called "Default", but you can create that room and access it with a variable like this.    
 ```javascript
 var roomWidth = 4000;
 var roomHeight = 2000;
@@ -34,9 +34,9 @@ var stepSpeed = DEFAULT_STEP;	//DEFAULT_STEP is 1/30, but this can be changed if
 var firstRoom = Rooms.Add("Default", roomWidth, roomHeight, "path/to/background", stepSpeed);
 //You can also use Rooms.New or even R.Add or R.New to do exactly the same thing as above.
 ```    
-To make things a little bit simpler, all of the arguments (except for the name) are optional! If you leave out width and height (i.e. `R.Add("Room Name");`), it defaults to the camera's size and prevents camera movement. If you leave out the path to the background (i.e. `R.Add("Room Name", width, height);`), then it doesn't draw a background and becomes transparent, showing the background of either the canvas or the page (specified through CSS). If you leave out the step speed, then it uses the DEFAULT_STEP value.
+To make things a little bit simpler, all of the arguments (except for the name) are optional! If you leave out width and height (i.e. `R.Add("Room Name");`), it defaults to the camera's size and prevents camera movement. If you leave out the path to the background (i.e. `R.Add("Room Name", width, height);`), then it doesn't draw a background and becomes transparent, showing the background of either the canvas or the page (specified through CSS). If you leave out the step speed, then it uses the `DEFAULT_STEP` value.
 
-Last, you'll want to add objects to the room. Each Room you create holds its own objects in its Room.objects property, so to add an object to a Room at the start of the game (so those objects will be there when the room is on screen), you'll use the `Room.AddObject()` function. How you created your room determines how you'll use this function. For example:    
+Last, you'll want to add objects to the room. Each Room you create holds its own objects in its `Room.objects` property, so to add an object to a Room at the start of the game (so those objects will be there when the room is on screen), you'll use the `Room.AddObject()` function. How you created your room determines how you'll use this function. For example:    
 ```javascript
 //If you created a room and set a variable reference...
 var mainRoom = R.Add("Default");
@@ -48,7 +48,7 @@ R.Add("Another Room");
 R["Another Room"].AddObject("enemy", x, y, "path/to/image", "path/to/mask", [array, of, animations]);
 ```    
 In the above example, "path/to/image" specifies the sprite sheet you want to use for that object. This is explained below with Animations. "path/to/mask" specifies an image whose size is used as reference for the object's bounding box. If you enter `false` instead of a valid image path, it will use the size of the default Animation.    
-[array, of, animations] above refers to an array of the last kind of thing you need for your game: Animations. Animations live in the Animations namespace (which can be accessed using the alias A. Hopefully you've seen the pattern with the namespaces by now.) and can be created by, you guessed it, the `Animations.Add()` syntax. You'll want to create your animations before you create your objects so you can actually access them. For example:    
+[array, of, animations] above refers to an array of the last kind of thing you need for your game: Animations. Animations live in the `Animations` namespace (which can be accessed using the alias `A`. Hopefully you've seen the pattern with the namespaces by now.) and can be created by, you guessed it, the `Animations.Add()` syntax. You'll want to create your animations before you create your objects so you can actually access them. For example:    
 ```javascript
 var idleAnimation = Animations.Add("Idle", spriteWidth, spriteHeight, numberOfColumns, numberOfRows, speed, xOffsetOnSheet, yOffsetOnSheet);
 var walkLeftAnimation = Animations.New("Walk Left", spriteWidth, spriteHeight, numberOfColumns, numberOfRows, speed, xOffsetOnSheet, yOffsetOnSheet);
@@ -56,7 +56,7 @@ var walkRightAnimation = A.Add("Walk Right", spriteWidth, spriteHeight, numberOf
 var jumpLeftAnimation = A.New("Jump Left", spriteWidth, spriteHeight, numberOfColumns, numberOfRows, speed, xOffsetOnSheet, yOffsetOnSheet);
 ```
 Animations are meant to be used with a sprite sheet, and if there are multiple rows, you're going to want to have just as many columns in the subsequent rows as there are in the first. Otherwise, just keep each animation in its own row. `spriteWidth` and `spriteHeight` refers to the dimensions of the individual frame while `numberOfColumns` and `numberOfRows` refers to the number of animation frames from left to right that are in each of the vertical rows of the sprite sheet. `speed` should be a number between 0 and 1 (it is automatically clamped between 0 and 1 in case you enter a higher or lower number for some reason) that scales the animation speed relative to the Room's step speed. Finally, `xOffsetOnSheet` and `yOffsetOnSheet` is the pixel offset for the animation. For example, say you have your sprite sheet set up so that "Walk Left" is right above "Walk Right". To set `walkRightAnimation` to the "Walk Right" section, you would set the `yOffsetOnSheet` to the height of the sprite so the animation would start reading at the correct spot.    
-These Animations can then be added to the animations array for the object within the object's declaration like this: `[idleAnimation, walkLeftAnimation, walkRightAnimation, jumpLeftAnimation]` and can be set on the object using the Object's SetAnimation() function:
+These Animations can then be added to the animations array for the object within the object's declaration like this: `[idleAnimation, walkLeftAnimation, walkRightAnimation, jumpLeftAnimation]` and can be set on the object using the Object's `SetAnimation()` function:
 ```javascript
 if (leftKey.down) {
 	player.SetAnimation("Walk Left");
@@ -79,9 +79,9 @@ player.Do = function () {		//Due to JavaScript's syntax, you MUST either create 
 	console.log("My name is " + this.name);		//This will print out "My name is player<id>" 30 times every second in the console if it's in the current room.
 }
 ```
-If you're not experienced with game development, heed this warning: you'll mostly want to use Do() for things like checking controls and events rather than say creating objects or writing to the console. There are lots of other object functions that you can create and access that perform differently and at different times, like `BeforeDo()` and `DoLast()`, but those will be covered in the wiki once it is built. Until then, you'll have to dig in the source to find it all. :)
+If you're not experienced with game development, heed this warning: you'll mostly want to use `Do()` for things like checking controls and events rather than say creating objects or writing to the console. There are lots of other object functions that you can create and access that perform differently and at different times, like `BeforeDo()` and `DoLast()`, but those will be covered in the wiki once it is built. Until then, you'll have to dig in the source to find it all. :)
 
-The last thing you need to know about are PremadeObjects (or Prefabs). You can create a Prefab that can then be used to easily add to Rooms or be created after the Room has been running for a while. To do this, you would create an object in the PremadeObjects namespace instead of directly in the room first. PremadeObjects live in the PremadeObjects namespace (aliased with either Prefabs or P) and can be created using the `PremadeObjects.Add()` syntax:    
+The last thing you need to know about are `PremadeObjects` (or `Prefabs`). You can create a Prefab that can then be used to easily add to Rooms or be created after the Room has been running for a while. To do this, you would create an object in the `PremadeObjects` namespace instead of directly in the room first. PremadeObjects live in the `PremadeObjects` namespace (aliased with either `Prefabs` or `P`) and can be created using the `PremadeObjects.Add()` syntax:    
 ```javascript
 playerPrefab = PremadeObjects.Add("player", x, y, "path/to/image", "path/to/mask", [array, of, animations]);
 
@@ -104,7 +104,7 @@ Things You Should Know
 * There is no built-in audio support yet (as of version 0.5), so you'll have to do that yourself using your own HTML5 knowledge. It's not hard, but it's complicated and it falls outside of the time limit I restricted myself to for this first version. Feel free to build your own and send a pull request if you want it sooner. Just remember to keep in line with the code policy outlined below. :)
 * Basic browser mouse and keyboard scrolling controls are disabled on the canvas. You can right click and scroll outside of the canvas, but these default actions are disabled when hovering over the canvas! Likewise, the arrow keys and space bar will not scroll the page, period. Keep this in mind when choosing your camera size.
 * Don't make rooms that are smaller than your camera! I haven't tested this, but I think it'll just make things display weird...
-* Objects you create in rooms retain their properties after changing rooms! If you want objects to reset after changing rooms and returning, you'll need to manually set every property back to the value you want. To make things easier for you, you can use your `Room.DoLast()` function to do this when your room changes, but you'll need to specify each object's properties manually. Make sure you always Destroy unused objects or else they'll stick around in the Room for the whole game session.
+* Objects you create in rooms retain their properties after changing rooms! If you want objects to reset after changing rooms and returning, you'll need to manually set every property back to the value you want. To make things easier for you, you can use your `Room.DoLast()` function to do this when your room changes, but you'll need to specify each object's properties manually. Make sure you always Destroy unused objects or else they'll stick around in the Room for the whole game session. Destroy is used with  `object.Destroy()`.
 * You'll want to need to have each separate direction as a separate animation set on your sprite sheet(s) in order to indicate direction. This is beacause inverting images in any direction (using scale) is outrageously inefficient on HTML5 canvas and is not friendly to video games.
 
 Policy for Contribution
