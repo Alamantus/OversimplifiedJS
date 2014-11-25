@@ -4,7 +4,7 @@ var nextID = 0;
 //Settings Namespace - currently unused, to be used for audio
 var Settings = window.Settings || {};
 Settings.defaultStep = 1/30;
-Settings.SetCamera = function (width, height, hBorder, vBorder, following) {
+Settings.SetCamera = function (width, height, objectToFollow, hBorder, vBorder) {
     hBorder = typeof hBorder !== 'undefined' ? hBorder : camera.hBorder;
     vBorder = typeof vBorder !== 'undefined' ? vBorder : camera.vBorder;
     
@@ -21,12 +21,16 @@ Settings.SetCamera = function (width, height, hBorder, vBorder, following) {
         return false;
     }
     
+    if (typeof objectToFollow !== 'undefined') {
+        if (objectToFollow.name) {
+            camera.Follow(objectToFollow);
+        } else {
+            console.log("Settings.SetCamera()'s objectToFollow argument must be a GameObject.");
+        }
+    }
+    
     camera.hBorder = hBorder;
     camera.vBorder = vBorder;
-    
-    if (following.name) {
-        camera.Follow(following);
-    }
 }
 
 var S = window.Settings;

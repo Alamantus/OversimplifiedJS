@@ -1,7 +1,7 @@
 OversimplifiedJS
 =============
 A lightweight, modular 2-D game engine for HTML5 canvas &amp; JavaScript    
-(Current Version: 0.5)
+(Current Version: 0.6)
 
 Getting Started
 -------------
@@ -10,12 +10,30 @@ You'll need to get the `index.html`, `Oversimplified.js` _(this is a minified bu
 
 Once you have your directory ready, you begin by editing the `start.js` file. When you open the file, you'll find nothing but a sad, empty `start()` function. As its name implies, however, this is the function where everything starts! It's the first function called even before the first frame of your game, and it is required in order for OversimplifiedJS to work, so always have a `start.js` file with a start function in it in the same directory as your index! _(Note, you can edit the `Oversimplified.js` file to change this expected location, but I'd recommend only doing that if you know how to read JavaScript well enough to not accidentally break something.)_
 
-To start making your game, you'll want to make sure all the settings are in order (i.e. step speed, camera settings, controls, etc.). Eventually there will be a Settings namespace where all of these useful settings will be stored and you can just knock it out all in one place, but as of version 0.5, they're a little bit scattered. The default step speed is 1/30, which is to say 30 frames per second. If you want to change this, just access the `DEFAULT_STEP` variable and set it to your preferred default step speed. (Note: you can set step speed per room, as you will see below.) The camera size determines the size of the canvas on the page and is set to 900x650 by default, just because I frankly didn't know what size it should have been. You can change this by doing this:    
+To start making your game, you'll want to make sure all the settings are in order (i.e. step speed, camera settings, controls, etc.). ~Eventually there will be a `Settings` namespace where all of these useful settings will be stored and you can just knock it out all in one place, but as of version 0.5, they're a little bit scattered.~ The `Settings` namespace (aliased by `S`) contains two useful elements: `Settings.defaultStep` and `Settings.SetCamera()`. The default step speed is `1/30`, which is to say 30 frames per second. If you want to change this, just access the `Settings.defaultStep` variable and set it to your preferred default step speed. (Note: you can set step speed per room, as you will see below.) The camera size determines the size of the canvas on the page and is set to `640x480` by default. You can change this by doing this:    
 ```javascript
-camera.width = 1000;
-camera.height = 1000;
+camera.width = 1280;
+camera.height = 760;
 ```
 Just be sure that the camera size isn't inconvenient for your players! The camera also has `x` and `y` values that adjust its position in the room, though if your room isn't bigger than the camera, this won't mean anything, as the camera cannot move outside of the room's boundaries.    
+As of version 0.6, however, `Settings` now has a `SetCamera()` function, which allows you to easily and safely change all of the camera's main settings:    
+```javascript
+//You can change just the camera's width and height
+Settings.SetCamera(newCameraWidth, newCameraHeight);
+
+//You can also set an object to follow and use the camera's current borders
+//Note: the objectToFollow must be a GameObject
+S.SetCamera(camera.width, camera.height, objectToFollow);
+
+//OR you can also change its hBorder and vBorder as well if the defaults are not to your liking
+S.SetCamera(camera.width, camera.height, objectToFollow, newCameraHBorder, newCameraVBorder);
+
+//You can also specify what object the camera should follow.
+//Note: this should be a GameObject
+S.SetCamera(camera.width, camera.height, camera.hBorder, camera.vBorder, objectToFollow);
+```    
+You can learn about all of `camera`'s properties like hBorder and vBorder on the [[Camera]] page in the wiki (https://github.com/Alamantus/OversimplifiedJS/wiki/Camera).
+
 Finally, you'll want to set up controls to use. Controls live in the `Controls` namespace (which has a convenient alias `C` that you can use instead) and are created using the syntax `Controls.Add(keycode)`, for example    
 ```javascript
 var leftKey = Controls.Add(Keycode.left);
@@ -23,18 +41,19 @@ var rightKey = Controls.New(Keycode.right);
 var upKey = C.Add(Keycode.up);
 var downKey = C.New(Keycode.down);
 ```    
-Note the four different ways of doing the same thing for your convenience. You can find all of the keycode shortcuts on [this page in the wiki](https://github.com/Alamantus/OversimplifiedJS-Engine/wiki/Keycodes). Now that you have controls, you can access them by their properties `down`, `held`, and `up`, which return 'true` or `false` based on hopefully self-explanatory conditions.
+Note the four different ways of doing the same thing for your convenience. You can find all of the keycode shortcuts on the [[Keycodes]] page in the wiki (https://github.com/Alamantus/OversimplifiedJS-Engine/wiki/Keycodes). Now that you have controls, you can access them by their properties `down`, `held`, and `up`, which return 'true` or `false` based on hopefully self-explanatory conditions.    
+Also, as of version 0.6, there is an `Axis` control which takes a positive and negative keycode and returns -1, 0, or 1 depending upon which key is pressed or if neither are pressed.
 
 Next you'll want to start creating rooms. You create rooms in the `Rooms` namespace (which has a convenient alias `R`) The first room that Oversimplifed expects is called "Default", but you can create that room and access it with a variable like this.    
 ```javascript
 var roomWidth = 4000;
 var roomHeight = 2000;
-var stepSpeed = DEFAULT_STEP;	//DEFAULT_STEP is 1/30, but this can be changed if you want.
+var stepSpeed = Settings.defaultStep;	//Settings.defaultStep is 1/30, but this can be changed if you want.
 
 var firstRoom = Rooms.Add("Default", roomWidth, roomHeight, "path/to/background", stepSpeed);
 //You can also use Rooms.New or even R.Add or R.New to do exactly the same thing as above.
 ```    
-To make things a little bit simpler, all of the arguments (except for the name) are optional! If you leave out width and height (i.e. `R.Add("Room Name");`), it defaults to the camera's size and prevents camera movement. If you leave out the path to the background (i.e. `R.Add("Room Name", width, height);`), then it doesn't draw a background and becomes transparent, showing the background of either the canvas or the page (specified through CSS). If you leave out the step speed, then it uses the `DEFAULT_STEP` value.
+To make things a little bit simpler, all of the arguments (except for the name) are optional! If you leave out width and height (i.e. `R.Add("Room Name");`), it defaults to the camera's size and prevents camera movement. If you leave out the path to the background (i.e. `R.Add("Room Name", width, height);`), then it doesn't draw a background and becomes transparent, showing the background of either the canvas or the page (specified through CSS). If you leave out the step speed, then it uses the `Settings.defaultStep` value.
 
 Last, you'll want to add objects to the room. Each Room you create holds its own objects in its `Room.objects` property, so to add an object to a Room at the start of the game (so those objects will be there when the room is on screen), you'll use the `Room.AddObject()` function. How you created your room determines how you'll use this function. For example:    
 ```javascript
@@ -101,7 +120,7 @@ Things You Should Know
 
 * OversimplifiedJS exists to make your game development process simpler by giving easy access to basic game development objects, so you'll definitely still need to know your way around JavaScript and be comfortable with text editors if you want to make a game with it.
 * OversimplifiedJS has not been stress tested with lots of objects that all have complicated `Do()` functions! Be careful and report bugs to the issue tracker (or fix them yourself and send a pull request! That would be wonderful!).
-* There is no built-in audio support yet (as of version 0.5), so you'll have to do that yourself using your own HTML5 knowledge. It's not hard, but it's complicated and it falls outside of the time limit I restricted myself to for this first version. Feel free to build your own and send a pull request if you want it sooner. Just remember to keep in line with the code policy outlined below. :)
+* There is no built-in audio support yet (as of version 0.6), so you'll have to do that yourself using your own HTML5 knowledge. It's not hard, but it's complicated and it falls outside of the time limit I restricted myself to for this first version. Feel free to build your own and send a pull request if you want it sooner. Just remember to keep in line with the code policy outlined below. :)
 * Basic browser mouse and keyboard scrolling controls are disabled on the canvas. You can right click and scroll outside of the canvas, but these default actions are disabled when hovering over the canvas! Likewise, the arrow keys and space bar will not scroll the page, period. Keep this in mind when choosing your camera size.
 * Don't make rooms that are smaller than your camera! I haven't tested this, but I think it'll just make things display weird...
 * Objects you create in rooms retain their properties after changing rooms! If you want objects to reset after changing rooms and returning, you'll need to manually set every property back to the value you want. To make things easier for you, you can use your `Room.DoLast()` function to do this when your room changes, but you'll need to specify each object's properties manually. Make sure you always Destroy unused objects or else they'll stick around in the Room for the whole game session. Destroy is used with  `object.Destroy()`.
@@ -116,11 +135,12 @@ Planned Additions
 -------------
 
 Things I'm planning to add to OversimplifiedJS at some point in the future include (in no particular order):
-* `AddAnimation()` function for easily adding Animations to GameObjects after creation.
 * Sound and Music classes
 * Easy-access Settings adjustments
 * Sample Modules
-* Maybe scale the canvas and its contents if the window can't fit it.
+* ~Maybe scale the canvas and its contents if the window can't fit it.~ Because of HTML5 canvas' AA, this would not be ideal.
+* ~`Axis` control class that returns positive, negative, or 0 based on a set of 2 keys~ Added in Version 0.6
+* ~`AddAnimation()` function for easily adding Animations to GameObjects after creation.~ Added in Version 0.6
 * More I can't think of right now.
 
 About
