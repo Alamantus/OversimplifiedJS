@@ -32,7 +32,7 @@ S.SetCamera(camera.width, camera.height, objectToFollow, newCameraHBorder, newCa
 //Note: this should be a GameObject
 S.SetCamera(camera.width, camera.height, camera.hBorder, camera.vBorder, objectToFollow);
 ```    
-You can learn about all of `camera`'s properties like hBorder and vBorder on the [[Camera]] page in the wiki (https://github.com/Alamantus/OversimplifiedJS/wiki/Camera).
+You can learn about all of `camera`'s properties like hBorder and vBorder on the [Camera](https://github.com/Alamantus/OversimplifiedJS/wiki/Camera) page in the wiki.
 
 Finally, you'll want to set up controls to use. Controls live in the `Controls` namespace (which has a convenient alias `C` that you can use instead) and are created using the syntax `Controls.Add(keycode)`, for example    
 ```javascript
@@ -41,7 +41,7 @@ var rightKey = Controls.New(Keycode.right);
 var upKey = C.Add(Keycode.up);
 var downKey = C.New(Keycode.down);
 ```    
-Note the four different ways of doing the same thing for your convenience. You can find all of the keycode shortcuts on the [[Keycodes]] page in the wiki (https://github.com/Alamantus/OversimplifiedJS-Engine/wiki/Keycodes). Now that you have controls, you can access them by their properties `down`, `held`, and `up`, which return 'true` or `false` based on hopefully self-explanatory conditions.    
+Note the four different ways of doing the same thing for your convenience. You can find all of the keycode shortcuts on the [Keycodes](https://github.com/Alamantus/OversimplifiedJS-Engine/wiki/Keycodes) page in the wiki. Now that you have controls, you can access them by their properties `down`, `held`, and `up`, which return 'true` or `false` based on hopefully self-explanatory conditions.    
 Also, as of version 0.6, there is an `Axis` control which takes a positive and negative keycode and returns -1, 0, or 1 depending upon which key is pressed or if neither are pressed.
 
 Next you'll want to start creating rooms. You create rooms in the `Rooms` namespace (which has a convenient alias `R`) The first room that Oversimplifed expects is called "Default", but you can create that room and access it with a variable like this.    
@@ -138,9 +138,9 @@ Things I'm planning to add to OversimplifiedJS at some point in the future inclu
 * Sound and Music classes
 * Easy-access Settings adjustments
 * Sample Modules
-* ~Maybe scale the canvas and its contents if the window can't fit it.~ Because of HTML5 canvas' AA, this would not be ideal.
-* ~`Axis` control class that returns positive, negative, or 0 based on a set of 2 keys~ Added in Version 0.6
-* ~`AddAnimation()` function for easily adding Animations to GameObjects after creation.~ Added in Version 0.6
+* ~~Maybe scale the canvas and its contents if the window can't fit it.~~ Because of HTML5 canvas' AA, this would not be ideal.
+* ~~`Axis` control class that returns positive, negative, or 0 based on a set of 2 keys~~ Added in Version 0.6
+* ~~`AddAnimation()` function for easily adding Animations to GameObjects after creation.~~ Added in Version 0.6
 * More I can't think of right now.
 
 About
