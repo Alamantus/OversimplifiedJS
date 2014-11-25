@@ -1,6 +1,36 @@
 var canvas, context;
 var nextID = 0;
 
+//Settings Namespace - currently unused, to be used for audio
+var Settings = window.Settings || {};
+Settings.defaultStep = 1/30;
+Settings.SetCamera = function (width, height, hBorder, vBorder, following) {
+    hBorder = typeof hBorder !== 'undefined' ? hBorder : camera.hBorder;
+    vBorder = typeof vBorder !== 'undefined' ? vBorder : camera.vBorder;
+    
+    if (typeof width !== 'undefined') {
+        camera.width = width;
+    } else {
+        console.log("You must specify a width in function Settings.SetCamera()");
+        return false;
+    }
+    if (typeof height !== 'undefined') {
+        camera.height = height;
+    } else {
+        console.log("You must specify a height in function Settings.SetCamera()");
+        return false;
+    }
+    
+    camera.hBorder = hBorder;
+    camera.vBorder = vBorder;
+    
+    if (following.name) {
+        camera.Follow(following);
+    }
+}
+
+var S = window.Settings;
+
 //Time variables
 function timestamp() {
   return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
@@ -8,20 +38,13 @@ function timestamp() {
 var now;
 var dateTime = 0;
 var lastFrame = timestamp();
-var step = DEFAULT_STEP = 1/30;     //seconds per frame
-
-//Settings Namespace - currently unused, to be used for audio
-var Settings = window.Settings || {};
-var S = window.Settings;
+var step = Settings.defaultStep;     //seconds per frame
 
 var camera = {
     x: 0,
     y: 0,
     width: 640,
     height: 480,
-    xScale: 1,
-    yScale: 1,
-    follow: null,
     hBorder: 64,
     vBorder: 64,
     following: "",
@@ -55,10 +78,10 @@ var releasedKeys = [];
 
 //Key definitions
 var Key = {
-    37: "left",
-    38: "up",
-    39: "right",
-    40: "down",
+    37: "left arrow",
+    38: "up arrow",
+    39: "right arrow",
+    40: "down arrow",
     45: "insert",
     46: "delete",
     8: "backspace",
@@ -68,30 +91,30 @@ var Key = {
     17: "ctrl",
     18: "alt",
     19: "pause",
-    20: "capslock",
+    20: "caps lock",
     27: "escape",
     32: "space",
-    33: "pageup",
-    34: "pagedown",
+    33: "page up",
+    34: "page down",
     35: "end",
-    91: "leftwinkey",
-    92: "rightwinkey",
-    93: "selectkey",
-    96: "numpad_0",
-    97: "numpad_1",
-    98: "numpad_2",
-    99: "numpad_3",
-    100: "numpad_4",
-    101: "numpad_5",
-    102: "numpad_6",
-    103: "numpad_7",
-    104: "numpad_8",
-    105: "numpad_9",
-    106: "numpad_asterisk",
-    107: "numpad_plus",
-    109: "numpad_dash",
-    110: "numpad_period",
-    111: "numpad_slash",
+    91: "left win/special key",
+    92: "right win/special key",
+    93: "select key",
+    96: "numpad 0",
+    97: "numpad 1",
+    98: "numpad 2",
+    99: "numpad 3",
+    100: "numpad 4",
+    101: "numpad 5",
+    102: "numpad 6",
+    103: "numpad 7",
+    104: "numpad 8",
+    105: "numpad 9",
+    106: "numpad asterisk",
+    107: "numpad plus",
+    109: "numpad dash",
+    110: "numpad period",
+    111: "numpad slash",
     112: "f1",
     113: "f2",
     114: "f3",
@@ -104,18 +127,18 @@ var Key = {
     121: "f10",
     122: "f11",
     123: "f12",
-    144: "numlock",
-    145: "scrolllock",
+    144: "num lock",
+    145: "scroll lock",
     186: "semicolon",
     187: "equal",
     188: "comma",
     189: "dash",
     190: "period",
     191: "slash",
-    192: "grave",
-    219: "openbracket",
+    192: "grave accent",
+    219: "open bracket",
     220: "backslash",
-    221: "closebracket",
+    221: "close bracket",
     222: "quote"
 };
 var Keycode = {
@@ -327,7 +350,7 @@ function Room (name, width, height, backgroundSrc, stepSpeed) {
     this.id = nextID++;
     var self = this;
     
-    stepSpeed = typeof stepSpeed !== 'undefined' ? stepSpeed : DEFAULT_STEP;
+    stepSpeed = typeof stepSpeed !== 'undefined' ? stepSpeed : Settings.defaultStep;
     width = typeof width !== 'undefined' ? width : camera.width;
     height = typeof height !== 'undefined' ? height : camera.height;
     backgroundSrc = typeof backgroundSrc !== 'undefined' ? backgroundSrc : "";
@@ -543,6 +566,17 @@ function GameObject (name, x, y, imageSrc, maskImageSrc, animationsArray) {
     this.DrawAbove = function () {};
 }
 GameObject.prototype.type = "GameObject";
+GameObject.prototype.AddAnimation = function (animation, width, height, columns, rows, speed, xOffset, yOffset) {
+    //Takes either an animation or the name of an animation in the Animations namespace and adds it to the object.
+    if (animation.name) {
+        this.image.animations[animation.name] = animation;
+    } else {
+        if (typeof A[animation] === 'undefined') {
+            A.Add(animation, width, height, columns, rows, speed, xOffset, yOffset);
+        }
+        this.image.animations[A[animation].name] = A[animation];
+    }
+}
 GameObject.prototype.Draw = function () {
     this.DrawBelow();
     
@@ -887,6 +921,31 @@ var DEBUG = {
     },
     objectsOnScreen: 0,
     CountObjectsOnScreen: function () {return DEBUG.objectsOnScreen;},
+    ListControls: function () {
+        var numControls = 0;
+        var numAxes = 0;
+        var total = 0;
+        
+        for (control in Controls) {
+            if (typeof Controls[control].Check !== 'undefined') {   //Only return values in Control that have Check(), i.e. controls & axes
+                total++;
+                var message = "C[\"" + control + "\"] "
+                
+                if (Controls[control].type == "Control") {
+                    message += "(Control): " + C[control].keyName;
+                    numControls++;
+                }
+                if (Controls[control].type == "Axis") {
+                    message += "(Axis) Positive: " + C[control].positiveKeyName + ", Negative: " + C[control].negativeKeyName;
+                    numAxes++;
+                }
+                
+                console.log(message);
+            }
+        }
+        
+        console.log(numControls + " Controls and " + numAxes + " Axes.\n" + total + " in all");
+    },
 };
 
 window.onload = function () {Initialize();};
