@@ -1106,7 +1106,7 @@ function Update () {
             camera.y = R[R.currentRoom].objects[camera.following].y - (camera.height - camera.vBorder);
         }
         if (R[R.currentRoom].objects[camera.following].y - camera.y < camera.vBorder) {
-            camera.y = R[R.currentRoom].objects[camera.following].y - camera.hBorder;
+            camera.y = R[R.currentRoom].objects[camera.following].y - camera.vBorder;
         }
     }
     
