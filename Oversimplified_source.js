@@ -252,7 +252,7 @@ Controls.Add = function(name, positiveKeycode, negativeKeycode) {
     if (typeof negativeKeycode !== 'undefined') {
         Controls[name] = new Axis(positiveKeycode, negativeKeycode);
     } else {
-        Controls[name] = new Control(keycode);
+        Controls[name] = new Control(positiveKeycode);
     }
 };
 Controls.New = Controls.Add;
@@ -664,7 +664,7 @@ GameObject.prototype.End = function () {
 }
 GameObject.prototype.MoveTo = function (x, y, speed) {
     //Moves toward the given point at the given speed.
-    //Imprecise and only moves at 90° and 45° angles, but gets the job done.
+    //Imprecise and only moves at 90Â° and 45Â° angles, but gets the job done.
     speed = typeof speed !== 'undefined' ? speed : 1;
     if (this.x < x) {
         this.x += speed;
@@ -1161,7 +1161,7 @@ function MouseWheelHandler (e) {
     //Prevent scrolling page when scrolling inside canvas.
     e.preventDefault();
     
-    mouse.wheel = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));    //reverse Firefox’s detail value and return either 1 for up or -1 for down
+    mouse.wheel = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));    //reverse FirefoxÂ’s detail value and return either 1 for up or -1 for down
 }
 
 function isOnCamera(x, y) {
