@@ -1,5 +1,6 @@
 var canvas, context;
 var nextID = 0;
+var loadingScripts = [];
 
 //Settings Namespace - currently unused, to be used for audio
 var Settings = window.Settings || {};
@@ -255,6 +256,7 @@ Controls.Add = function(name, positiveKeycode, negativeKeycode) {
     } else {
         Controls[name] = new Control(positiveKeycode);
     }
+    return Controls[name];
 };
 Controls.New = Controls.Add;
 Controls.CheckAll = function () {
@@ -336,9 +338,9 @@ var Rooms = window.Rooms || {
     AllDo: function () {},
     AllAfterDo: function () {}
 }
-Rooms.Add = function (name, width, height, backgroundSrc, stepSpeed) {
+Rooms.Add = function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
     if (typeof Rooms[name] === 'undefined') {
-        Rooms[name] = new Room(name, width, height, backgroundSrc, stepSpeed);
+        Rooms[name] = new Room(name, width, height, backgroundSrc, stepSpeed, extraParameters);
         
         return Rooms[name];
     } else {
@@ -351,11 +353,12 @@ var R = window.Rooms;
 var O;    //Current Room Objects alias
 
 //Room Class
-function Room (name, width, height, backgroundSrc, stepSpeed) {
+function Room (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
     this.id = nextID++;
     var self = this;
     
     stepSpeed = typeof stepSpeed !== 'undefined' ? stepSpeed : Settings.defaultStep;
+    extraParameters = typeof extraParameters !== 'undefined' ? extraParameters : [];
     width = typeof width !== 'undefined' ? width : camera.width;
     height = typeof height !== 'undefined' ? height : camera.height;
     backgroundSrc = typeof backgroundSrc !== 'undefined' ? backgroundSrc : "";
@@ -368,27 +371,12 @@ function Room (name, width, height, backgroundSrc, stepSpeed) {
     this.background.src = backgroundSrc;
     this.background.onload = function () {
             this.loaded = true;
+            if (extraParameters.indexOf("background size") != -1) {
+                self.width = this.width;
+                self.height = this.height;
+            }
         }
     this.stepSpeed = stepSpeed;
-    
-    this.AddObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
-        if (newObjectName.type == "GameObject") {    //Create from prefabricated object
-            var newID = nextID++;
-            var newName = newObjectName.name + newID.toString();
-            this.objects[newName] = CopyObject(newObjectName, newID, newName);
-            
-            return this.objects[newName];
-        }
-        else {
-            if (this.objects[newObjectName]) {
-                console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
-                return false;
-            }
-            this.objects[newObjectName] = new GameObject(newObjectName, x, y, imageSrc, maskImageSrc, animationsArray);
-            
-            return this.objects[newObjectName];
-        }
-    }
     
     this.objects = {};
     this.O = this.objects;
@@ -474,6 +462,26 @@ Room.prototype.Draw = function () {
     }
     
     this.DrawAbove();    //Draw this after all other drawing is done
+}
+Room.prototype.AddObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
+    var self = this;
+    
+    if (newObjectName.type == "GameObject") {    //Create from prefabricated object
+        var newID = nextID++;
+        var newName = newObjectName.name + newID.toString();
+        self.objects[newName] = CopyObject(newObjectName, newID, newName);
+        
+        return self.objects[newName];
+    }
+    else {
+        if (self.objects[newObjectName]) {
+            console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
+            return false;
+        }
+        self.objects[newObjectName] = new GameObject(newObjectName, x, y, imageSrc, maskImageSrc, animationsArray);
+        
+        return self.objects[newObjectName];
+    }
 }
 
 function SetRoom(room) {
@@ -609,7 +617,7 @@ GameObject.prototype.Draw = function () {
             self.image.frameRow = 0;
         }
         
-        if (isOnCamera(self)) {
+        if (IsOnCamera(self)) {
             var adjustedColumn = Math.floor(self.image.frameColumn);
             var adjustedRow = Math.floor(self.image.frameRow);
             
@@ -900,6 +908,59 @@ function CopyObject (object, newID, newName) {
     return resultingCopy;
 }
 
+function Copy (object, newID, newName) {
+    var resultingCopy = {};
+    if (newID != "identical") {
+        resultingCopy.id = typeof newID !== 'undefined' ? newID : nextID++;
+        resultingCopy.name = typeof newName !== 'undefined' ? newName : object.name + resultingCopy.id.toString();
+    } else {    //If second argument is "identical" with quotes, then copy id and name, too.
+        resultingCopy.id = object.id;
+        resultingCopy.name = object.name;
+    }
+    //Copy GameObject-unique properties
+    if (object.type == 'GameObject') {
+        resultingCopy.self = resultingCopy;
+        resultingCopy.image = new Image();
+        resultingCopy.image.src = object.image.src;
+        resultingCopy.image.xScale = object.image.xScale;
+        resultingCopy.image.yScale = object.image.yScale;
+        resultingCopy.image.rotation = object.image.rotation;
+        resultingCopy.image.frameColumn = 0;
+        resultingCopy.image.frameRow = 0;
+        resultingCopy.image.animations = object.image.animations;
+        resultingCopy.image.currentAnimation = object.image.currentAnimation;
+        resultingCopy.mask = new Image();
+        resultingCopy.mask.src = object.mask.src;
+        if (resultingCopy.mask.src == "") {
+            resultingCopy.mask.width = resultingCopy.image.animations["Default"].width;
+            resultingCopy.mask.height = resultingCopy.image.animations["Default"].height;
+        }
+        resultingCopy.mask.onload = function(){
+            resultingCopy.xBound = this.width / 2;
+            resultingCopy.yBound = this.height / 2;
+        };
+    }
+    if (object.type == 'Room') {
+        /* resultingCopy.background = new Image();
+        resultingCopy.background.loaded = false;
+        resultingCopy.background.src = object.background.src;
+        resultingCopy.background.onload = function () {
+                resultingCopy.loaded = true;
+            } */
+        resultingCopy.objects = {};
+        for (var subObject in object.objects) {
+            resultingCopy.objects[subObject] = Copy(object.objects[subObject]);
+        }
+    }
+    for (var property in object) {
+        if (typeof resultingCopy[property] === 'undefined') {
+            resultingCopy[property] = object[property];
+        }
+    }
+    
+    return resultingCopy;
+}
+
 var DEBUG = {
     DrawBoundingBox: function (object) {
         var fillStyle = context.fillStyle;
@@ -959,7 +1020,7 @@ function Initialize() {
     
     SetupControls();
     
-    addScript("start.js", function(){
+    AddScript("start.js", function(){
         start();
         SetupCamera();
         Frame();    //Only run the first frame after Start has been loaded.
@@ -1069,15 +1130,19 @@ function SetupCamera () {
 }
 
 function Frame () {
-    now = timestamp();
-    dateTime = dateTime + Math.min(1, (now - lastFrame) / 1000);
-    while (dateTime > step) {
-        dateTime = dateTime - step;
-        Update();
-        Draw();
-        EndFrame();
+    if (loadingScripts.length == 0) {
+        now = timestamp();
+        dateTime = dateTime + Math.min(1, (now - lastFrame) / 1000);
+        while (dateTime > step) {
+            dateTime = dateTime - step;
+            Update();
+            Draw();
+            EndFrame();
+        }
+        lastFrame = now;
+    } else {
+        console.log("Loading scripts: " + loadingScripts.toString());
     }
-    lastFrame = now;
     
     requestAnimationFrame(Frame);
 }
@@ -1114,14 +1179,14 @@ function Update () {
     if (camera.x < 0) {
         camera.x = 0;
     }
-    if (camera.x + camera.width > R.currentRoom.width) {
-        camera.x = R[currentRoom].width - camera.width;
+    if (camera.x + camera.width > R[R.currentRoom].width) {
+        camera.x = R[R.currentRoom].width - camera.width;
     }
     if (camera.y < 0) {
         camera.y = 0;
     }
-    if (camera.y + camera.height > R.currentRoom.height) {
-        camera.y = R[currentRoom].height - camera.height;
+    if (camera.y + camera.height > R[R.currentRoom].height) {
+        camera.y = R[R.currentRoom].height - camera.height;
     }
 }
 
@@ -1150,14 +1215,6 @@ function EndFrame () {
     releasedKeys = [];
 }
 
-function getMousePos (canvas, e) {
-    var rect = canvas.getBoundingClientRect();
-    return {
-        x: (e.clientX - rect.left),
-        y: (e.clientY - rect.top)
-    };
-}
-
 function MouseWheelHandler (e) {
     //Prevent scrolling page when scrolling inside canvas.
     e.preventDefault();
@@ -1165,7 +1222,7 @@ function MouseWheelHandler (e) {
     mouse.wheel = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));    //reverse Firefoxs detail value and return either 1 for up or -1 for down
 }
 
-function isOnCamera(x, y) {
+function IsOnCamera(x, y) {
     if (typeof y !== 'undefined') {    //If both are defined, then they are a point.
         if (x > camera.x && x < camera.x + camera.width
             && y > camera.y && y < camera.y + camera.height)
@@ -1187,9 +1244,12 @@ function isOnCamera(x, y) {
         
 }
 
-function addScript(pathToScript, mainFunction) {
+function AddScript(pathToScript, mainFunction) {
     //You can either specify a main function or just make the main function within the script the same as the script's name (minus ".js")
     mainFunction = typeof mainFunction !== 'undefined' ? mainFunction : pathToScript.slice(((pathToScript.lastIndexOf("/")>-1)?pathToScript.lastIndexOf("/")+1:0), pathToScript.indexOf("."));
+    
+    loadingScripts.push(pathToScript);
+    
     var script = document.createElement('script');
     script.src = pathToScript;
     script.onload = function () {
@@ -1202,6 +1262,8 @@ function addScript(pathToScript, mainFunction) {
                 console.log(mainFunction + " is not a function!");
             }
         }
+        
+        loadingScripts.splice(loadingScripts.indexOf(pathToScript), 1);
     };
     document.body.appendChild(script);
 }
