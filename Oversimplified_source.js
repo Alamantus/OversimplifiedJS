@@ -1254,10 +1254,10 @@ function AddScript(pathToScript, mainFunction) {
     script.src = pathToScript;
     script.onload = function () {
         if (typeof mainFunction !== 'string') {
-            mainFunction();
+            WaitForScriptsToLoad(function(){mainFunction()});
         } else {
             if (typeof window[mainFunction] === 'function') {
-                window[mainFunction]();
+                WaitForScriptsToLoad(function(){window[mainFunction]()});
             } else {
                 console.log(mainFunction + " is not a function!");
             }
@@ -1266,6 +1266,16 @@ function AddScript(pathToScript, mainFunction) {
         loadingScripts.splice(loadingScripts.indexOf(pathToScript), 1);
     };
     document.body.appendChild(script);
+}
+
+function WaitForScriptsToLoad (Function) {  //Callback
+    //console.log("Waiting to run " + Function + ". " + loadingScripts.length + " scripts left to load!");
+    if (loadingScripts.length > 0) {
+        setTimeout(function(){WaitForScriptsToLoad(Function)}, 0.1);
+    } else {
+        //console.log("Running " + Function + ". " + loadingScripts.length + " scripts left to load!");
+        Function();
+    }
 }
 
 //Detect Internet Explorer
