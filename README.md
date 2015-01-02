@@ -111,7 +111,8 @@ if (spaceKey.down) {
 	CreateObject(playerPrefab);
 }
 ```    
-Prefabs and other methods for adding objects will be discussed further once the wiki is finished, but for now, that's what you get.
+Prefabs and other methods for adding objects will be discussed further once the wiki is finished, but for now, that's what you get.    
+_NOTE: If you use multiple `.js` files to separate your code and you need to refer to an object in another file, always do so within the file's main function. Adding an existing object from another file outside of this function may result in the object not loading correctly, but adding the object in from the file's main function ensures that all other `.js` files have been loaded and the object you are referring to does exist. Refer to the [Modules wiki](https://github.com/Alamantus/OversimplifiedJS/wiki/Modules "Page will be updated with more details later") for more information._
 
 So I hope you enjoy using OversimplifiedJS! If you need to know more about how to do things, you'll unfortunately either need to wait until the wiki is ready or dig into that source code yourself to see what's there! Don't worry, I'll be working as quickly as I can to write up the most thorough wiki I can possibly make. Until then, good luck and have fun! :D
 
