@@ -1,7 +1,7 @@
 OversimplifiedJS
 =============
 A lightweight, modular 2-D game engine for HTML5 canvas &amp; JavaScript    
-(Current Version: 0.6)
+(Current Version: 0.61)
 
 Getting Started
 -------------
@@ -130,7 +130,7 @@ Things You Should Know
 Policy for Contribution
 -------------
 
-If you want to contribute to OversimplifiedJS's code to add/improve functionality or to include a module or something, then I absolutely welcome you to! All I ask is that you keep one thing in mind: Is it simple? The way I built OversimplifiedJS focuses on giving users options and simplicity: if you want to create an object in the current room, just call `object = CreateObject(//some prefab, x, y)` and it's there and ready to be used; if you want an object to do something, the code is `object.Do = function() {//thing to do here}` _(and I would have gone without the "`= function()` bit if JavaScript would have allowed me to)_. The point is that the code should be readable, understandable, and relatively easy to use. If your code can be described as such, then it will be welcomed with open arms!
+If you want to contribute to OversimplifiedJS's code to add/improve functionality or to include a module or something, then I absolutely welcome you to! All I ask is that you keep one thing in mind: Is it simple? The way I built OversimplifiedJS focuses on giving users options and simplicity: if you want to create an object in the current room, just call `object = CreateObject(//some prefab, x, y)` and it's there and ready to be used; if you want an object to do something, the code is `object.Do = function() {//thing to do here}` _(and I would have gone without the "`= function()`" bit if JavaScript would have allowed me to)_. The point is that the code should be readable, understandable, and relatively easy to use. If your code can be described as such, then it will be welcomed with open arms!
 
 Planned Additions
 -------------
