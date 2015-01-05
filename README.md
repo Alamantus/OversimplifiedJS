@@ -6,7 +6,7 @@ A lightweight, modular 2-D game engine for HTML5 canvas &amp; JavaScript
 Getting Started
 -------------
 
-You'll need to get the `index.html`, `Oversimplified.js` _(this is a minified but identical `Oversimplified_source.js`)_, and `start.js` files in this GitHub project and put them either in a local or server directory. OversimplifiedJS is designed to be exactly that&mdash;a little bit too simple for better or worse as you'll probably see below.
+You'll need to get the `index.html`, `Oversimplified.js` _(the release file contains a minified version)_, and `start.js` files in this GitHub project and put them either in a local or server directory. OversimplifiedJS is designed to be exactly that&mdash;a little bit too simple for better or worse as you'll probably see below.
 
 Once you have your directory ready, you begin by editing the `start.js` file. When you open the file, you'll find nothing but a sad, empty `start()` function. As its name implies, however, this is the function where everything starts! It's the first function called even before the first frame of your game, and it is required in order for OversimplifiedJS to work, so always have a `start.js` file with a start function in it in the same directory as your index! _(Note, you can edit the `Oversimplified.js` file to change this expected location, but I'd recommend only doing that if you know how to read JavaScript well enough to not accidentally break something.)_
 
@@ -121,11 +121,11 @@ Things You Should Know
 
 * OversimplifiedJS exists to make your game development process simpler by giving easy access to basic game development objects, so you'll definitely still need to know your way around JavaScript and be comfortable with text editors if you want to make a game with it.
 * OversimplifiedJS has not been stress tested with lots of objects that all have complicated `Do()` functions! Be careful and report bugs to the issue tracker (or fix them yourself and send a pull request! That would be wonderful!).
-* There is no built-in audio support yet (as of version 0.6), so you'll have to do that yourself using your own HTML5 knowledge. It's not hard, but it's complicated and it falls outside of the time limit I restricted myself to for this first version. Feel free to build your own and send a pull request if you want it sooner. Just remember to keep in line with the code policy outlined below. :)
+* There is no built-in audio support yet (as of version 0.61), so you'll have to do that yourself using your own HTML5 knowledge. It's not hard, but it's complicated and it falls outside of the time limit I restricted myself to for this first version. Feel free to build your own and send a pull request if you want it sooner. Just remember to keep in line with the code policy outlined below. :)
 * Basic browser mouse and keyboard scrolling controls are disabled on the canvas. You can right click and scroll outside of the canvas, but these default actions are disabled when hovering over the canvas! Likewise, the arrow keys and space bar will not scroll the page, period. Keep this in mind when choosing your camera size.
 * Don't make rooms that are smaller than your camera! I haven't tested this, but I think it'll just make things display weird...
 * Objects you create in rooms retain their properties after changing rooms! If you want objects to reset after changing rooms and returning, you'll need to manually set every property back to the value you want. To make things easier for you, you can use your `Room.DoLast()` function to do this when your room changes, but you'll need to specify each object's properties manually. Make sure you always Destroy unused objects or else they'll stick around in the Room for the whole game session. Destroy is used with  `object.Destroy()`.
-* You'll want to need to have each separate direction as a separate animation set on your sprite sheet(s) in order to indicate direction. This is beacause inverting images in any direction (using scale) is outrageously inefficient on HTML5 canvas and is not friendly to video games.
+* You'll want to need to have each separate direction as a separate animation set on your sprite sheet(s) in order to indicate direction. This is because inverting images in any direction (using scale) is outrageously inefficient on HTML5 canvas and is not friendly to video games.
 
 Policy for Contribution
 -------------
@@ -137,12 +137,13 @@ Planned Additions
 
 Things I'm planning to add to OversimplifiedJS at some point in the future include (in no particular order):
 * Sound and Music classes
+* Grouped bounding boxes for complex collisions
+* Touch controls
 * Easy-access Settings adjustments
 * Sample Modules
 * ~~Maybe scale the canvas and its contents if the window can't fit it.~~ Because of HTML5 canvas' AA, this would not be ideal.
 * ~~`Axis` control class that returns positive, negative, or 0 based on a set of 2 keys~~ Added in Version 0.6
 * ~~`AddAnimation()` function for easily adding Animations to GameObjects after creation.~~ Added in Version 0.6
-* More I can't think of right now.
 
 About
 -------------
