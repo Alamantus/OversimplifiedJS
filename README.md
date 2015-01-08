@@ -1,7 +1,7 @@
 OversimplifiedJS
 =============
 A lightweight, modular 2-D game engine for HTML5 canvas &amp; JavaScript    
-(Current Version: 0.61)
+(Current Version: 0.62)
 
 Getting Started
 -------------
@@ -138,7 +138,7 @@ Planned Additions
 Things I'm planning to add to OversimplifiedJS at some point in the future include (in no particular order):
 * Sound and Music classes
 * Grouped bounding boxes for complex collisions
-* Touch controls
+* ~~Touch controls~~ Added in Version 0.62&mdash;touches emulate mouse buttons (1 finger = left mouse, 2 fingers = right mouse, 3 fingers = middle mouse)
 * Easy-access Settings adjustments
 * Sample Modules
 * ~~Maybe scale the canvas and its contents if the window can't fit it.~~ Because of HTML5 canvas' AA, this would not be ideal.

@@ -1044,14 +1044,7 @@ function SetupControls () {
     SetupKeyboardListeners();
 }
 
-function SetupMouseListeners () {    
-    canvas.addEventListener("mousedown", function(e) {
-        // Prevent 
-        if(e.button === mouse.middleCode) {
-            e.preventDefault();
-        }
-    }, false);
-    
+function SetupMouseListeners () {
     canvas.addEventListener('mousemove', function (e) {
             var rect = canvas.getBoundingClientRect();
             mouse.x = (e.clientX - rect.left) + camera.x;
@@ -1095,6 +1088,59 @@ function SetupMouseListeners () {
     //mouse wheel functionality
     canvas.addEventListener("mousewheel", MouseWheelHandler, false);
     canvas.addEventListener("DOMMouseScroll", MouseWheelHandler, false); //for (old?) Firefox
+    
+    //Touch Mouse Emulation
+    canvas.addEventListener("touchstart", function(e) {
+            e.preventDefault();
+            switch (e.targetTouches.length) {
+            case 1:
+                mouse.right = false;
+                mouse.middle = false;
+                if (!mouse.left) mouse.leftDown = true;
+                mouse.left = true;
+                break;
+            case 2:
+                mouse.left = false;
+                mouse.middle = false;
+                if (!mouse.right) mouse.rightDown = true;
+                mouse.right = true;
+                break;
+            case 3:
+                mouse.left = false;
+                mouse.right = false;
+                if (!mouse.middle) mouse.middleDown = true;
+                mouse.middle = true;
+                break;
+            default:
+                break;
+            }
+            var rect = canvas.getBoundingClientRect();
+            //Takes mouse position as First touch
+            mouse.x = (e.targetTouches[0].clientX - rect.left) + camera.x;
+            mouse.y = (e.targetTouches[0].clientY - rect.top) + camera.y;
+        }, false);
+    canvas.addEventListener('touchmove', function (e) {
+            e.preventDefault();
+            var rect = canvas.getBoundingClientRect();
+            mouse.x = (e.targetTouches[0].clientX - rect.left) + camera.x;
+            mouse.y = (e.targetTouches[0].clientY - rect.top) + camera.y;
+        }, false);
+    window.addEventListener('touchend', function (e) {
+            //Does not record last position
+            if (e.targetTouches.length < 1) {
+                if (mouse.left) mouse.leftUp = true;
+                mouse.left = false;
+                mouse.right = false;
+                mouse.middle = false;
+            } else if (e.targetTouches.length < 2) {
+                if (mouse.right) mouse.rightUp = true;
+                mouse.right = false;
+                mouse.middle = false;
+            } else if (e.targetTouches.length < 3) {
+                if (mouse.middle) mouse.middleUp = true;
+                mouse.middle = false;
+            }
+        }, false);
 }
 
 function SetupKeyboardListeners () {
