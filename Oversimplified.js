@@ -166,7 +166,7 @@ var Keycode = {
     right:    39,
     down:    40,
     insert:    45,
-    delete:    46,
+    del:    46,
     zero:    48,
     one:    49,
     two:    50,
