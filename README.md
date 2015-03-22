@@ -6,6 +6,8 @@ A lightweight, modular 2-D game engine for HTML5 canvas &amp; JavaScript
 Getting Started
 -------------
 
+> ___NOTE:___ _These getting started instructions are for the non-compatible version of OversimplifiedJS. If you want to use OversimplifiedJS with another JavaScript library like jQuery or something else, please use Oversimplified.compatible.js instead of Oversimplified.js for the time being and prepend `OS.` to each of the base-level code snippets listed below (for example, use `OS.Settings` instead of `Settings` and `OS.camera.width` instead of `camera.width` below). In the near future, the compaitble version will be move to the official version and this guide will be updated to reflect the changes._
+
 You'll need to get the `index.html`, `Oversimplified.js` _(the release file contains a minified version)_, and `start.js` files in this GitHub project and put them either in a local or server directory. OversimplifiedJS is designed to be exactly that&mdash;a little bit too simple for better or worse as you'll probably see below.
 
 Once you have your directory ready, you begin by editing the `start.js` file. When you open the file, you'll find nothing but a sad, empty `start()` function. As its name implies, however, this is the function where everything starts! It's the first function called even before the first frame of your game, and it is required in order for OversimplifiedJS to work, so always have a `start.js` file with a start function in it in the same directory as your index! _(Note, you can edit the `Oversimplified.js` file to change this expected location, but I'd recommend only doing that if you know how to read JavaScript well enough to not accidentally break something.)_
