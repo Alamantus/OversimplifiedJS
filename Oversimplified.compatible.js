@@ -1426,3 +1426,26 @@ Math.clampAngle = function (value, min, max) {
     }
     return value;
 };
+Math.radToDeg = function (radians) {
+    return radians / (Math.PI / 180);
+};
+Math.degToRad = function (degrees) {
+    return degrees * (Math.PI / 180);
+};
+Math.getCos = function (angle) {
+    return Math.cos(Math.degToRad(angle));
+};
+Math.getSin = function (angle) {
+    return Math.sin(Math.degToRad(angle));
+};
+Math.coinFlip = function () {
+    if (Math.random() >= 0.5) {
+        return true;
+    } else {
+        return false;
+    }
+};
+Math.randomRange(min, max) {
+// Min inclusive, max inclusive.
+    return Math.random() * (max - min) + min;
+};
