@@ -1,533 +1,529 @@
-var Oversimplified = {};
+var Oversimplified;
 var OS = Oversimplified;
+var Œ = OS;
 
-Oversimplified.canvas = null;
-Oversimplified.context = null;
-Oversimplified.nextID = 0;
-Oversimplified.loadingScripts = [];
+Oversimplified = {
+    canvas : null,
+    context : null,
+    nextID : 0,
+    loadingScripts : [],
 
-//Settings Namespace - currently unused, to be used for audio
-Oversimplified.Settings = {};
-Oversimplified.Settings.defaultStep = 1/30;
-Oversimplified.Settings.SetCamera = function (width, height, objectToFollow, hBorder, vBorder) {
-    hBorder = typeof hBorder !== 'undefined' ? hBorder : Oversimplified.camera.hBorder;
-    vBorder = typeof vBorder !== 'undefined' ? vBorder : Oversimplified.camera.vBorder;
+    //Settings Namespace - currently unused, to be used for audio
+    Settings : {
+        defaultStep : 1/30,
+        SetCamera : function (width, height, objectToFollow, hBorder, vBorder) {
+            hBorder = typeof hBorder !== 'undefined' ? hBorder : Oversimplified.camera.hBorder;
+            vBorder = typeof vBorder !== 'undefined' ? vBorder : Oversimplified.camera.vBorder;
     
-    if (typeof width !== 'undefined') {
-        Oversimplified.camera.width = width;
-    } else {
-        console.log("You must specify a width in function Oversimplified.Settings.SetCamera()");
-        return false;
-    }
-    if (typeof height !== 'undefined') {
-        Oversimplified.camera.height = height;
-    } else {
-        console.log("You must specify a height in function Oversimplified.Settings.SetCamera()");
-        return false;
-    }
-    
-    if (typeof objectToFollow !== 'undefined') {
-        if (objectToFollow.name) {
-            Oversimplified.camera.Follow(objectToFollow);
-        } else {
-            console.log("Oversimplified.Settings.SetCamera()'s objectToFollow argument must be a Oversimplified.GameObject.");
-        }
-    }
-    
-    Oversimplified.camera.hBorder = hBorder;
-    Oversimplified.camera.vBorder = vBorder;
-}
-
-Oversimplified.S = Oversimplified.Settings;
-
-//Time variables
-Oversimplified.timestamp = function() {
-  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
-}
-Oversimplified.now = null;
-Oversimplified.dateTime = 0;
-Oversimplified.lastFrame = Oversimplified.timestamp();
-Oversimplified.step = Oversimplified.Settings.defaultStep;     //seconds per frame
-
-// Camera Object
-Oversimplified.camera = {
-    x: 0,
-    y: 0,
-    width: 640,
-    height: 480,
-    hBorder: 64,
-    vBorder: 64,
-    following: "",
-    Follow: function (object) {
-        this.following = object.name;
-    }
-}
-
-//Detect Internet Explorer
-Oversimplified.IsInternetExplorer = function () {
-    var ua = window.navigator.userAgent;
-    var msie = ua.indexOf("MSIE ");
-
-    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {        // If Internet Explorer, return true
-        return true;
-    } else {        // If another browser, return false
-        return false;
-    }
-}
-
-// Mouse Object
-Oversimplified.mouse = {
-    x: 0,
-    y: 0,
-    leftCode: Oversimplified.IsInternetExplorer() ? 1 : 0,
-    middleCode: Oversimplified.IsInternetExplorer() ? 4 : 1,
-    rightCode: 2,
-    leftDown: false,
-    left: false,
-    leftUp: false,
-    middleDown: false,
-    middle: false,
-    middleUp: false,
-    rightDown: false,
-    right: false,
-    rightUp: false,
-    wheel: 0
-}
-
-//Keys
-Oversimplified.heldKeys = [];
-Oversimplified.pressedKeys = [];
-Oversimplified.releasedKeys = [];
-
-//Key definitions
-Oversimplified.Key = {
-    37: "left arrow",
-    38: "up arrow",
-    39: "right arrow",
-    40: "down arrow",
-    45: "insert",
-    46: "delete",
-    8: "backspace",
-    9: "tab",
-    13: "enter",
-    16: "shift",
-    17: "ctrl",
-    18: "alt",
-    19: "pause",
-    20: "caps lock",
-    27: "escape",
-    32: "space",
-    33: "page up",
-    34: "page down",
-    35: "end",
-    91: "left win/special key",
-    92: "right win/special key",
-    93: "select key",
-    96: "numpad 0",
-    97: "numpad 1",
-    98: "numpad 2",
-    99: "numpad 3",
-    100: "numpad 4",
-    101: "numpad 5",
-    102: "numpad 6",
-    103: "numpad 7",
-    104: "numpad 8",
-    105: "numpad 9",
-    106: "numpad asterisk",
-    107: "numpad plus",
-    109: "numpad dash",
-    110: "numpad period",
-    111: "numpad slash",
-    112: "f1",
-    113: "f2",
-    114: "f3",
-    115: "f4",
-    116: "f5",
-    117: "f6",
-    118: "f7",
-    119: "f8",
-    120: "f9",
-    121: "f10",
-    122: "f11",
-    123: "f12",
-    144: "num lock",
-    145: "scroll lock",
-    186: "semicolon",
-    187: "equal",
-    188: "comma",
-    189: "dash",
-    190: "period",
-    191: "slash",
-    192: "grave accent",
-    219: "open bracket",
-    220: "backslash",
-    221: "close bracket",
-    222: "quote"
-};
-Oversimplified.Keycode = {
-    backspace:    8,
-    tab:    9,
-    enter:    13,
-    shift:    16,
-    ctrl:    17,
-    alt:    18,
-    pausebreak:    19,
-    capslock:    20,
-    escape:    27,
-    space: 32,
-    pageup:    33,
-    pagedown:    34,
-    end:    35,
-    home:    36,
-    left:    37,
-    up:    38,
-    right:    39,
-    down:    40,
-    insert:    45,
-    del:    46,
-    zero:    48,
-    one:    49,
-    two:    50,
-    three:    51,
-    four:    52,
-    five:    53,
-    six:    54,
-    seven:    55,
-    eight:    56,
-    nine:    57,
-    a:    65,
-    b:    66,
-    c:    67,
-    d:    68,
-    e:    69,
-    f:    70,
-    g:    71,
-    h:    72,
-    i:    73,
-    j:    74,
-    k:    75,
-    l:    76,
-    m:    77,
-    n:    78,
-    o:    79,
-    p:    80,
-    q:    81,
-    r:    82,
-    s:    83,
-    t:    84,
-    u:    85,
-    v:    86,
-    w:    87,
-    x:    88,
-    y:    89,
-    z:    90,
-    leftwinkey:    91,
-    rightwinkey:    92,
-    selectkey:    93,
-    numpad_0:    96,
-    numpad_1:    97,
-    numpad_2:    98,
-    numpad_3:    99,
-    numpad_4:    100,
-    numpad_5:    101,
-    numpad_6:    102,
-    numpad_7:    103,
-    numpad_8:    104,
-    numpad_9:    105,
-    numpad_asterisk:    106,
-    numpad_plus:    107,
-    numpad_dash:    109,
-    numpad_period:    110,
-    numpad_slash:    111,
-    f1:    112,
-    f2:    113,
-    f3:    114,
-    f4:    115,
-    f5:    116,
-    f6:    117,
-    f7:    118,
-    f8:    119,
-    f9:    120,
-    f10:    121,
-    f11:    122,
-    f12:    123,
-    numlock:    144,
-    scrolllock:    145,
-    semicolon:    186,
-    equal:    187,
-    comma:    188,
-    dash:    189,
-    period:    190,
-    slash:    191,
-    grave:    192,
-    openbracket:    219,
-    backslash:    220,
-    closebraket:    221,
-    quote:    222
-}
-
-//Controls Namespace
-Oversimplified.Controls = {};
-Oversimplified.Controls.Add = function(name, positiveKeycode, negativeKeycode) {
-    if (typeof negativeKeycode !== 'undefined') {
-        Oversimplified.Controls[name] = new Oversimplified.Axis(positiveKeycode, negativeKeycode);
-    } else {
-        Oversimplified.Controls[name] = new Oversimplified.Control(positiveKeycode);
-    }
-    return Oversimplified.Controls[name];
-};
-Oversimplified.Controls.New = Oversimplified.Controls.Add;
-Oversimplified.Controls.CheckAll = function () {
-    for (control in Oversimplified.Controls) {
-        if (typeof Oversimplified.Controls[control].Check !== 'undefined') {
-            Oversimplified.Controls[control].Check();
-        }
-    }
-};
-Oversimplified.C = Oversimplified.Controls;
-
-//Control Class
-Oversimplified.Control = function (keycode) {
-    var self = this;
-    
-    this.keyCode = keycode;
-    this.keyName = Oversimplified.Key[keycode];
-    
-    this.down = false;
-    this.held = false;
-    this.up = false;
-}
-Oversimplified.Control.prototype.type = "Control";
-Oversimplified.Control.prototype.Check = function () {
-    if (Oversimplified.heldKeys.indexOf(this.keyCode) != -1) {
-        this.held = true;
-    } else {
-        this.held = false;
-    }
-    if (Oversimplified.pressedKeys.indexOf(this.keyCode) != -1) {
-        this.down = true;
-    } else {
-        this.down = false;
-    }
-    if (Oversimplified.releasedKeys.indexOf(this.keyCode) != -1) {
-        this.up = true;
-    } else {
-        this.up = false;
-    }
-}
-
-//Axis Class
-Oversimplified.Axis = function (positiveKeycode, negativeKeycode) {
-    //Keeps track of a direction, either -1, 0, or 1
-    var self = this;
-    
-    this.positiveKeycode = positiveKeycode;
-    this.positiveKeyName = Oversimplified.Key[positiveKeycode];
-    this.negativeKeycode = negativeKeycode;
-    this.negativeKeyName = Oversimplified.Key[negativeKeycode];
-    
-    this.direction = 0;
-}
-Oversimplified.Axis.prototype.type = "Axis";
-Oversimplified.Axis.prototype.Check = function () {
-    if (Oversimplified.heldKeys.indexOf(this.positiveKeycode) != -1
-        && Oversimplified.heldKeys.indexOf(this.negativeKeycode) == -1)
-    {
-        this.direction = 1;
-    }
-    if (Oversimplified.heldKeys.indexOf(this.negativeKeycode) != -1
-        && Oversimplified.heldKeys.indexOf(this.positiveKeycode) == -1)
-    {
-        this.direction = -1;
-    }
-    if ( (Oversimplified.heldKeys.indexOf(this.negativeKeycode) == -1      //If neither are held
-        && Oversimplified.heldKeys.indexOf(this.positiveKeycode) == -1)
-        || (Oversimplified.heldKeys.indexOf(this.negativeKeycode) != -1    //or both are held
-        && Oversimplified.heldKeys.indexOf(this.positiveKeycode) != -1) )
-    {
-        this.direction = 0;
-    }
-}
-
-//Rooms Namespace
-Oversimplified.Rooms = {
-    currentRoom: "Default",
-    AllBeforeDo: function () {},
-    AllDo: function () {},
-    AllAfterDo: function () {}
-}
-Oversimplified.Rooms.Add = function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
-    if (typeof Oversimplified.Rooms[name] === 'undefined') {
-        Oversimplified.Rooms[name] = new Oversimplified.Room(name, width, height, backgroundSrc, stepSpeed, extraParameters);
-        
-        return Oversimplified.Rooms[name];
-    } else {
-        console.log("A Room with the name \"" + name + "\" already exists!");
-        return false;
-    }
-}
-Oversimplified.Rooms.New = Oversimplified.Rooms.Add;
-Oversimplified.R = Oversimplified.Rooms;
-Oversimplified.O = null;    //Current Room Objects alias
-
-//Room Class
-Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
-    this.id = Oversimplified.nextID++;
-    var self = this;
-    
-    stepSpeed = typeof stepSpeed !== 'undefined' ? stepSpeed : Oversimplified.Settings.defaultStep;
-    extraParameters = typeof extraParameters !== 'undefined' ? extraParameters : [];
-    width = typeof width !== 'undefined' ? width : Oversimplified.camera.width;
-    height = typeof height !== 'undefined' ? height : Oversimplified.camera.height;
-    backgroundSrc = typeof backgroundSrc !== 'undefined' ? backgroundSrc : "";
-    
-    this.name = name;
-    this.width = width;
-    this.height = height;
-    this.background = new Image();
-    this.background.loaded = false;
-    this.background.src = backgroundSrc;
-    this.background.onload = function () {
-            this.loaded = true;
-            if (extraParameters.indexOf("background size") != -1) {
-                self.width = this.width;
-                self.height = this.height;
+            if (typeof width !== 'undefined') {
+                Oversimplified.camera.width = width;
+            } else {
+                console.log("You must specify a width in function Oversimplified.Settings.SetCamera()");
+                return false;
             }
-        }
-    this.stepSpeed = stepSpeed;
-    
-    this.objects = {};
-    this.O = this.objects;
-    
-    this.drawOrder = [];
-    
-    this.DoFirst = function () {};
-    
-    this.BeforeDo = function () {};
-    this.Do = function () {};
-    this.AfterDo = function () {};
-    
-    this.DoLast = function () {};
-    
-    this.DrawBelow = function () {};
-    this.DrawAbove = function () {};
-}
-Oversimplified.Room.prototype.type = "Room";
-Oversimplified.Room.prototype.Start = function () {
-    this.DoFirst();
-    
-    if (this.name === Oversimplified.R.currentRoom) {
-        for (var object in this.objects) {
-            this.objects[object].Start();
-        }
-    }
-}
-Oversimplified.Room.prototype.Update = function () {
-    if (Oversimplified.step != this.stepSpeed) {
-        Oversimplified.step = this.stepSpeed;
-    }
-    
-    this.drawOrder = [];        //Determine draw order every frame
-    for (object in this.objects) {
-        if (this.objects[object].type == 'GameObject') {
-            if (this.drawOrder.length <= 0) {    //If this is the first object checked,
-                this.drawOrder = [object];        //Add it to the array
-                continue;        //And move to the next object without sorting
+            if (typeof height !== 'undefined') {
+                Oversimplified.camera.height = height;
+            } else {
+                console.log("You must specify a height in function Oversimplified.Settings.SetCamera()");
+                return false;
             }
-            var depth = this.objects[object].depth;
-            for (var i = 0; i < this.drawOrder.length; i++) {        //Loop through the objects already in array
-                if (depth < this.objects[this.drawOrder[i]].depth) {    //if the object's depth is less than the object being checked,
-                    this.drawOrder.splice(i, 0, object);    //insert the object before it in the array
-                    break;                                    //and stop looking in the array
+    
+            if (typeof objectToFollow !== 'undefined') {
+                if (objectToFollow.name) {
+                    Oversimplified.camera.Follow(objectToFollow);
+                } else {
+                    console.log("Oversimplified.Settings.SetCamera()'s objectToFollow argument must be a Oversimplified.GameObject.");
                 }
             }
-            if (this.drawOrder.indexOf(object) < 0) {        //if it gets through the loop and the depth is not less than any object,
-                this.drawOrder.push(object);        //put it at the end
+    
+            Oversimplified.camera.hBorder = hBorder;
+            Oversimplified.camera.vBorder = vBorder;
+        }
+    },
+    S : Oversimplified.Settings,
+
+    //Time variables
+    timestamp : function () {
+        return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+    },
+    now : null,
+    dateTime : 0,
+    lastFrame : Oversimplified.timestamp(),
+    step : Oversimplified.Settings.defaultStep,     //seconds per frame
+    
+    // Camera Object
+    camera : {
+        x: 0,
+        y: 0,
+        width: 640,
+        height: 480,
+        hBorder: 64,
+        vBorder: 64,
+        following: "",
+        Follow: function (object) {
+            this.following = object.name;
+        }
+    },
+    
+    // Mouse Object
+    mouse : {
+        x: 0,
+        y: 0,
+        leftCode: Oversimplified.IsInternetExplorer() ? 1 : 0,
+        middleCode: Oversimplified.IsInternetExplorer() ? 4 : 1,
+        rightCode: 2,
+        leftDown: false,
+        left: false,
+        leftUp: false,
+        middleDown: false,
+        middle: false,
+        middleUp: false,
+        rightDown: false,
+        right: false,
+        rightUp: false,
+        wheel: 0
+    },
+
+    //Keys lists
+    heldKeys : [],
+    pressedKeys : [],
+    releasedKeys : [],
+
+    //Key definitions
+    Key : {     // Translates keycode value into key name
+        37: "left arrow",
+        38: "up arrow",
+        39: "right arrow",
+        40: "down arrow",
+        45: "insert",
+        46: "delete",
+        8: "backspace",
+        9: "tab",
+        13: "enter",
+        16: "shift",
+        17: "ctrl",
+        18: "alt",
+        19: "pause",
+        20: "caps lock",
+        27: "escape",
+        32: "space",
+        33: "page up",
+        34: "page down",
+        35: "end",
+        91: "left win/special key",
+        92: "right win/special key",
+        93: "select key",
+        96: "numpad 0",
+        97: "numpad 1",
+        98: "numpad 2",
+        99: "numpad 3",
+        100: "numpad 4",
+        101: "numpad 5",
+        102: "numpad 6",
+        103: "numpad 7",
+        104: "numpad 8",
+        105: "numpad 9",
+        106: "numpad asterisk",
+        107: "numpad plus",
+        109: "numpad dash",
+        110: "numpad period",
+        111: "numpad slash",
+        112: "f1",
+        113: "f2",
+        114: "f3",
+        115: "f4",
+        116: "f5",
+        117: "f6",
+        118: "f7",
+        119: "f8",
+        120: "f9",
+        121: "f10",
+        122: "f11",
+        123: "f12",
+        144: "num lock",
+        145: "scroll lock",
+        186: "semicolon",
+        187: "equal",
+        188: "comma",
+        189: "dash",
+        190: "period",
+        191: "slash",
+        192: "grave accent",
+        219: "open bracket",
+        220: "backslash",
+        221: "close bracket",
+        222: "quote"
+    },
+    Keycode : {     // Translates key name into keycode value
+        backspace:    8,
+        tab:    9,
+        enter:    13,
+        shift:    16,
+        ctrl:    17,
+        alt:    18,
+        pausebreak:    19,
+        capslock:    20,
+        escape:    27,
+        space: 32,
+        pageup:    33,
+        pagedown:    34,
+        end:    35,
+        home:    36,
+        left:    37,
+        up:    38,
+        right:    39,
+        down:    40,
+        insert:    45,
+        del:    46,
+        zero:    48,
+        one:    49,
+        two:    50,
+        three:    51,
+        four:    52,
+        five:    53,
+        six:    54,
+        seven:    55,
+        eight:    56,
+        nine:    57,
+        a:    65,
+        b:    66,
+        c:    67,
+        d:    68,
+        e:    69,
+        f:    70,
+        g:    71,
+        h:    72,
+        i:    73,
+        j:    74,
+        k:    75,
+        l:    76,
+        m:    77,
+        n:    78,
+        o:    79,
+        p:    80,
+        q:    81,
+        r:    82,
+        s:    83,
+        t:    84,
+        u:    85,
+        v:    86,
+        w:    87,
+        x:    88,
+        y:    89,
+        z:    90,
+        leftwinkey:    91,
+        rightwinkey:    92,
+        selectkey:    93,
+        numpad_0:    96,
+        numpad_1:    97,
+        numpad_2:    98,
+        numpad_3:    99,
+        numpad_4:    100,
+        numpad_5:    101,
+        numpad_6:    102,
+        numpad_7:    103,
+        numpad_8:    104,
+        numpad_9:    105,
+        numpad_asterisk:    106,
+        numpad_plus:    107,
+        numpad_dash:    109,
+        numpad_period:    110,
+        numpad_slash:    111,
+        f1:    112,
+        f2:    113,
+        f3:    114,
+        f4:    115,
+        f5:    116,
+        f6:    117,
+        f7:    118,
+        f8:    119,
+        f9:    120,
+        f10:    121,
+        f11:    122,
+        f12:    123,
+        numlock:    144,
+        scrolllock:    145,
+        semicolon:    186,
+        equal:    187,
+        comma:    188,
+        dash:    189,
+        period:    190,
+        slash:    191,
+        grave:    192,
+        openbracket:    219,
+        backslash:    220,
+        closebraket:    221,
+        quote:    222
+    },
+
+    //Controls Namespace
+    Controls : {
+        Add : function(name, positiveKeycode, negativeKeycode) {
+            if (typeof negativeKeycode !== 'undefined') {
+                Oversimplified.Controls[name] = new Oversimplified.Axis(positiveKeycode, negativeKeycode);
+            } else {
+                Oversimplified.Controls[name] = new Oversimplified.Control(positiveKeycode);
+            }
+            return Oversimplified.Controls[name];
+        },
+        New : Oversimplified.Controls.Add,
+        CheckAll : function () {
+            for (control in Oversimplified.Controls) {
+                if (typeof Oversimplified.Controls[control].Check !== 'undefined') {
+                    Oversimplified.Controls[control].Check();
+                }
             }
         }
-    }
+    },
+    C : Oversimplified.Controls,
+
+    //Control Class
+    Control : function (keycode) {
+        var self = this;
     
-    this.BeforeDo();
+        this.keyCode = keycode;
+        this.keyName = Oversimplified.Key[keycode];
     
-    this.Do();
-    
-    if (this.name === Oversimplified.R.currentRoom) {
-        for (var object in this.objects) {
-            this.objects[object].Update();
+        this.down = false;
+        this.held = false;
+        this.up = false;
+    },
+    Control.prototype.type : "Control",
+    Control.prototype.Check : function () {
+        if (Oversimplified.heldKeys.indexOf(this.keyCode) != -1) {
+            this.held = true;
+        } else {
+            this.held = false;
         }
-    }
+        if (Oversimplified.pressedKeys.indexOf(this.keyCode) != -1) {
+            this.down = true;
+        } else {
+            this.down = false;
+        }
+        if (Oversimplified.releasedKeys.indexOf(this.keyCode) != -1) {
+            this.up = true;
+        } else {
+            this.up = false;
+        }
+    },
+
+    //Axis Class
+    Axis : function (positiveKeycode, negativeKeycode) {
+        //Keeps track of a direction, either -1, 0, or 1
+        var self = this;
     
-    this.AfterDo();
-}
-Oversimplified.Room.prototype.End = function () {
-    this.DoLast();
-}
-Oversimplified.Room.prototype.Draw = function () {
-    var self = this;
-    //Always draw background first if there is one
-    if (this.background.loaded) {
-        Oversimplified.context.drawImage(self.background, Oversimplified.camera.x, Oversimplified.camera.y, Oversimplified.camera.width, Oversimplified.camera.height, 0, 0, self.background.width, self.background.height);
-    }
+        this.positiveKeycode = positiveKeycode;
+        this.positiveKeyName = Oversimplified.Key[positiveKeycode];
+        this.negativeKeycode = negativeKeycode;
+        this.negativeKeyName = Oversimplified.Key[negativeKeycode];
     
-    this.DrawBelow();    //Draw this before any objects are drawn
+        this.direction = 0;
+    },
+    Axis.prototype.type : "Axis",
+    Axis.prototype.Check : function () {
+        if (Oversimplified.heldKeys.indexOf(this.positiveKeycode) != -1
+            && Oversimplified.heldKeys.indexOf(this.negativeKeycode) == -1)
+        {
+            this.direction = 1;
+        }
+        if (Oversimplified.heldKeys.indexOf(this.negativeKeycode) != -1
+            && Oversimplified.heldKeys.indexOf(this.positiveKeycode) == -1)
+        {
+            this.direction = -1;
+        }
+        if ( (Oversimplified.heldKeys.indexOf(this.negativeKeycode) == -1      //If neither are held
+            && Oversimplified.heldKeys.indexOf(this.positiveKeycode) == -1)
+            || (Oversimplified.heldKeys.indexOf(this.negativeKeycode) != -1    //or both are held
+            && Oversimplified.heldKeys.indexOf(this.positiveKeycode) != -1) )
+        {
+            this.direction = 0;
+        }
+    },
+
+    //Rooms Namespace
+    Rooms : {
+        currentRoom: "Default",
+        AllBeforeDo: function () {},
+        AllDo: function () {},
+        AllAfterDo: function () {},
+        Add : function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
+            if (typeof Oversimplified.Rooms[name] === 'undefined') {
+                Oversimplified.Rooms[name] = new Oversimplified.Room(name, width, height, backgroundSrc, stepSpeed, extraParameters);
+        
+                return Oversimplified.Rooms[name];
+            } else {
+                console.log("A Room with the name \"" + name + "\" already exists!");
+                return false;
+            }
+        },
+        New : Oversimplified.Rooms.Add,
+    },
+    R : Oversimplified.Rooms,
     
-    if (this.name === Oversimplified.R.currentRoom) {
-        for (var i = 0; i < this.drawOrder.length; i++) {
-            if (typeof this.objects[this.drawOrder[i]] !== 'undefined') {
-                this.objects[this.drawOrder[i]].Draw();
+    O : null,    //Current Room's Objects alias
+
+    //Room Class
+    Room : function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
+        this.id = Oversimplified.nextID++;
+        var self = this;
+    
+        stepSpeed = typeof stepSpeed !== 'undefined' ? stepSpeed : Oversimplified.Settings.defaultStep;
+        extraParameters = typeof extraParameters !== 'undefined' ? extraParameters : [];
+        width = typeof width !== 'undefined' ? width : Oversimplified.camera.width;
+        height = typeof height !== 'undefined' ? height : Oversimplified.camera.height;
+        backgroundSrc = typeof backgroundSrc !== 'undefined' ? backgroundSrc : "";
+    
+        this.name = name;
+        this.width = width;
+        this.height = height;
+        this.background = new Image();
+        this.background.loaded = false;
+        this.background.src = backgroundSrc;
+        this.background.onload = function () {
+                this.loaded = true;
+                if (extraParameters.indexOf("background size") != -1) {
+                    self.width = this.width;
+                    self.height = this.height;
+                }
+            }
+        this.stepSpeed = stepSpeed;
+    
+        this.objects = {};
+        this.O = this.objects;
+    
+        this.drawOrder = [];
+    
+        this.DoFirst = function () {};
+    
+        this.BeforeDo = function () {};
+        this.Do = function () {};
+        this.AfterDo = function () {};
+    
+        this.DoLast = function () {};
+    
+        this.DrawBelow = function () {};
+        this.DrawAbove = function () {};
+    },
+    Room.prototype.type : "Room",
+    Room.prototype.Start : function () {
+        this.DoFirst();
+    
+        if (this.name === Oversimplified.R.currentRoom) {
+            for (var object in this.objects) {
+                this.objects[object].Start();
             }
         }
-    }
-    
-    this.DrawAbove();    //Draw this after all other drawing is done
-}
-Oversimplified.Room.prototype.AddObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
-    var self = this;
-    
-    if (newObjectName.type == "GameObject") {    //Create from prefabricated object
-        var newID = Oversimplified.nextID++;
-        var newName = newObjectName.name + newID.toString();
-        self.objects[newName] = Oversimplified.CopyObject(newObjectName, newID, newName);
-        
-        return self.objects[newName];
-    }
-    else {
-        if (self.objects[newObjectName]) {
-            console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
-            return false;
+    },
+    Room.prototype.Update = function () {
+        if (Oversimplified.step != this.stepSpeed) {
+            Oversimplified.step = this.stepSpeed;
         }
-        self.objects[newObjectName] = new Oversimplified.GameObject(newObjectName, x, y, imageSrc, maskImageSrc, animationsArray);
+    
+        this.drawOrder = [];        //Determine draw order every frame
+        for (object in this.objects) {
+            if (this.objects[object].type == 'GameObject') {
+                if (this.drawOrder.length <= 0) {    //If this is the first object checked,
+                    this.drawOrder = [object];        //Add it to the array
+                    continue;        //And move to the next object without sorting
+                }
+                var depth = this.objects[object].depth;
+                for (var i = 0; i < this.drawOrder.length; i++) {        //Loop through the objects already in array
+                    if (depth < this.objects[this.drawOrder[i]].depth) {    //if the object's depth is less than the object being checked,
+                        this.drawOrder.splice(i, 0, object);    //insert the object before it in the array
+                        break;                                    //and stop looking in the array
+                    }
+                }
+                if (this.drawOrder.indexOf(object) < 0) {        //if it gets through the loop and the depth is not less than any object,
+                    this.drawOrder.push(object);        //put it at the end
+                }
+            }
+        }
+    
+        this.BeforeDo();
+    
+        this.Do();
+    
+        if (this.name === Oversimplified.R.currentRoom) {
+            for (var object in this.objects) {
+                this.objects[object].Update();
+            }
+        }
+    
+        this.AfterDo();
+    },
+    Room.prototype.End : function () {
+        this.DoLast();
+    },
+    Room.prototype.Draw : function () {
+        var self = this;
+        //Always draw background first if there is one
+        if (this.background.loaded) {
+            Oversimplified.context.drawImage(self.background, Oversimplified.camera.x, Oversimplified.camera.y, Oversimplified.camera.width, Oversimplified.camera.height, 0, 0, self.background.width, self.background.height);
+        }
+    
+        this.DrawBelow();    //Draw this before any objects are drawn
+    
+        if (this.name === Oversimplified.R.currentRoom) {
+            for (var i = 0; i < this.drawOrder.length; i++) {
+                if (typeof this.objects[this.drawOrder[i]] !== 'undefined') {
+                    this.objects[this.drawOrder[i]].Draw();
+                }
+            }
+        }
+    
+        this.DrawAbove();    //Draw this after all other drawing is done
+    },
+    Room.prototype.AddObject : function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
+        var self = this;
+    
+        if (newObjectName.type == "GameObject") {    //Create from prefabricated object
+            var newID = Oversimplified.nextID++;
+            var newName = newObjectName.name + newID.toString();
+            self.objects[newName] = Oversimplified.CopyObject(newObjectName, newID, newName);
         
-        return self.objects[newObjectName];
-    }
-}
+            return self.objects[newName];
+        }
+        else {
+            if (self.objects[newObjectName]) {
+                console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
+                return false;
+            }
+            self.objects[newObjectName] = new Oversimplified.GameObject(newObjectName, x, y, imageSrc, maskImageSrc, animationsArray);
+        
+            return self.objects[newObjectName];
+        }
+    },
 
-Oversimplified.SetRoom = function (room) {
-    if (typeof Oversimplified.R[Oversimplified.R.currentRoom] !== 'undefined') {
-        Oversimplified.R[Oversimplified.R.currentRoom].End();
-    }
+    SetRoom : function (room) {
+        if (typeof Oversimplified.R[Oversimplified.R.currentRoom] !== 'undefined') {
+            Oversimplified.R[Oversimplified.R.currentRoom].End();
+        }
     
-    Oversimplified.R.currentRoom = room.name;
-    Oversimplified.O = Oversimplified.Rooms[Oversimplified.R.currentRoom].objects;    //Update the Oversimplified.O alias when room changes
-    Oversimplified.camera.following = "";
+        Oversimplified.R.currentRoom = room.name;
+        Oversimplified.O = Oversimplified.Rooms[Oversimplified.R.currentRoom].objects;    //Update the Oversimplified.O alias when room changes
+        Oversimplified.camera.following = "";
     
-    Oversimplified.R[Oversimplified.R.currentRoom].Start();
-}
+        Oversimplified.R[Oversimplified.R.currentRoom].Start();
+    },
 
-//Oversimplified.PremadeObjects (Prefab) Namespace
-Oversimplified.PremadeObjects = {};
-Oversimplified.PremadeObjects.Add = function (name, x, y, imageSrc, maskImageSrc, animationsArray) {
-    if (typeof Oversimplified.PremadeObjects[name] === 'undefined') {
-        Oversimplified.PremadeObjects[name] = new Oversimplified.GameObject(name, x, y, imageSrc, maskImageSrc, animationsArray);
-        return Oversimplified.PremadeObjects[name];
-    } else {
-        console.log("A Premade Object with the name \"" + name + "\" already exists!");
-        return false;
-    }
-}
-Oversimplified.PremadeObjects.New = Oversimplified.PremadeObjects.Add;
-Oversimplified.Prefabs = Oversimplified.PremadeObjects;    //2 aliases in case someone likes the technical "prefab" term better
-Oversimplified.P = Oversimplified.PremadeObjects;
+    //PremadeObjects (Prefab) Namespace
+    PremadeObjects : {
+        Add : function (name, x, y, imageSrc, maskImageSrc, animationsArray) {
+            if (typeof Oversimplified.PremadeObjects[name] === 'undefined') {
+                Oversimplified.PremadeObjects[name] = new Oversimplified.GameObject(name, x, y, imageSrc, maskImageSrc, animationsArray);
+                return Oversimplified.PremadeObjects[name];
+            } else {
+                console.log("A Premade Object with the name \"" + name + "\" already exists!");
+                return false;
+            }
+        },
+        New : Oversimplified.PremadeObjects.Add,
+    },
+    //2 aliases in case someone likes the technical "prefab" term better
+    Prefabs : Oversimplified.PremadeObjects,
+    P : Oversimplified.PremadeObjects,
+
+};  // End of Oversimplified object
 
 //GameObject class
 Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animationsArray) {
@@ -1340,6 +1336,18 @@ Oversimplified.WaitForScriptsToLoad = function (Function) {  //Callback
     } else {
         //console.log("Running " + Function + ". " + Oversimplified.loadingScripts.length + " scripts left to load!");
         Function();
+    }
+}
+
+//Detect Internet Explorer
+Oversimplified.IsInternetExplorer = function () {
+    var ua = window.navigator.userAgent;
+    var msie = ua.indexOf("MSIE ");
+
+    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {        // If Internet Explorer, return true
+        return true;
+    } else {        // If another browser, return false
+        return false;
     }
 }
 
