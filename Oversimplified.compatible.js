@@ -1,14 +1,30 @@
 var Oversimplified = {};
-var OS = Oversimplified;
+var OS = Oversimplified;    // Handy-dandy alias for shortening code.
 
+// Engine variables
 Oversimplified.canvas = null;
 Oversimplified.context = null;
 Oversimplified.nextID = 0;
 Oversimplified.loadingScripts = [];
 
-//Settings Namespace - currently unused, to be used for audio
+// Time variables
+Oversimplified.timestamp = function() {
+  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+}
+Oversimplified.now = null;
+Oversimplified.dateTime = 0;
+Oversimplified.lastFrame = Oversimplified.timestamp();
+Oversimplified.step = Oversimplified.Settings.defaultStep;     //seconds per frame
+
+// Settings Namespace
 Oversimplified.Settings = {};
 Oversimplified.Settings.defaultStep = 1/30;
+// Set up the camera.
+/*
+    It is important that this is done first at the time the game is loaded because this determines the size of the HTML5 canvas.
+    Be sure that the objectToFollow has already been created in the current room. Can be referenced with a variable.
+    objectToFollow, hBorder, and vBorder are optional arguments, but if you want to set hBorder and vBorder, there must be an objectToFollow.
+*/
 Oversimplified.Settings.SetCamera = function (width, height, objectToFollow, hBorder, vBorder) {
     hBorder = typeof hBorder !== 'undefined' ? hBorder : Oversimplified.camera.hBorder;
     vBorder = typeof vBorder !== 'undefined' ? vBorder : Oversimplified.camera.vBorder;
@@ -37,17 +53,8 @@ Oversimplified.Settings.SetCamera = function (width, height, objectToFollow, hBo
     Oversimplified.camera.hBorder = hBorder;
     Oversimplified.camera.vBorder = vBorder;
 }
-
+// Convenient alias for Settings.
 Oversimplified.S = Oversimplified.Settings;
-
-//Time variables
-Oversimplified.timestamp = function() {
-  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
-}
-Oversimplified.now = null;
-Oversimplified.dateTime = 0;
-Oversimplified.lastFrame = Oversimplified.timestamp();
-Oversimplified.step = Oversimplified.Settings.defaultStep;     //seconds per frame
 
 // Camera Object
 Oversimplified.camera = {
@@ -58,20 +65,9 @@ Oversimplified.camera = {
     hBorder: 64,
     vBorder: 64,
     following: "",
+    // Set the object for the camera to follow.
     Follow: function (object) {
         this.following = object.name;
-    }
-}
-
-//Detect Internet Explorer
-Oversimplified.IsInternetExplorer = function () {
-    var ua = window.navigator.userAgent;
-    var msie = ua.indexOf("MSIE ");
-
-    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {        // If Internet Explorer, return true
-        return true;
-    } else {        // If another browser, return false
-        return false;
     }
 }
 
@@ -94,12 +90,13 @@ Oversimplified.mouse = {
     wheel: 0
 }
 
-//Keys
+// Lists of Detected Keys
 Oversimplified.heldKeys = [];
 Oversimplified.pressedKeys = [];
 Oversimplified.releasedKeys = [];
 
-//Key definitions
+// Key definitions
+// Get Key name based on keycode
 Oversimplified.Key = {
     37: "left arrow",
     38: "up arrow",
@@ -164,6 +161,7 @@ Oversimplified.Key = {
     221: "close bracket",
     222: "quote"
 };
+// Get Keycode based on key name
 Oversimplified.Keycode = {
     backspace:    8,
     tab:    9,
@@ -266,8 +264,9 @@ Oversimplified.Keycode = {
     quote:    222
 }
 
-//Controls Namespace
+// Controls Namespace
 Oversimplified.Controls = {};
+// Add a control to the collection of Controls.
 Oversimplified.Controls.Add = function(name, positiveKeycode, negativeKeycode) {
     if (typeof negativeKeycode !== 'undefined') {
         Oversimplified.Controls[name] = new Oversimplified.Axis(positiveKeycode, negativeKeycode);
@@ -276,7 +275,11 @@ Oversimplified.Controls.Add = function(name, positiveKeycode, negativeKeycode) {
     }
     return Oversimplified.Controls[name];
 };
+
+// Alias for OS.Controls.Add()
 Oversimplified.Controls.New = Oversimplified.Controls.Add;
+
+// Checks each control every frame for presses/releases/holds
 Oversimplified.Controls.CheckAll = function () {
     for (control in Oversimplified.Controls) {
         if (typeof Oversimplified.Controls[control].Check !== 'undefined') {
@@ -284,9 +287,11 @@ Oversimplified.Controls.CheckAll = function () {
         }
     }
 };
+
+// Convenient alias for Controls
 Oversimplified.C = Oversimplified.Controls;
 
-//Control Class
+// Control Class
 Oversimplified.Control = function (keycode) {
     var self = this;
     
@@ -356,6 +361,8 @@ Oversimplified.Rooms = {
     AllDo: function () {},
     AllAfterDo: function () {}
 }
+
+// Add a Room to the collection of Rooms
 Oversimplified.Rooms.Add = function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
     if (typeof Oversimplified.Rooms[name] === 'undefined') {
         Oversimplified.Rooms[name] = new Oversimplified.Room(name, width, height, backgroundSrc, stepSpeed, extraParameters);
@@ -366,11 +373,17 @@ Oversimplified.Rooms.Add = function (name, width, height, backgroundSrc, stepSpe
         return false;
     }
 }
-Oversimplified.Rooms.New = Oversimplified.Rooms.Add;
-Oversimplified.R = Oversimplified.Rooms;
-Oversimplified.O = null;    //Current Room Objects alias
 
-//Room Class
+// Alias for Rooms.Add
+Oversimplified.Rooms.New = Oversimplified.Rooms.Add;
+
+// Convenient alias for Rooms
+Oversimplified.R = Oversimplified.Rooms;
+
+// Convenient way to access the objects within the current room.
+Oversimplified.O = null;
+
+// Room Class
 Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
     this.id = Oversimplified.nextID++;
     var self = this;
@@ -481,6 +494,8 @@ Oversimplified.Room.prototype.Draw = function () {
     
     this.DrawAbove();    //Draw this after all other drawing is done
 }
+
+// Add a GameObject or PremadeObject to the room.
 Oversimplified.Room.prototype.AddObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
     var self = this;
     
@@ -502,6 +517,8 @@ Oversimplified.Room.prototype.AddObject = function (newObjectName, x, y, imageSr
     }
 }
 
+// Change to the specified room.
+// Runs the current Room's End() function, changes the room, and runs the specified Room's Start() function.
 Oversimplified.SetRoom = function (room) {
     if (typeof Oversimplified.R[Oversimplified.R.currentRoom] !== 'undefined') {
         Oversimplified.R[Oversimplified.R.currentRoom].End();
@@ -514,8 +531,10 @@ Oversimplified.SetRoom = function (room) {
     Oversimplified.R[Oversimplified.R.currentRoom].Start();
 }
 
-//Oversimplified.PremadeObjects (Prefab) Namespace
+// PremadeObjects (Prefab) Namespace
 Oversimplified.PremadeObjects = {};
+
+// Add a GameObject to the list of PremadeObjects.
 Oversimplified.PremadeObjects.Add = function (name, x, y, imageSrc, maskImageSrc, animationsArray) {
     if (typeof Oversimplified.PremadeObjects[name] === 'undefined') {
         Oversimplified.PremadeObjects[name] = new Oversimplified.GameObject(name, x, y, imageSrc, maskImageSrc, animationsArray);
@@ -525,11 +544,15 @@ Oversimplified.PremadeObjects.Add = function (name, x, y, imageSrc, maskImageSrc
         return false;
     }
 }
+
+// Alias for PremadeObjects.Add().
 Oversimplified.PremadeObjects.New = Oversimplified.PremadeObjects.Add;
-Oversimplified.Prefabs = Oversimplified.PremadeObjects;    //2 aliases in case someone likes the technical "prefab" term better
+
+// Convenient aliases for PremadeObjects.
+Oversimplified.Prefabs = Oversimplified.PremadeObjects;    // In case someone likes the technical "prefab" term better.
 Oversimplified.P = Oversimplified.PremadeObjects;
 
-//GameObject class
+// GameObject class
 Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animationsArray) {
     this.id = Oversimplified.nextID++;
     
@@ -823,7 +846,7 @@ Oversimplified.CollisionAtPoint = function (x, y) {
     return false;
 }
 
-//Animations Namespace
+// Animations Namespace
 Oversimplified.Animations = {};
 Oversimplified.Animations.Add = function (name, width, height, columns, rows, speed, xOffset, yOffset) {
     if (typeof Oversimplified.Animations[name] === 'undefined') {
@@ -938,26 +961,6 @@ Oversimplified.Copy = function (object, newID, newName) { // Copy any class (nee
     //Copy Oversimplified.GameObject-unique properties
     if (object.type == 'GameObject') {
         resultingCopy = CopyObject(object, newID, newName);
-        // resultingCopy.self = resultingCopy;
-//         resultingCopy.image = new Image();
-//         resultingCopy.image.src = object.image.src;
-//         resultingCopy.image.xScale = object.image.xScale;
-//         resultingCopy.image.yScale = object.image.yScale;
-//         resultingCopy.image.rotation = object.image.rotation;
-//         resultingCopy.image.frameColumn = 0;
-//         resultingCopy.image.frameRow = 0;
-//         resultingCopy.image.animations = object.image.animations;
-//         resultingCopy.image.currentAnimation = object.image.currentAnimation;
-//         resultingCopy.mask = new Image();
-//         resultingCopy.mask.src = object.mask.src;
-//         if (resultingCopy.mask.src == "") {
-//             resultingCopy.mask.width = resultingCopy.image.animations["Default"].width;
-//             resultingCopy.mask.height = resultingCopy.image.animations["Default"].height;
-//         }
-//         resultingCopy.mask.onload = function(){
-//             resultingCopy.xBound = this.width / 2;
-//             resultingCopy.yBound = this.height / 2;
-//         };
     }
     if (object.type == 'Room') {
         /* resultingCopy.background = new Image();
@@ -980,6 +983,7 @@ Oversimplified.Copy = function (object, newID, newName) { // Copy any class (nee
     return resultingCopy;
 }
 
+// DEBUG object
 Oversimplified.DEBUG = {
     DrawBoundingBox: function (object) {
         var fillStyle = Oversimplified.context.fillStyle;
@@ -1033,7 +1037,10 @@ Oversimplified.DEBUG = {
     },
 };
 
+// window.onload call - If there is another place that sets window.onload, then Oversimplified.Initialize() will need to be manually specified!
 window.onload = function () {Oversimplified.Initialize();};
+
+// Set up important engine pieces.
 Oversimplified.Initialize = function () {
     Oversimplified.SetupCanvas();
     
@@ -1194,6 +1201,7 @@ Oversimplified.SetupCamera = function () {
     Oversimplified.canvas.height = Oversimplified.camera.height;
 }
 
+// Defines the order of operations for the Frame.
 Oversimplified.Frame = function () {
     if (Oversimplified.loadingScripts.length == 0) {
         Oversimplified.now = Oversimplified.timestamp();
@@ -1212,6 +1220,7 @@ Oversimplified.Frame = function () {
     requestAnimationFrame(Oversimplified.Frame);
 }
 
+// Mechanical/action-based/calculation functions
 Oversimplified.Update = function () {
     Oversimplified.Controls.CheckAll();
     
@@ -1255,6 +1264,7 @@ Oversimplified.Update = function () {
     }
 }
 
+// Drawing functions
 Oversimplified.Draw = function () {
     Oversimplified.context.clearRect(0, 0, Oversimplified.canvas.width, Oversimplified.canvas.height);
     Oversimplified.DEBUG.objectsOnScreen = 0;
@@ -1266,6 +1276,7 @@ Oversimplified.Draw = function () {
     }
 }
 
+// Anything left over/resetting the mouse and keys.
 Oversimplified.EndFrame = function () {
     Oversimplified.mouse.wheel = 0;
     
@@ -1287,6 +1298,7 @@ Oversimplified.MouseWheelHandler = function (e) {
     Oversimplified.mouse.wheel = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));    //reverse Firefoxs detail value and return either 1 for up or -1 for down
 }
 
+// Check if the defined point (x, y) is currently visible on the canvas.
 Oversimplified.IsOnCamera = function (x, y) {
     if (typeof y !== 'undefined') {    //If both are defined, then they are a point.
         if (x > Oversimplified.camera.x && x < Oversimplified.camera.x + Oversimplified.camera.width
@@ -1309,6 +1321,7 @@ Oversimplified.IsOnCamera = function (x, y) {
         
 }
 
+// Dynamically add a source script to the page.
 Oversimplified.AddScript = function (pathToScript, mainFunction) {
     //You can either specify a main function or just make the main function within the script the same as the script's name (minus ".js")
     mainFunction = typeof mainFunction !== 'undefined' ? mainFunction : pathToScript.slice(((pathToScript.lastIndexOf("/")>-1)?pathToScript.lastIndexOf("/")+1:0), pathToScript.indexOf("."));
@@ -1333,7 +1346,8 @@ Oversimplified.AddScript = function (pathToScript, mainFunction) {
     document.body.appendChild(script);
 }
 
-Oversimplified.WaitForScriptsToLoad = function (Function) {  //Callback
+// Callback function that prevents any added scripts from executing until all scripts are loaded.
+Oversimplified.WaitForScriptsToLoad = function (Function) {
     //console.log("Waiting to run " + Function + ". " + Oversimplified.loadingScripts.length + " scripts left to load!");
     if (Oversimplified.loadingScripts.length > 0) {
         setTimeout(function(){Oversimplified.WaitForScriptsToLoad(Function)}, 0.1);
@@ -1343,11 +1357,23 @@ Oversimplified.WaitForScriptsToLoad = function (Function) {  //Callback
     }
 }
 
-//Add more functionality to Math namespace
+// Global function to detect Internet Explorer
+function IsInternetExplorer () {
+    var ua = window.navigator.userAgent;
+    var msie = ua.indexOf("MSIE ");
+
+    if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {        // If Internet Explorer, return true
+        return true;
+    } else {        // If another browser, return false
+        return false;
+    }
+}
+
+// Add more functionality to Math namespace
 Math.clamp = function (value, min, max) {
-    //Makes sure the value does not fall outide the min-max range
-    //Usage: numberValue = Math.clamp(numberValue, 3, 10);
-    //Handle Errors
+    // Makes sure the value does not fall outide the min-max range
+    // Usage: numberValue = Math.clamp(numberValue, 3, 10);
+    // Handle Errors
     if (min == max) {
         console.log("Min and Max cannot be the same number!");
         return false;
@@ -1357,7 +1383,7 @@ Math.clamp = function (value, min, max) {
         return false;
     }
     
-    //clamp the value
+    // clamp the value
     if (value < min) {
         value = min;
     }
@@ -1367,10 +1393,10 @@ Math.clamp = function (value, min, max) {
     return value;
 };
 Math.clamp01 = function (value) {
-    //Makes sure the value does not fall outide the 0-1 range
-    //Usage: numberValue = Math.clamp01(numberValue);
+    // Makes sure the value does not fall outide the 0-1 range
+    // Usage: numberValue = Math.clamp01(numberValue);
     
-    //clamp the value
+    // clamp the value
     if (value < 0) {
         value = 0;
     }
@@ -1380,11 +1406,11 @@ Math.clamp01 = function (value) {
     return value;
 };
 Math.clampAngle = function (value, min, max) {
-    //Returns the given numberValue as an angle 0 and 360
-    //Usage: numberValue = Math.clampAngle(numberValue, 0, 180);
-    //Alternate: numberValue = Math.clampAngle(numberValue);
+    // Returns the given numberValue as an angle 0 and 360
+    // Usage: numberValue = Math.clampAngle(numberValue, 0, 180);
+    // Alternate: numberValue = Math.clampAngle(numberValue);
     
-    //Make sure angle is between 0 and 360
+    // Make sure angle is between 0 and 360
     while (value >= 360) {
         value -= 360;
     }
@@ -1393,7 +1419,7 @@ Math.clampAngle = function (value, min, max) {
     }
     
     if (typeof min !== 'undefined' && typeof max !== 'undefined') {
-        //Adjust min and max values to be between 0 and 360
+        // Adjust min and max values to be between 0 and 360
         while (min >= 360) {
             min -= 360;
         }
@@ -1406,7 +1432,7 @@ Math.clampAngle = function (value, min, max) {
         while (max < 0) {
             max += 360;
         }
-        //Handle Errors
+        // Handle Errors
         if (min == max) {
             console.log("Min and Max cannot be the same number!");
             return false;
@@ -1427,18 +1453,33 @@ Math.clampAngle = function (value, min, max) {
     return value;
 };
 Math.radToDeg = function (radians) {
+    // Converts a radian value to degrees
+    // Usage: degreeValue = Math.radToDeg(radianValue);
+    
     return radians / (Math.PI / 180);
 };
 Math.degToRad = function (degrees) {
+    // Converts a degree value to radians
+    // Usage: radianValue = Math.degToRad(degreeValue);
+    
     return degrees * (Math.PI / 180);
 };
 Math.getCos = function (angle) {
+    // Gets the cosine of an angle given in degrees
+    //Usage: cosine = Math.getCos(angleInDegrees);
+    
     return Math.cos(Math.degToRad(angle));
 };
 Math.getSin = function (angle) {
+    // Gets the sine of an angle given in degrees
+    //Usage: sine = Math.getSin(angleInDegrees);
+    
     return Math.sin(Math.degToRad(angle));
 };
 Math.coinFlip = function () {
+    // Returns true or false based on a 50% chance
+    // Usage: flippedHeads = Math.coinFlip();
+    
     if (Math.random() >= 0.5) {
         return true;
     } else {
@@ -1446,6 +1487,8 @@ Math.coinFlip = function () {
     }
 };
 Math.randomRange(min, max) {
-// Min inclusive, max inclusive.
+    // Returns a random number between min and max (inclusive)
+    // Usage: numberBetween3And15 = Math.randomRange(3, 15);
+    
     return Math.random() * (max - min) + min;
 };
