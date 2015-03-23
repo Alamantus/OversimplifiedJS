@@ -393,18 +393,31 @@ Oversimplified.R = Oversimplified.Rooms;
 // Convenient way to access the objects within the current room.
 Oversimplified.O = null;
 
-// Room Class
+/* Room Class
+
+name (required) : The unique identifier of the room. Used to locate the room within the Rooms namespace.
+width (optional) : The width of the room. The camera will not travel beyond this to the right. If it is larger than the camera's width and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's width, it will be set to the camera's width. -- default = Oversimplified.camera.width
+height (optional) : The height of the room. The camera will not travel beyond this to the bottom. If it is larger than the camera's height and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's height, it will be set to the camera's height. -- default = Oversimplified.camera.height
+backgroundSrc (optional) : The image that will be displayed as the room's background. If excluded or set to empty string (""), no background will show.
+stepSpeed (optional) : The step speed for the Room. If excluded or set to 0, the default is used. -- default = Oversimplified.Settings.defaultStep
+extraParameters (optional) : An array of extra parameters for the Room. Options include:
+
+"background size" = sets the room size to whatever the backgroundSrc image size is, regardless of what is entered as width and height!
+
+"#FF0000" (any hex color value) = sets the far background color (behind the background image, visible only if transparent or excluded). A JavaScript alternative to setting the HTML5 canvas's background color CSS.
+
+"foreground.png" (path to any .png or .gif file) = sets the foreground image that displays over the background and all objects in the room. Appears below the Room's DrawAbove() function but above any GameObject's DrawAbove() function.
+*/
 Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
     this.id = Oversimplified.nextID++;
     var self = this;
     
-    stepSpeed = typeof stepSpeed !== 'undefined' ? stepSpeed : Oversimplified.Settings.defaultStep;
+    stepSpeed = (typeof stepSpeed !== 'undefined' && stepSpeed > 0) ? stepSpeed : Oversimplified.Settings.defaultStep;
     extraParameters = typeof extraParameters !== 'undefined' ? extraParameters : [];
-    width = typeof width !== 'undefined' ? width : Oversimplified.camera.width;
-    height = typeof height !== 'undefined' ? height : Oversimplified.camera.height;
-    backgroundSrc = typeof backgroundSrc !== 'undefined' ? backgroundSrc : "";
-    // If backgroundSrc is an empty string, instead use a generated 1x1 transparent image.
-    backgroundSrc = (backgroundSrc == "") ? "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" : backgroundSrc;
+    width = (typeof width !== 'undefined' && width >= Oversimplified.camera.width) ? width : Oversimplified.camera.width;
+    height = (typeof height !== 'undefined' && height >= Oversimplified.camera.height) ? height : Oversimplified.camera.height;
+    // If backgroundSrc is excluded or an empty string, instead use a generated 1x1 transparent image.
+    backgroundSrc = (typeof backgroundSrc !== 'undefined' && backgroundSrc != "") ? backgroundSrc : "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
     
     this.name = name;
     this.width = width;
@@ -415,6 +428,7 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
     this.background.src = backgroundSrc;
     this.background.onload = function () {
             this.loaded = true;
+            // If extraParameters contains "background size", then make room the size of the background image.
             if (extraParameters.indexOf("background size") != -1) {
                 self.width = this.width;
                 self.height = this.height;
@@ -433,6 +447,14 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
                     // If the parameter starts with #, then it is a background color hex.
                     if (extraParameters[p].substring(0,1) == "#") {
                         self.background.color = extraParameters[p];
+                    } else {
+                        var ext = extraParameters[p].substr(extraParameters[p].length - 4);
+                        if (ext == ".png" || ext == ".gif") {   // If the string is a PNG or GIF, set it as foreground.
+                            self.foreground = new Image();
+                            self.foreground.loaded = false;
+                            self.foreground.src = extraParameters[p];
+                            self.foreground.onload = function () {this.loaded = true;}
+                        }
                     }
                     break;
                 // Can be expanded later.
@@ -525,6 +547,13 @@ Oversimplified.Room.prototype.Draw = function () {
             if (typeof this.objects[this.drawOrder[i]] !== 'undefined') {
                 this.objects[this.drawOrder[i]].Draw();
             }
+        }
+    }
+    
+    // If there is a foreground, draw it.
+    if (typeof this.foreground !== "undefined") {
+        if (this.foreground.loaded) {
+            Oversimplified.context.drawImage(self.foreground, Oversimplified.camera.x, Oversimplified.camera.y, Oversimplified.camera.width, Oversimplified.camera.height, 0, 0, self.foreground.width, self.foreground.height);
         }
     }
     
