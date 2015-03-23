@@ -11,20 +11,12 @@ Oversimplified.context = null;
 Oversimplified.nextID = 0;
 Oversimplified.loadingScripts = [];
 
-// Time variables
-Oversimplified.timestamp = function() {
-  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
-}
-Oversimplified.now = null;
-Oversimplified.dateTime = 0;
-Oversimplified.lastFrame = Oversimplified.timestamp();
-Oversimplified.step = Oversimplified.Settings.defaultStep;     //seconds per frame
-
 // Settings Namespace
 Oversimplified.Settings = {};
 Oversimplified.Settings.defaultStep = 1/30;
 Oversimplified.Settings.soundVolume = 0.75;
 Oversimplified.Settings.musicVolume = 0.75;
+
 /* Set up the camera.
 
 It is important that this is done first at the time the game is loaded because this determines the size of the HTML5 canvas.
@@ -62,6 +54,15 @@ Oversimplified.Settings.SetCamera = function (width, height, objectToFollow, hBo
 // Convenient alias for Settings.
 Oversimplified.S = Oversimplified.Settings;
 
+// Time variables
+Oversimplified.timestamp = function() {
+  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+}
+Oversimplified.now = null;
+Oversimplified.dateTime = 0;
+Oversimplified.lastFrame = Oversimplified.timestamp();
+Oversimplified.step = Oversimplified.Settings.defaultStep;     //seconds per frame
+
 // Camera Object
 Oversimplified.camera = {
     x: 0,
@@ -81,8 +82,8 @@ Oversimplified.camera = {
 Oversimplified.mouse = {
     x: 0,
     y: 0,
-    leftCode: Oversimplified.IsInternetExplorer() ? 1 : 0,
-    middleCode: Oversimplified.IsInternetExplorer() ? 4 : 1,
+    leftCode: IsInternetExplorer() ? 1 : 0,
+    middleCode: IsInternetExplorer() ? 4 : 1,
     rightCode: 2,
     leftDown: false,
     left: false,
@@ -402,10 +403,13 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
     width = typeof width !== 'undefined' ? width : Oversimplified.camera.width;
     height = typeof height !== 'undefined' ? height : Oversimplified.camera.height;
     backgroundSrc = typeof backgroundSrc !== 'undefined' ? backgroundSrc : "";
+    // If backgroundSrc is an empty string, instead use a generated 1x1 transparent image.
+    backgroundSrc = (backgroundSrc == "") ? "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=" : backgroundSrc;
     
     this.name = name;
     this.width = width;
     this.height = height;
+    
     this.background = new Image();
     this.background.loaded = false;
     this.background.src = backgroundSrc;
@@ -416,10 +420,27 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
                 self.height = this.height;
             }
         }
+    
     this.stepSpeed = stepSpeed;
     
     this.objects = {};
     this.O = this.objects;
+    
+    if (extraParameters.length > 0) {
+        for (p = 0; p < extraParameters.length; p++) {
+            switch (typeof extraParameters[p]) {
+                case "string":
+                    // If the parameter starts with #, then it is a background color hex.
+                    if (extraParameters[p].substring(0,1) == "#") {
+                        self.background.color = extraParameters[p];
+                    }
+                    break;
+                // Can be expanded later.
+                default:
+                    break;
+            }
+        }
+    }
     
     this.drawOrder = [];
     
@@ -487,6 +508,12 @@ Oversimplified.Room.prototype.End = function () {
 Oversimplified.Room.prototype.Draw = function () {
     var self = this;
     //Always draw background first if there is one
+    if (typeof this.background.color !== "undefined") {
+        var tmp = Oversimplified.context.fillStyle;
+        Oversimplified.context.fillStyle = this.background.color;
+        Oversimplified.context.fillRect(0, 0, Oversimplified.camera.width, Oversimplified.camera.height);
+        Oversimplified.context.fillStyle = tmp;
+    }
     if (this.background.loaded) {
         Oversimplified.context.drawImage(self.background, Oversimplified.camera.x, Oversimplified.camera.y, Oversimplified.camera.width, Oversimplified.camera.height, 0, 0, self.background.width, self.background.height);
     }
@@ -1547,6 +1574,6 @@ Math.coinFlip = function () {
 
 Usage: numberBetween3And15 = Math.randomRange(3, 15);
 */
-Math.randomRange(min, max) {
+Math.randomRange = function (min, max) {
     return Math.random() * (max - min) + min;
 };
