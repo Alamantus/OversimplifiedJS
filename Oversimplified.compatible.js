@@ -19,8 +19,11 @@ Oversimplified.step = Oversimplified.Settings.defaultStep;     //seconds per fra
 // Settings Namespace
 Oversimplified.Settings = {};
 Oversimplified.Settings.defaultStep = 1/30;
-// Set up the camera.
+Oversimplified.Settings.soundVolume = 0.75;
+Oversimplified.Settings.musicVolume = 0.75;
 /*
+    Set up the camera.
+    
     It is important that this is done first at the time the game is loaded because this determines the size of the HTML5 canvas.
     Be sure that the objectToFollow has already been created in the current room. Can be referenced with a variable.
     objectToFollow, hBorder, and vBorder are optional arguments, but if you want to set hBorder and vBorder, there must be an objectToFollow.
@@ -96,6 +99,7 @@ Oversimplified.pressedKeys = [];
 Oversimplified.releasedKeys = [];
 
 // Key definitions
+// 
 // Get Key name based on keycode
 Oversimplified.Key = {
     37: "left arrow",
@@ -580,13 +584,13 @@ Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animat
     if (typeof animationsArray !== 'undefined') {
         for (var i = 0; i < animationsArray.length; i++) {
             if (i == 0 && animationsArray[i].name != "Default") {
-                this.image.animations["Default"] = animationsArray[i];    //Creates a duplicate animation of the first animation called "Default" in addition to the named animation below (unless the animation's name is "Default"
+                this.image.animations["Default"] = animationsArray[i];    // Creates a duplicate animation of the first animation called "Default" in addition to the named animation below (unless the animation's name is "Default")
             }
             this.image.animations[animationsArray[i].name] = animationsArray[i];
         }
     } else {
         //If no animations array is included, then just show the whole image
-        this.image.onload = function(){this.animations["Default"] = new Oversimplified.Animation("newAnimation", this.width, this.height)};    //Creates the default animation as the whole image once the image is loaded.
+        this.image.onload = function(){this.animations["Default"] = new Oversimplified.Animation("newAnimation", this.width, this.height)};    // Creates the default animation as the whole image once the image is loaded.
     }
     
     this.image.currentAnimation = "Default";
@@ -712,9 +716,10 @@ Oversimplified.GameObject.prototype.Update = function () {
 Oversimplified.GameObject.prototype.End = function () {
     this.DoLast();
 }
+
+// Move toward the given point at the given speed.
+// Imprecise and only moves at 90° and 45° angles, but gets the job done.
 Oversimplified.GameObject.prototype.MoveTo = function (x, y, speed) {
-    //Moves toward the given point at the given speed.
-    //Imprecise and only moves at 90° and 45° angles, but gets the job done.
     speed = typeof speed !== 'undefined' ? speed : 1;
     if (this.x < x) {
         this.x += speed;
@@ -729,8 +734,9 @@ Oversimplified.GameObject.prototype.MoveTo = function (x, y, speed) {
         this.y -= speed;
     }
 }
+
+// Check if the given point is within the object's bounds.
 Oversimplified.GameObject.prototype.PointOverlaps = function (x, y) {
-    //Check if the given point is within the object's bounds.
     if (x > this.x - this.xBound
         && x < this.x + this.xBound
         && y > this.y - this.yBound
@@ -741,8 +747,9 @@ Oversimplified.GameObject.prototype.PointOverlaps = function (x, y) {
         return false;
     }
 }
+
+// Check if object is overlapping any other object in the room
 Oversimplified.GameObject.prototype.IsOverlapping = function () {
-    // Check if object is overlapping any other object in the room
     var currentRoom = Oversimplified.R[Oversimplified.R.currentRoom];
     
     for (var obj in Oversimplified.O) {
@@ -767,8 +774,9 @@ Oversimplified.GameObject.prototype.IsOverlapping = function () {
     
     return false;
 }
+
+// Returns true if the mouse is within the object's bounding box.
 Oversimplified.GameObject.prototype.MouseIsOver = function () {
-    //Returns true if the mouse is within the object's bounding box.
     if (this.PointOverlaps(Oversimplified.mouse.x, Oversimplified.mouse.y))
     {
         return true;
@@ -776,9 +784,11 @@ Oversimplified.GameObject.prototype.MouseIsOver = function () {
         return false;
     }
 }
+
+
+// Returns true if the object is clicked with the given mouse click, eg. Oversimplified.mouse.leftDown, Oversimplified.mouse.rightUp, etc.
+// If no click is specified, it defaults to left down
 Oversimplified.GameObject.prototype.Clicked = function (mouseClick) {
-    //Returns true if the object is clicked with the given mouse click, eg. Oversimplified.mouse.leftDown, Oversimplified.mouse.rightUp, etc.
-    //If no click is specified, it defaults to left down
     mouseClick = typeof mouseClick !== 'undefined' ? mouseClick : Oversimplified.mouse.leftDown;
     if (this.MouseIsOver() && mouseClick)
     {
@@ -787,26 +797,27 @@ Oversimplified.GameObject.prototype.Clicked = function (mouseClick) {
         return false;
     }
 }
+
+// Move the object based upon xSpeed and ySpeed, stopping if colliding with solid objects
+// Speed is scaled based on camera's scale.
 Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, checkCollisions) {
-    //Moves the object based upon xSpeed and ySpeed, stopping if colliding with solid objects
-    //Speed is scaled based on camera's scale.
     var collisionLeft = collisionRight = collisionUp = collisionDown = false;
     if (checkCollisions) {
         for (var vert = 0; vert < this.yBound * 2; vert++) {
             var yToCheck = (this.y - this.yBound + vert);
-            if (!collisionLeft) {    //If this has already been flagged true, don't make it false again.
+            if (!collisionLeft) {
                 collisionLeft = xSpeed < 0 && Oversimplified.CollisionAtPoint((this.x - this.xBound) + xSpeed, yToCheck);
             }
-            if (!collisionRight) {    //If this has already been flagged true, don't make it false again.
+            if (!collisionRight) {
                 collisionRight = xSpeed > 0 && Oversimplified.CollisionAtPoint((this.x + this.xBound) + xSpeed, yToCheck);
             }
         }
         for (var hor = 0; hor < this.xBound * 2; hor++) {
             var xToCheck = (this.x - this.xBound + hor);
-            if (!collisionUp) {        //If this has already been flagged true, don't make it false again.
+            if (!collisionUp) {
                 collisionUp = ySpeed < 0 && Oversimplified.CollisionAtPoint(xToCheck, (this.y - this.yBound) + ySpeed);
             }
-            if (!collisionDown) {    //If this has already been flagged true, don't make it false again.
+            if (!collisionDown) {
                 collisionDown = ySpeed > 0 && Oversimplified.CollisionAtPoint(xToCheck, (this.y + this.yBound) + ySpeed);
             }
         }
@@ -821,6 +832,8 @@ Oversimplified.GameObject.prototype.Destroy = function () {
     delete Oversimplified.R[Oversimplified.R.currentRoom].objects[this.name];
 }
 
+// Check if the point (x, y) lies inside the bounds of ANY object in the room.
+// If yes and if that object is flagged as solid, then there is a collision.
 Oversimplified.CollisionAtPoint = function (x, y) {
     var currentRoom = Oversimplified.R[Oversimplified.R.currentRoom];
     
@@ -833,8 +846,8 @@ Oversimplified.CollisionAtPoint = function (x, y) {
                     var yToCheck = (object.y - object.yBound) + j;
                     
                     if (xToCheck == x && yToCheck == y)
-                    {    //Check if the point lies inside the bounds of ANY object in the room.
-                        if (object.solid) {    //If yes and if that object is flagged as solid, then there is a collision.
+                    {
+                        if (object.solid) {
                             return true;
                         }
                     }
@@ -860,7 +873,8 @@ Oversimplified.Animations.Add = function (name, width, height, columns, rows, sp
 Oversimplified.Animations.New = Oversimplified.Animations.Add;
 Oversimplified.A = Oversimplified.Animations;
 
-//Animation class (for use with sprite sheets)
+// Animation class (for use with sprite sheets)
+// Prevents animation mess-ups by preventing speeds higher than one with Math.clamp01.
 Oversimplified.Animation = function (name, width, height, columns, rows, speed, xOffset, yOffset) {
     this.id = Oversimplified.nextID++;
     
@@ -870,7 +884,7 @@ Oversimplified.Animation = function (name, width, height, columns, rows, speed, 
     xOffset = typeof xOffset !== 'undefined' ? xOffset : 0;
     yOffset = typeof yOffset !== 'undefined' ? yOffset : 0;
     
-    speed = Math.clamp01(speed);    //Prevent animation mess-ups by preventing speeds higher than one.
+    speed = Math.clamp01(speed);
     
     this.name = name;
     this.width = width;
@@ -883,8 +897,8 @@ Oversimplified.Animation = function (name, width, height, columns, rows, speed, 
 }
 Oversimplified.Animation.prototype.type = "Animation";
 
+// Create a new object inside the current rom and return it.
 Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
-    //Create a new object inside the current rom and return it.
     if (newObjectName.type == "GameObject") {    //Create from prefabricated object
         var newID = Oversimplified.nextID++;
         var newName = newObjectName.name + newID.toString();
@@ -908,6 +922,11 @@ Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImage
     return Oversimplified.O[newObjectName];
 }
 
+/* Copy a GameObject
+    
+    newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
+    Use "identical" to copy name and id of original object.
+*/
 Oversimplified.CopyObject = function (object, newID, newName) {
     var resultingCopy = {};
     if (newID != "identical") {
@@ -949,7 +968,12 @@ Oversimplified.CopyObject = function (object, newID, newName) {
     return resultingCopy;
 }
 
-Oversimplified.Copy = function (object, newID, newName) { // Copy any class (needs expanding)
+/* Copy any class (needs expanding)
+    
+    newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
+    Use "identical" to copy the id and name of the original object.
+*/
+Oversimplified.Copy = function (object, newID, newName) {
     var resultingCopy = {};
     if (newID != "identical") {
         resultingCopy.id = typeof newID !== 'undefined' ? newID : Oversimplified.nextID++;
@@ -985,12 +1009,15 @@ Oversimplified.Copy = function (object, newID, newName) { // Copy any class (nee
 
 // DEBUG object
 Oversimplified.DEBUG = {
+    // Draw a magenta bounding box around the specified object representing the object's collision extents.
     DrawBoundingBox: function (object) {
         var fillStyle = Oversimplified.context.fillStyle;
         Oversimplified.context.fillStyle = "rgba(255, 0, 255, 0.5)";
         Oversimplified.context.fillRect(object.x - object.xBound - Oversimplified.camera.x, object.y - object.yBound - Oversimplified.camera.y, object.xBound * 2, object.yBound * 2);
         Oversimplified.context.fillStyle = fillStyle;
     },
+    
+    // Return the number of objects currently in the room.
     CountObjectsInRoom: function (roomName) {
         var roomInQuestion;
         var count = 0;
@@ -1009,7 +1036,10 @@ Oversimplified.DEBUG = {
         return count;
     },
     objectsOnScreen: 0,
+    // Return the number of objects currently being drawn on the canvas.
     CountObjectsOnScreen: function () {return Oversimplified.DEBUG.objectsOnScreen;},
+    
+    // List all current controls to the console.
     ListControls: function () {
         var numControls = 0;
         var numAxes = 0;
@@ -1037,7 +1067,10 @@ Oversimplified.DEBUG = {
     },
 };
 
-// window.onload call - If there is another place that sets window.onload, then Oversimplified.Initialize() will need to be manually specified!
+/* window.onload call
+    
+    If there is another place that sets window.onload, then Oversimplified.Initialize() will need to be manually called!
+*/
 window.onload = function () {Oversimplified.Initialize();};
 
 // Set up important engine pieces.
@@ -1370,10 +1403,11 @@ function IsInternetExplorer () {
 }
 
 // Add more functionality to Math namespace
+
+
+// Make sure the value does not fall outide the min-max range
+// Usage: numberValue = Math.clamp(numberValue, 3, 10);
 Math.clamp = function (value, min, max) {
-    // Makes sure the value does not fall outide the min-max range
-    // Usage: numberValue = Math.clamp(numberValue, 3, 10);
-    // Handle Errors
     if (min == max) {
         console.log("Min and Max cannot be the same number!");
         return false;
@@ -1392,11 +1426,11 @@ Math.clamp = function (value, min, max) {
     }
     return value;
 };
+
+
+// Make sure the given value does not fall outide the 0-1 range
+// Usage: numberValue = Math.clamp01(numberValue);
 Math.clamp01 = function (value) {
-    // Makes sure the value does not fall outide the 0-1 range
-    // Usage: numberValue = Math.clamp01(numberValue);
-    
-    // clamp the value
     if (value < 0) {
         value = 0;
     }
@@ -1405,11 +1439,12 @@ Math.clamp01 = function (value) {
     }
     return value;
 };
+
+
+// Return the given numberValue as a clamped angle between 0 and 360
+// Usage: numberValue = Math.clampAngle(numberValue, 0, 180);
+// Alternate: numberValue = Math.clampAngle(numberValue);
 Math.clampAngle = function (value, min, max) {
-    // Returns the given numberValue as an angle 0 and 360
-    // Usage: numberValue = Math.clampAngle(numberValue, 0, 180);
-    // Alternate: numberValue = Math.clampAngle(numberValue);
-    
     // Make sure angle is between 0 and 360
     while (value >= 360) {
         value -= 360;
@@ -1452,43 +1487,44 @@ Math.clampAngle = function (value, min, max) {
     }
     return value;
 };
+
+
+// Convert a radian value to degrees
+// Usage: degreeValue = Math.radToDeg(radianValue);
 Math.radToDeg = function (radians) {
-    // Converts a radian value to degrees
-    // Usage: degreeValue = Math.radToDeg(radianValue);
-    
     return radians / (Math.PI / 180);
 };
+
+// Convert a degree value to radians
+// Usage: radianValue = Math.degToRad(degreeValue);
 Math.degToRad = function (degrees) {
-    // Converts a degree value to radians
-    // Usage: radianValue = Math.degToRad(degreeValue);
-    
     return degrees * (Math.PI / 180);
 };
+
+// Get the cosine of an angle given in degrees
+// Usage: cosine = Math.getCos(angleInDegrees);
 Math.getCos = function (angle) {
-    // Gets the cosine of an angle given in degrees
-    //Usage: cosine = Math.getCos(angleInDegrees);
-    
     return Math.cos(Math.degToRad(angle));
 };
+
+// Get the sine of an angle given in degrees
+// Usage: sine = Math.getSin(angleInDegrees);
 Math.getSin = function (angle) {
-    // Gets the sine of an angle given in degrees
-    //Usage: sine = Math.getSin(angleInDegrees);
-    
     return Math.sin(Math.degToRad(angle));
 };
+
+// Return true or false based on a 50% chance
+// Usage: flippedHeads = Math.coinFlip();
 Math.coinFlip = function () {
-    // Returns true or false based on a 50% chance
-    // Usage: flippedHeads = Math.coinFlip();
-    
     if (Math.random() >= 0.5) {
         return true;
     } else {
         return false;
     }
 };
+
+// Return a random number between min and max (inclusive)
+// Usage: numberBetween3And15 = Math.randomRange(3, 15);
 Math.randomRange(min, max) {
-    // Returns a random number between min and max (inclusive)
-    // Usage: numberBetween3And15 = Math.randomRange(3, 15);
-    
     return Math.random() * (max - min) + min;
 };
