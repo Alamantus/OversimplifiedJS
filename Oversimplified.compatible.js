@@ -928,9 +928,9 @@ Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImage
 }
 
 /* Copy a GameObject
-    
-    newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
-    Use "identical" to copy name and id of original object.
+
+newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
+Use "identical" to copy name and id of original object.
 */
 Oversimplified.CopyObject = function (object, newID, newName) {
     var resultingCopy = {};
@@ -974,9 +974,9 @@ Oversimplified.CopyObject = function (object, newID, newName) {
 }
 
 /* Copy any class (needs expanding)
-    
-    newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
-    Use "identical" to copy the id and name of the original object.
+
+newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
+Use "identical" to copy the id and name of the original object.
 */
 Oversimplified.Copy = function (object, newID, newName) {
     var resultingCopy = {};
@@ -1040,7 +1040,9 @@ Oversimplified.DEBUG = {
         }
         return count;
     },
+    
     objectsOnScreen: 0,
+    
     // Return the number of objects currently being drawn on the canvas.
     CountObjectsOnScreen: function () {return Oversimplified.DEBUG.objectsOnScreen;},
     
@@ -1073,8 +1075,8 @@ Oversimplified.DEBUG = {
 };
 
 /* window.onload call
-    
-    If there is another place that sets window.onload, then Oversimplified.Initialize() will need to be manually called!
+
+If there is another place that sets window.onload, then Oversimplified.Initialize() will need to be manually called!
 */
 window.onload = function () {Oversimplified.Initialize();};
 
@@ -1144,7 +1146,7 @@ Oversimplified.SetupMouseListeners = function () {
                 Oversimplified.mouse.rightUp = true;
             }
         }, false);
-    //if mouse leaves the canvas, left, middle, and right click are unset.
+    // if mouse leaves the canvas, left, middle, and right click are unset.
     Oversimplified.canvas.addEventListener('mouseout', function () {
             Oversimplified.mouse.left = Oversimplified.mouse.middle = Oversimplified.mouse.right = false;
         }, false);
@@ -1287,7 +1289,7 @@ Oversimplified.Update = function () {
         }
     }
     
-    //Don't let camera move past room boundaries.
+    // Don't let camera move past room boundaries.
     if (Oversimplified.camera.x < 0) {
         Oversimplified.camera.x = 0;
     }
@@ -1318,7 +1320,6 @@ Oversimplified.Draw = function () {
 Oversimplified.EndFrame = function () {
     Oversimplified.mouse.wheel = 0;
     
-    //Reset the presses/realeases of controls.
     Oversimplified.mouse.leftDown = false;
     Oversimplified.mouse.middleDown = false;
     Oversimplified.mouse.rightDown = false;
@@ -1329,8 +1330,8 @@ Oversimplified.EndFrame = function () {
     Oversimplified.releasedKeys = [];
 }
 
+// Prevent scrolling page when scrolling inside canvas.
 Oversimplified.MouseWheelHandler = function (e) {
-    //Prevent scrolling page when scrolling inside canvas.
     e.preventDefault();
     
     Oversimplified.mouse.wheel = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));    //reverse Firefoxs detail value and return either 1 for up or -1 for down
@@ -1346,7 +1347,7 @@ Oversimplified.IsOnCamera = function (x, y) {
         } else {
             return false;
         }
-    } else {        //if only one is defined, then it is an object
+    } else {        // if only one is defined, then it is an object
         var obj = x;
         if (obj.x + obj.xBound > Oversimplified.camera.x && obj.x - obj.xBound < Oversimplified.camera.x + Oversimplified.camera.width
             && obj.y + obj.yBound > Oversimplified.camera.y && obj.y - obj.yBound < Oversimplified.camera.y + Oversimplified.camera.height)
@@ -1409,9 +1410,10 @@ function IsInternetExplorer () {
 
 // Add more functionality to Math namespace
 
+/* Make sure the value does not fall outide the min-max range
 
-// Make sure the value does not fall outide the min-max range
-// Usage: numberValue = Math.clamp(numberValue, 3, 10);
+Usage: numberValue = Math.clamp(numberValue, 3, 10);
+*/
 Math.clamp = function (value, min, max) {
     if (min == max) {
         console.log("Min and Max cannot be the same number!");
@@ -1433,8 +1435,10 @@ Math.clamp = function (value, min, max) {
 };
 
 
-// Make sure the given value does not fall outide the 0-1 range
-// Usage: numberValue = Math.clamp01(numberValue);
+/* Make sure the given value does not fall outide the 0-1 range
+
+Usage: numberValue = Math.clamp01(numberValue);
+*/
 Math.clamp01 = function (value) {
     if (value < 0) {
         value = 0;
@@ -1446,9 +1450,12 @@ Math.clamp01 = function (value) {
 };
 
 
-// Return the given numberValue as a clamped angle between 0 and 360
-// Usage: numberValue = Math.clampAngle(numberValue, 0, 180);
-// Alternate: numberValue = Math.clampAngle(numberValue);
+/* Return the given numberValue as a clamped angle between 0 and 360
+
+Usage: numberValue = Math.clampAngle(numberValue, 0, 180);
+
+Alternate: numberValue = Math.clampAngle(numberValue);
+*/
 Math.clampAngle = function (value, min, max) {
     // Make sure angle is between 0 and 360
     while (value >= 360) {
@@ -1494,32 +1501,42 @@ Math.clampAngle = function (value, min, max) {
 };
 
 
-// Convert a radian value to degrees
-// Usage: degreeValue = Math.radToDeg(radianValue);
+/* Convert a radian value to degrees
+
+Usage: degreeValue = Math.radToDeg(radianValue);
+*/
 Math.radToDeg = function (radians) {
     return radians / (Math.PI / 180);
 };
 
-// Convert a degree value to radians
-// Usage: radianValue = Math.degToRad(degreeValue);
+/* Convert a degree value to radians
+
+Usage: radianValue = Math.degToRad(degreeValue);
+*/
 Math.degToRad = function (degrees) {
     return degrees * (Math.PI / 180);
 };
 
-// Get the cosine of an angle given in degrees
-// Usage: cosine = Math.getCos(angleInDegrees);
+/* Get the cosine of an angle given in degrees
+
+Usage: cosine = Math.getCos(angleInDegrees);
+*/
 Math.getCos = function (angle) {
     return Math.cos(Math.degToRad(angle));
 };
 
-// Get the sine of an angle given in degrees
-// Usage: sine = Math.getSin(angleInDegrees);
+/* Get the sine of an angle given in degrees
+
+Usage: sine = Math.getSin(angleInDegrees);
+*/
 Math.getSin = function (angle) {
     return Math.sin(Math.degToRad(angle));
 };
 
-// Return true or false based on a 50% chance
-// Usage: flippedHeads = Math.coinFlip();
+/* Return true or false based on a 50% chance
+
+Usage: flippedHeads = Math.coinFlip();
+*/
 Math.coinFlip = function () {
     if (Math.random() >= 0.5) {
         return true;
@@ -1528,8 +1545,10 @@ Math.coinFlip = function () {
     }
 };
 
-// Return a random number between min and max (inclusive)
-// Usage: numberBetween3And15 = Math.randomRange(3, 15);
+/* Return a random number between min and max (inclusive)
+
+Usage: numberBetween3And15 = Math.randomRange(3, 15);
+*/
 Math.randomRange(min, max) {
     return Math.random() * (max - min) + min;
 };
