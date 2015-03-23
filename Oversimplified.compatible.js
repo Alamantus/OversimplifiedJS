@@ -1360,9 +1360,11 @@ Oversimplified.IsOnCamera = function (x, y) {
         
 }
 
-// Dynamically add a source script to the page.
+/* Dynamically add a source script to the page.
+
+You can either specify a main function or just make the main function within the script the same as the script's name (minus ".js")
+*/
 Oversimplified.AddScript = function (pathToScript, mainFunction) {
-    //You can either specify a main function or just make the main function within the script the same as the script's name (minus ".js")
     mainFunction = typeof mainFunction !== 'undefined' ? mainFunction : pathToScript.slice(((pathToScript.lastIndexOf("/")>-1)?pathToScript.lastIndexOf("/")+1:0), pathToScript.indexOf("."));
     
     Oversimplified.loadingScripts.push(pathToScript);
@@ -1387,11 +1389,9 @@ Oversimplified.AddScript = function (pathToScript, mainFunction) {
 
 // Callback function that prevents any added scripts from executing until all scripts are loaded.
 Oversimplified.WaitForScriptsToLoad = function (Function) {
-    //console.log("Waiting to run " + Function + ". " + Oversimplified.loadingScripts.length + " scripts left to load!");
     if (Oversimplified.loadingScripts.length > 0) {
         setTimeout(function(){Oversimplified.WaitForScriptsToLoad(Function)}, 0.1);
     } else {
-        //console.log("Running " + Function + ". " + Oversimplified.loadingScripts.length + " scripts left to load!");
         Function();
     }
 }
@@ -1424,7 +1424,6 @@ Math.clamp = function (value, min, max) {
         return false;
     }
     
-    // clamp the value
     if (value < min) {
         value = min;
     }
@@ -1479,7 +1478,7 @@ Math.clampAngle = function (value, min, max) {
         while (max < 0) {
             max += 360;
         }
-        // Handle Errors
+        
         if (min == max) {
             console.log("Min and Max cannot be the same number!");
             return false;
@@ -1489,7 +1488,6 @@ Math.clampAngle = function (value, min, max) {
             return false;
         }
         
-        //clamp the value
         if (value < min) {
             value = min;
         }
