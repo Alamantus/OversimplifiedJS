@@ -1,3 +1,7 @@
+/*OversimplifiedJS
+Author: Robbie Antenesse
+Description: A lightweight, modular 2-D game engine for HTML5 canvas & JavaScript designed to try to make it as simple as possible to get your game made.
+*/
 var Oversimplified = {};
 var OS = Oversimplified;    // Handy-dandy alias for shortening code.
 
@@ -21,12 +25,11 @@ Oversimplified.Settings = {};
 Oversimplified.Settings.defaultStep = 1/30;
 Oversimplified.Settings.soundVolume = 0.75;
 Oversimplified.Settings.musicVolume = 0.75;
-/*
-    Set up the camera.
-    
-    It is important that this is done first at the time the game is loaded because this determines the size of the HTML5 canvas.
-    Be sure that the objectToFollow has already been created in the current room. Can be referenced with a variable.
-    objectToFollow, hBorder, and vBorder are optional arguments, but if you want to set hBorder and vBorder, there must be an objectToFollow.
+/* Set up the camera.
+
+It is important that this is done first at the time the game is loaded because this determines the size of the HTML5 canvas.
+Be sure that the objectToFollow has already been created in the current room. Can be referenced with a variable.
+objectToFollow, hBorder, and vBorder are optional arguments, but if you want to set hBorder and vBorder, there must be an objectToFollow.
 */
 Oversimplified.Settings.SetCamera = function (width, height, objectToFollow, hBorder, vBorder) {
     hBorder = typeof hBorder !== 'undefined' ? hBorder : Oversimplified.camera.hBorder;
@@ -98,9 +101,10 @@ Oversimplified.heldKeys = [];
 Oversimplified.pressedKeys = [];
 Oversimplified.releasedKeys = [];
 
-// Key definitions
-// 
-// Get Key name based on keycode
+/* Key definitions
+
+Get Key name based on keycode.
+*/
 Oversimplified.Key = {
     37: "left arrow",
     38: "up arrow",
@@ -165,6 +169,7 @@ Oversimplified.Key = {
     221: "close bracket",
     222: "quote"
 };
+
 // Get Keycode based on key name
 Oversimplified.Keycode = {
     backspace:    8,
