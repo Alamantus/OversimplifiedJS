@@ -10,6 +10,10 @@ Oversimplified.canvas = null;
 Oversimplified.context = null;
 Oversimplified.nextID = 0;
 Oversimplified.loadingScripts = [];
+Oversimplified.emptyImage = new Image();
+Oversimplified.emptyImage.src = "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
+Oversimplified.emptyImage.width = 1;
+Oversimplified.emptyImage.height = 1;
 
 // Settings Namespace
 Oversimplified.Settings = {};
@@ -631,8 +635,15 @@ Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animat
     
     this.x = typeof x !== 'undefined' ? x : -1;
     this.y = typeof y !== 'undefined' ? y : -1;
-    this.image = new Image();
-    this.image.src = imageSrc;
+    this.screenX = this.x - Oversimplified.camera.x;
+    this.screenY = this.y - Oversimplified.camera.y;
+    
+    if (typeof imageSrc !== 'undefined' && imageSrc != "") {
+        this.image = new Image();
+        this.image.src = imageSrc;
+    } else {
+        this.image = Oversimplified.emptyImage;
+    }
     this.image.xScale = 1;
     this.image.yScale = 1;
     this.image.rotation = 0;
@@ -650,8 +661,12 @@ Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animat
             this.image.animations[animationsArray[i].name] = animationsArray[i];
         }
     } else {
-        //If no animations array is included, then just show the whole image
-        this.image.onload = function(){this.animations["Default"] = new Oversimplified.Animation("newAnimation", this.width, this.height)};    // Creates the default animation as the whole image once the image is loaded.
+        if (this.image != Oversimplified.emptyImage) {
+            //If no animations array is included, then just show the whole image
+            this.image.onload = function(){this.animations["Default"] = new Oversimplified.Animation("newAnimation", this.width, this.height)};    // Creates the default animation as the whole image once the image is loaded.
+        } else {
+            this.image.animations["Default"] = new Oversimplified.Animation("newAnimation", this.image.width, this.image.height)
+        }
     }
     
     this.image.currentAnimation = "Default";
@@ -767,6 +782,9 @@ Oversimplified.GameObject.prototype.Start = function () {
     this.DoFirst();
 }
 Oversimplified.GameObject.prototype.Update = function () {
+    this.screenX = this.x - Oversimplified.camera.x;
+    this.screenY = this.y - Oversimplified.camera.y;
+    
     this.BeforeDo();
     this.Do();
     this.AfterDo();
