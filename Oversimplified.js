@@ -34,13 +34,13 @@ Oversimplified.Settings.SetCamera = function (width, height, objectToFollow, hBo
     if (typeof width !== 'undefined') {
         Oversimplified.camera.width = width;
     } else {
-        console.log("You must specify a width in function Oversimplified.Settings.SetCamera()");
+        if (Oversimplified.DEBUG.showMessages) console.log("You must specify a width in function Oversimplified.Settings.SetCamera()");
         return false;
     }
     if (typeof height !== 'undefined') {
         Oversimplified.camera.height = height;
     } else {
-        console.log("You must specify a height in function Oversimplified.Settings.SetCamera()");
+        if (Oversimplified.DEBUG.showMessages) console.log("You must specify a height in function Oversimplified.Settings.SetCamera()");
         return false;
     }
     
@@ -48,7 +48,7 @@ Oversimplified.Settings.SetCamera = function (width, height, objectToFollow, hBo
         if (objectToFollow.name) {
             Oversimplified.camera.Follow(objectToFollow);
         } else {
-            console.log("Oversimplified.Settings.SetCamera()'s objectToFollow argument must be a Oversimplified.GameObject.");
+            if (Oversimplified.DEBUG.showMessages) console.log("Oversimplified.Settings.SetCamera()'s objectToFollow argument must be a Oversimplified.GameObject.");
         }
     }
     
@@ -383,7 +383,7 @@ Oversimplified.Rooms.Add = function (name, width, height, backgroundSrc, stepSpe
         
         return Oversimplified.Rooms[name];
     } else {
-        console.log("A Room with the name \"" + name + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.log("A Room with the name \"" + name + "\" already exists!");
         return false;
     }
 }
@@ -577,7 +577,7 @@ Oversimplified.Room.prototype.AddObject = function (newObjectName, x, y, imageSr
     }
     else {
         if (self.objects[newObjectName]) {
-            console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
+            if (Oversimplified.DEBUG.showMessages) console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
             return false;
         }
         self.objects[newObjectName] = new Oversimplified.GameObject(newObjectName, x, y, imageSrc, maskImageSrc, animationsArray);
@@ -609,7 +609,7 @@ Oversimplified.PremadeObjects.Add = function (name, x, y, imageSrc, maskImageSrc
         Oversimplified.PremadeObjects[name] = new Oversimplified.GameObject(name, x, y, imageSrc, maskImageSrc, animationsArray);
         return Oversimplified.PremadeObjects[name];
     } else {
-        console.log("A Premade Object with the name \"" + name + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.log("A Premade Object with the name \"" + name + "\" already exists!");
         return false;
     }
 }
@@ -754,7 +754,7 @@ Oversimplified.GameObject.prototype.Draw = function () {
             Oversimplified.DEBUG.objectsOnScreen++;
         }
     } else {
-        console.log("No animation at " + animation);
+        if (Oversimplified.DEBUG.showMessages) console.log("No animation at " + animation);
     }
     
     this.DrawAbove();
@@ -1006,7 +1006,7 @@ Oversimplified.Animations.Add = function (name, width, height, columns, rows, sp
         Oversimplified.Animations[name] = new Oversimplified.Animation(name, width, height, columns, rows, speed, xOffset, yOffset);
         return Oversimplified.Animations[name];
     } else {
-        console.log("An animation with the name \"" + name + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.log("An animation with the name \"" + name + "\" already exists!");
         return false;
     }
 };
@@ -1052,7 +1052,7 @@ Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImage
     }
     else {
         if (Oversimplified.O[newObjectName]) {
-            console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
+            if (Oversimplified.DEBUG.showMessages) console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
             return false;
         }
         Oversimplified.O[newObjectName] = new Oversimplified.GameObject(newObjectName, x, y, imageSrc, maskImageSrc, animationsArray);
@@ -1393,7 +1393,7 @@ Oversimplified.Frame = function () {
         }
         Oversimplified.lastFrame = Oversimplified.now;
     } else {
-        console.log("Loading scripts: " + Oversimplified.loadingScripts.toString());
+        if (Oversimplified.DEBUG.showMessages) console.log("Loading scripts: " + Oversimplified.loadingScripts.toString());
     }
     
     requestAnimationFrame(Oversimplified.Frame);
@@ -1408,7 +1408,7 @@ Oversimplified.Update = function () {
     if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoom] !== 'undefined') {
         Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].Update();
     } else {
-        console.log("There is no current room. Please add one or make sure you are referencing the correct room with Oversimplified.Rooms.SetRoom().");
+        if (Oversimplified.DEBUG.showMessages) console.log("There is no current room. Please add one or make sure you are referencing the correct room with Oversimplified.Rooms.SetRoom().");
     }
     
     Oversimplified.Rooms.AllAfterDo();
@@ -1451,7 +1451,7 @@ Oversimplified.Draw = function () {
     if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoom] !== 'undefined') {
         Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].Draw();
     } else {
-        console.log("There is no current room. Please add one or make sure you are referencing the correct room with Oversimplified.Rooms.SetRoom().");
+        if (Oversimplified.DEBUG.showMessages) console.log("There is no current room. Please add one or make sure you are referencing the correct room with Oversimplified.Rooms.SetRoom().");
     }
 }
 
@@ -1517,7 +1517,7 @@ Oversimplified.AddScript = function (pathToScript, mainFunction) {
             if (typeof window[mainFunction] === 'function') {
                 Oversimplified.WaitForScriptsToLoad(function(){window[mainFunction]()});
             } else {
-                console.log(mainFunction + " is not a function!");
+                if (Oversimplified.DEBUG.showMessages) console.log(mainFunction + " is not a function!");
             }
         }
         
@@ -1555,11 +1555,11 @@ Usage: numberValue = Math.clamp(numberValue, 3, 10);
 */
 Math.clamp = function (value, min, max) {
     if (min == max) {
-        console.log("Min and Max cannot be the same number!");
+        if (Oversimplified.DEBUG.showMessages) console.log("Min and Max cannot be the same number!");
         return false;
     }
     if (min > max) {
-        console.log("Min must be less than Max!");
+        if (Oversimplified.DEBUG.showMessages) console.log("Min must be less than Max!");
         return false;
     }
     
@@ -1619,11 +1619,11 @@ Math.clampAngle = function (value, min, max) {
         }
         
         if (min == max) {
-            console.log("Min and Max cannot be the same number!");
+            if (Oversimplified.DEBUG.showMessages) console.log("Min and Max cannot be the same number!");
             return false;
         }
         if (min > max) {
-            console.log("Min must be less than Max!");
+            if (Oversimplified.DEBUG.showMessages) console.log("Min must be less than Max!");
             return false;
         }
         
