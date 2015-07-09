@@ -635,6 +635,8 @@ Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animat
     
     this.x = typeof x !== 'undefined' ? x : -1;
     this.y = typeof y !== 'undefined' ? y : -1;
+	this.xPrevious = this.x;
+	this.yPrevious = this.y;
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
     
@@ -784,6 +786,8 @@ Oversimplified.GameObject.prototype.Start = function () {
 Oversimplified.GameObject.prototype.Update = function () {
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
+	this.xPrevious = this.x;
+	this.yPrevious = this.y;
     
     this.BeforeDo();
     this.Do();
@@ -828,30 +832,83 @@ Oversimplified.GameObject.prototype.PointOverlaps = function (x, y) {
 }
 
 // Check if object is overlapping any other object in the room
-Oversimplified.GameObject.prototype.IsOverlapping = function () {
-    var currentRoom = Oversimplified.R[Oversimplified.R.currentRoom];
+//
+// Accepts true, false, or no value.
+Oversimplified.GameObject.prototype.IsOverlapping = function (doSimple) {
+    doSimple = (typeof doSimple !== 'undefined') ? doSimple : false;
     
     for (var obj in Oversimplified.O) {
         var object = Oversimplified.O[obj];
         if (object != this) {
-            for (var i = 0; i < 2 * object.xBound; i++) {
-                for (var j = 0; j < 2 * object.yBound; j++) {
-                    var xToCheck = (object.x - object.xBound) + i;
-                    var yToCheck = (object.y - object.yBound) + j;
-                    
-                    if (xToCheck > this.x - this.xBound
-                        && xToCheck < this.x + this.xBound
-                        && yToCheck > this.y - this.yBound
-                        && yToCheck < this.y + this.yBound)
-                    {    //Check if the point lies inside the bounds of ANY object in the room.
-                        return true;
+            // If doSimple is false or not set, then scan all pixels in object boundaries.
+            if (!doSimple)
+            {
+                for (var i = 0; i < 2 * object.xBound; i++) {
+                    for (var j = 0; j < 2 * object.yBound; j++) {
+                        var xToCheck = (object.x - object.xBound) + i;
+                        var yToCheck = (object.y - object.yBound) + j;
+                        
+                        if (xToCheck > this.x - this.xBound &&
+                            xToCheck < this.x + this.xBound &&
+                            yToCheck > this.y - this.yBound &&
+                            yToCheck < this.y + this.yBound)
+                        {    //Check if the point lies inside the bounds of ANY object in the room.
+                            return object;
+                        }
                     }
+                }
+            }
+            // If doSimple is true, only check the corner pixels and center pixels of object bounds. This makes for much faster checking.
+            else
+            {
+                if (object.PointOverlaps(this.x - this.xBound, this.y - this.yBound) ||
+                    object.PointOverlaps(this.x + this.xBound, this.y - this.yBound) ||
+                    object.PointOverlaps(this.x - this.xBound, this.y + this.yBound) ||
+                    object.PointOverlaps(this.x + this.xBound, this.y + this.yBound) ||
+                    object.PointOverlaps(this.x - this.xBound, this.y) ||
+                    object.PointOverlaps(this.x + this.xBound, this.y) ||
+                    object.PointOverlaps(this.x, this.y - this.yBound) ||
+                    object.PointOverlaps(this.x, this.y + this.yBound))
+                {
+                    return object;
                 }
             }
         }
     }
     
     return false;
+}
+
+// Move the object away from any overlapping objects.
+//
+// Accepts true, false, or no value.
+Oversimplified.GameObject.prototype.IfOverlappingThenMove = function (doSimple) {
+	var overlappingObject = this.IsOverlapping(doSimple);
+	
+	if (overlappingObject != false)
+	{
+		if (this.x < overlappingObject.x)
+		this.x--;
+		if (this.x >= overlappingObject.x)
+			this.x++;
+		if (this.y < overlappingObject.y)
+			this.y--;
+		if (this.y >= overlappingObject.y)
+			this.y++;
+	}
+}
+
+// Prevents the object from moving outside of the room's boundaries.
+Oversimplified.GameObject.prototype.KeepInsideRoom = function () {
+    var currentRoom = Oversimplified.R[Oversimplified.R.currentRoom]
+	if (this.x < this.xBound || this.x > currentRoom.width - this.xBound)
+    {
+        this.x = this.xPrevious;
+    }
+    if (this.y < this.yBound || this.y > currentRoom.height - this.yBound)
+    {
+        this.y = this.yPrevious;
+    }
 }
 
 // Returns true if the mouse is within the object's bounding box.
@@ -866,6 +923,7 @@ Oversimplified.GameObject.prototype.MouseIsOver = function () {
 
 
 // Returns true if the object is clicked with the given mouse click, eg. Oversimplified.mouse.leftDown, Oversimplified.mouse.rightUp, etc.
+//
 // If no click is specified, it defaults to left down
 Oversimplified.GameObject.prototype.Clicked = function (mouseClick) {
     mouseClick = typeof mouseClick !== 'undefined' ? mouseClick : Oversimplified.mouse.leftDown;
@@ -878,7 +936,8 @@ Oversimplified.GameObject.prototype.Clicked = function (mouseClick) {
 }
 
 // Move the object based upon xSpeed and ySpeed, stopping if colliding with solid objects
-// Speed is scaled based on camera's scale.
+//
+// xSpeed and ySpeed are numbers, and checkCollisions is true or false.
 Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, checkCollisions) {
     var collisionLeft = collisionRight = collisionUp = collisionDown = false;
     if (checkCollisions) {
@@ -906,6 +965,8 @@ Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, check
         this.y += ySpeed;
     }
 }
+
+// Removes the specified object from memory.
 Oversimplified.GameObject.prototype.Destroy = function () {
     this.End();
     delete Oversimplified.R[Oversimplified.R.currentRoom].objects[this.name];
@@ -953,6 +1014,7 @@ Oversimplified.Animations.New = Oversimplified.Animations.Add;
 Oversimplified.A = Oversimplified.Animations;
 
 // Animation class (for use with sprite sheets)
+//
 // Prevents animation mess-ups by preventing speeds higher than one with Math.clamp01.
 Oversimplified.Animation = function (name, width, height, columns, rows, speed, xOffset, yOffset) {
     this.id = Oversimplified.nextID++;
@@ -976,7 +1038,7 @@ Oversimplified.Animation = function (name, width, height, columns, rows, speed, 
 }
 Oversimplified.Animation.prototype.type = "Animation";
 
-// Create a new object inside the current rom and return it.
+// Create a new GameObject inside the current Room and return it.
 Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
     if (newObjectName.type == "GameObject") {    //Create from prefabricated object
         var newID = Oversimplified.nextID++;
@@ -1088,6 +1150,9 @@ Oversimplified.Copy = function (object, newID, newName) {
 
 // DEBUG object
 Oversimplified.DEBUG = {
+    // Show console.log messages.
+    showMessages: true,
+    
     // Draw a magenta bounding box around the specified object representing the object's collision extents.
     DrawBoundingBox: function (object) {
         var fillStyle = Oversimplified.context.fillStyle;
