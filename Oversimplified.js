@@ -1038,6 +1038,120 @@ Oversimplified.Animation = function (name, width, height, columns, rows, speed, 
 }
 Oversimplified.Animation.prototype.type = "Animation";
 
+Oversimplified.Effects = {
+    Sounds: [],
+    Tunes: [],
+}
+
+Oversimplified.Effects.Tunes.CheckLoops = function () {
+    for (tune in Oversimplified.Effects.Tunes) {
+        if (Oversimplified.Effects.Tunes[tune].type == "Tune" && Oversimplified.Effects.Tunes[tune].IsPlaying()) {
+            Oversimplified.Effects.Tunes[tune].CheckLoop();
+        }
+    }
+}
+
+/*  Sound Class
+    
+    Plays a sound effect once.    
+    Preferably source should be a .wav file and secondarySource should be a .mp3 file.
+*/
+Oversimplified.Sound = function (name, source, secondarySource) {
+    this.id = Oversimplified.nextID++;
+    
+    secondarySource = typeof secondarySource !== 'undefined' ? secondarySource : false;
+    
+    this.name = name;
+    this.source = source;
+    this.secondarySource = secondarySource;
+    
+    this.element = document.createElement("audio");
+    this.element.id = this.name + this.id.toString();
+    
+    var source = document.createElement("source");
+    source.src = this.source;
+    this.element.appendChild(source);
+    
+    if (this.secondarySource != false) {
+        source.src = this.secondarySource;
+        this.element.appendChild(source);
+    }
+    
+    document.getElementById("audio").appendChild(this.element);
+    this.element.load();
+}
+Oversimplified.Sound.prototype.type = "Sound";
+
+Oversimplified.Sound.prototype.Play = function () {
+    this.element.currentTime = 0;
+    this.element.volume = Oversimplified.Settings.soundVolume;
+    this.element.play();
+}
+Oversimplified.Sound.prototype.IsPlaying = function () {
+    return !this.element.paused && !this.element.ended && 0 < this.element.currentTime;
+}
+
+/*  Tune Class
+    
+    Preferably source should be a .mp3 file and secondarySource should be a .ogg file.    
+    If duration is specified, loop when duration is reached.
+*/
+Oversimplified.Tune = function (name, source, secondarySource, duration) {
+    this.id = Oversimplified.nextID++;
+    
+    secondarySource = typeof secondarySource !== 'undefined' ? secondarySource : false;
+    duration = typeof duration !== 'undefined' ? duration : false;
+    
+    this.name = name;
+    this.source = source;
+    this.secondarySource = secondarySource;
+    this.duration = duration;
+    
+    this.element = document.createElement("audio");
+    this.element.id = this.name + this.id.toString();
+    
+    var source = document.createElement("source");
+    source.src = this.source;
+    this.element.appendChild(source);
+    
+    if (this.secondarySource != false) {
+        source.src = this.secondarySource;
+        this.element.appendChild(source);
+    }
+    
+    document.getElementById("audio").appendChild(this.element);
+    this.element.load();
+}
+Oversimplified.Tune.prototype.type = "Tune";
+
+Oversimplified.Tune.prototype.Play = function () {
+    this.element.currentTime = 0;
+    this.element.volume = Oversimplified.Settings.musicVolume;
+    this.element.loop = true;
+    this.element.play();
+}
+Oversimplified.Tune.prototype.CheckLoop = funciton () {
+    if (this.duration < this.element.duration) {
+        if (this.element.currentTime > this.duration) {
+            this.element.currentTime = 0;
+        }
+    }
+}
+Oversimplified.Tune.prototype.IsPlaying = function () {
+    return !this.element.paused && !this.element.ended && 0 < this.element.currentTime;
+}
+
+// Aliases for Sounds and Tunes
+Oversimplified.Effects.S = Oversimplified.Effects.Sounds;
+Oversimplified.Effects.T = Oversimplified.Effects.Tunes;
+
+// Alias for "Tunes" in case it's too hard to remember.
+Oversimplified.Effects.Music = Oversimplified.Effects.Tunes;
+Oversimplified.Effects.M = Oversimplified.Effects.Tunes;
+
+// Alias for Effects
+Oversimplified.E = Oversimplified.Effects;
+
 // Create a new GameObject inside the current Room and return it.
 Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
     if (newObjectName.type == "GameObject") {    //Create from prefabricated object
@@ -1467,6 +1581,8 @@ Oversimplified.EndFrame = function () {
     Oversimplified.mouse.rightUp = false;
     Oversimplified.pressedKeys = [];
     Oversimplified.releasedKeys = [];
+    
+    
 }
 
 // Prevent scrolling page when scrolling inside canvas.
