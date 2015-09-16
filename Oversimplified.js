@@ -54,6 +54,8 @@ Oversimplified.Settings.SetCamera = function (width, height, objectToFollow, hBo
     
     Oversimplified.camera.hBorder = hBorder;
     Oversimplified.camera.vBorder = vBorder;
+    
+    Oversimplified.SetCanvasToCameraSize();
 }
 // Convenient alias for Settings.
 Oversimplified.S = Oversimplified.Settings;
@@ -420,17 +422,22 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
     extraParameters = typeof extraParameters !== 'undefined' ? extraParameters : [];
     width = (typeof width !== 'undefined' && width >= Oversimplified.camera.width) ? width : Oversimplified.camera.width;
     height = (typeof height !== 'undefined' && height >= Oversimplified.camera.height) ? height : Oversimplified.camera.height;
-    // If backgroundSrc is excluded or an empty string, instead use a generated 1x1 transparent image.
-    backgroundSrc = (typeof backgroundSrc !== 'undefined' && backgroundSrc != "") ? backgroundSrc : "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
     
     this.name = name;
     this.width = width;
     this.height = height;
     
-    this.background = new Image();
+    if (typeof backgroundSrc !== 'undefined' && backgroundSrc != "") {
+        this.background = new Image();
+        this.background.src = backgroundSrc;
+    } else {
+        // If backgroundSrc is excluded or an empty string, instead use Oversimplified.emptyImage instead.
+        this.background = Oversimplified.emptyImage;
+    }
     this.background.loaded = false;
-    this.background.src = backgroundSrc;
-    this.background.onload = function () {
+    
+    if (this.background != Oversimplified.emptyImage) {
+        this.background.onload = function () {
             this.loaded = true;
             // If extraParameters contains "background size", then make room the size of the background image.
             if (extraParameters.indexOf("background size") != -1) {
@@ -438,6 +445,8 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
                 self.height = this.height;
             }
         }
+    }
+    
     
     this.stepSpeed = stepSpeed;
     
@@ -541,7 +550,7 @@ Oversimplified.Room.prototype.Draw = function () {
         Oversimplified.context.fillStyle = tmp;
     }
     if (this.background.loaded) {
-        Oversimplified.context.drawImage(self.background, Oversimplified.camera.x, Oversimplified.camera.y, Oversimplified.camera.width, Oversimplified.camera.height, 0, 0, self.background.width, self.background.height);
+        Oversimplified.context.drawImage(self.background, Oversimplified.camera.x, Oversimplified.camera.y, (Oversimplified.camera.width <= self.background.width) ? Oversimplified.camera.width : self.background.width, (Oversimplified.camera.height <= self.background.height) ? Oversimplified.camera.height : self.background.height, 0, 0, self.background.width, self.background.height);
     }
     
     this.DrawBelow();    //Draw this before any objects are drawn
@@ -1130,7 +1139,7 @@ Oversimplified.Tune.prototype.Play = function () {
     this.element.loop = true;
     this.element.play();
 }
-Oversimplified.Tune.prototype.CheckLoop = funciton () {
+Oversimplified.Tune.prototype.CheckLoop = function () {
     if (this.duration < this.element.duration) {
         if (this.element.currentTime > this.duration) {
             this.element.currentTime = 0;
@@ -1341,7 +1350,7 @@ Oversimplified.Initialize = function () {
     
     Oversimplified.AddScript("start.js", function(){
         start();
-        Oversimplified.SetupCamera();
+        Oversimplified.SetCanvasToCameraSize();
         Oversimplified.Frame();    //Only run the first frame after Start has been loaded.
     });
 }
@@ -1489,9 +1498,17 @@ Oversimplified.SetupKeyboardListeners = function () {
     }, false);
 }
 
-Oversimplified.SetupCamera = function () {
-    Oversimplified.canvas.width = Oversimplified.camera.width;
-    Oversimplified.canvas.height = Oversimplified.camera.height;
+Oversimplified.SetCanvasToCameraSize = function () {
+    if (Oversimplified.canvas.width != Oversimplified.camera.width) {
+        if (Oversimplified.DEBUG.showMessages) console.log("Adjusting Camera Width from " + Oversimplified.canvas.width + " to " + Oversimplified.camera.width);
+        
+        Oversimplified.canvas.width = Oversimplified.camera.width;
+    }
+    if (Oversimplified.canvas.height != Oversimplified.camera.height) {
+        if (Oversimplified.DEBUG.showMessages) console.log("Adjusting Camera Height from " + Oversimplified.canvas.height + " to " + Oversimplified.camera.height);
+        
+        Oversimplified.canvas.height = Oversimplified.camera.height;
+    }
 }
 
 // Defines the order of operations for the Frame.
