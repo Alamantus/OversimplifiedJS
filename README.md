@@ -1,7 +1,7 @@
 OversimplifiedJS
 =============
 A lightweight, modular 2-D game engine for HTML5 canvas &amp; JavaScript    
-(Current Version: 0.62)
+(Current Version: 0.7)
 
 Getting Started
 -------------
