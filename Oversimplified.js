@@ -297,7 +297,7 @@ Oversimplified.Controls.New = Oversimplified.Controls.Add;
 
 // Checks each control every frame for presses/releases/holds
 Oversimplified.Controls.CheckAll = function () {
-    for (control in Oversimplified.Controls) {
+    for (var control in Oversimplified.Controls) {
         if (typeof Oversimplified.Controls[control].Check !== 'undefined') {
             Oversimplified.Controls[control].Check();
         }
@@ -454,7 +454,7 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
     this.O = this.objects;
     
     if (extraParameters.length > 0) {
-        for (p = 0; p < extraParameters.length; p++) {
+        for (var p = 0; p < extraParameters.length; p++) {
             switch (typeof extraParameters[p]) {
                 case "string":
                     // If the parameter starts with #, then it is a background color hex.
@@ -948,7 +948,10 @@ Oversimplified.GameObject.prototype.Clicked = function (mouseClick) {
 //
 // xSpeed and ySpeed are numbers, and checkCollisions is true or false.
 Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, checkCollisions) {
-    var collisionLeft = collisionRight = collisionUp = collisionDown = false;
+    var collisionLeft = false,
+        collisionRight = false,
+        collisionUp = false,
+        collisionDown = false;
     if (checkCollisions) {
         for (var vert = 0; vert < this.yBound * 2; vert++) {
             var yToCheck = (this.y - this.yBound + vert);
@@ -1053,7 +1056,7 @@ Oversimplified.Effects = {
 }
 
 Oversimplified.Effects.Tunes.CheckLoops = function () {
-    for (tune in Oversimplified.Effects.Tunes) {
+    for (var tune in Oversimplified.Effects.Tunes) {
         if (Oversimplified.Effects.Tunes[tune].type == "Tune" && Oversimplified.Effects.Tunes[tune].IsPlaying()) {
             Oversimplified.Effects.Tunes[tune].CheckLoop();
         }
@@ -1074,20 +1077,20 @@ Oversimplified.Sound = function (name, source, secondarySource) {
     this.source = source;
     this.secondarySource = secondarySource;
     
-    this.element = document.createElement("audio");
-    this.element.id = this.name + this.id.toString();
+    this.audioElement = document.createElement("audio");
+    this.audioElement.id = this.name + this.id.toString();
     
-    var source = document.createElement("source");
-    source.src = this.source;
-    this.element.appendChild(source);
+    var audioSource = document.createElement("source");
+    audioSource.src = this.source;
+    this.audioElement.appendChild(audioSource);
     
     if (this.secondarySource != false) {
-        source.src = this.secondarySource;
-        this.element.appendChild(source);
+        audioSource.src = this.secondarySource;
+        this.audioElement.appendChild(audioSource);
     }
     
-    document.getElementById("audio").appendChild(this.element);
-    this.element.load();
+    document.getElementById("audio").appendChild(this.audioElement);
+    this.audioElement.load();
 }
 Oversimplified.Sound.prototype.type = "Sound";
 
@@ -1116,20 +1119,20 @@ Oversimplified.Tune = function (name, source, secondarySource, duration) {
     this.secondarySource = secondarySource;
     this.duration = duration;
     
-    this.element = document.createElement("audio");
-    this.element.id = this.name + this.id.toString();
+    this.audioElement = document.createElement("audio");
+    this.audioElement.id = this.name + this.id.toString();
     
-    var source = document.createElement("source");
-    source.src = this.source;
-    this.element.appendChild(source);
+    var audioSource = document.createElement("source");
+    audioSource.src = this.source;
+    this.audioElement.appendChild(audioSource);
     
     if (this.secondarySource != false) {
-        source.src = this.secondarySource;
-        this.element.appendChild(source);
+        audioSource.src = this.secondarySource;
+        this.audioElement.appendChild(audioSource);
     }
     
-    document.getElementById("audio").appendChild(this.element);
-    this.element.load();
+    document.getElementById("audio").appendChild(this.audioElement);
+    this.audioElement.load();
 }
 Oversimplified.Tune.prototype.type = "Tune";
 
@@ -1248,7 +1251,7 @@ Oversimplified.Copy = function (object, newID, newName) {
     }
     //Copy Oversimplified.GameObject-unique properties
     if (object.type == 'GameObject') {
-        resultingCopy = CopyObject(object, newID, newName);
+        resultingCopy = Oversimplified.CopyObject(object, newID, newName);
     }
     if (object.type == 'Room') {
         /* resultingCopy.background = new Image();
@@ -1297,7 +1300,7 @@ Oversimplified.DEBUG = {
         } else {
             roomInQuestion = Oversimplified.Rooms[Oversimplified.R.currentRoom];
         }
-        for (objects in roomInQuestion.objects) {
+        for (var objects in roomInQuestion.objects) {
             count++;
         }
         return count;
@@ -1314,17 +1317,17 @@ Oversimplified.DEBUG = {
         var numAxes = 0;
         var total = 0;
         
-        for (control in Oversimplified.Controls) {
+        for (var control in Oversimplified.Controls) {
             if (typeof Oversimplified.Controls[control].Check !== 'undefined') {   //Only return values in Control that have Check(), i.e. controls & axes
                 total++;
-                var message = "C[\"" + control + "\"] "
+                var message = "Oversimplified.C[\"" + control + "\"] "
                 
                 if (Oversimplified.Controls[control].type == "Control") {
-                    message += "(Control): " + C[control].keyName;
+                    message += "(Control): " + Oversimplified.C[control].keyName;
                     numControls++;
                 }
                 if (Oversimplified.Controls[control].type == "Axis") {
-                    message += "(Axis) Positive: " + C[control].positiveKeyName + ", Negative: " + C[control].negativeKeyName;
+                    message += "(Axis) Positive: " + Oversimplified.C[control].positiveKeyName + ", Negative: " + Oversimplified.C[control].negativeKeyName;
                     numAxes++;
                 }
                 
