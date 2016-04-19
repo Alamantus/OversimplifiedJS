@@ -1300,6 +1300,57 @@ Oversimplified.Copy = function (object, newID, newName) {
     return resultingCopy;
 }
 
+Oversimplified.Save = function (location, data) {
+    // Set and overwrite data at specified location in browser's Local Storage
+    if(typeof(Storage) !== "undefined") {
+        localStorage.setItem(location, data);
+        if (localStorage.getItem(location) == data) {
+            if (Oversimplified.DEBUG.showMessages) console.log("Successfully saved " + data + " to localStorage[\"" + location + "\"].");
+            return true;
+        } else {
+            if (Oversimplified.DEBUG.showMessages) console.log("Could not save " + data + " to localStorage[\"" + location + "\"].");
+        }
+    } else {
+        if (Oversimplified.DEBUG.showMessages) console.log("This browser does not support saving to localStorage.");
+    }
+    return false;
+}
+
+Oversimplified.Load = function (location) {
+    // Load data from specified location in browser's Local Storage
+    if(typeof(Storage) !== "undefined") {
+        if (localStorage.getItem(location)) {
+            if (Oversimplified.DEBUG.showMessages) console.log("Successfully loaded from localStorage[\"" + location + "\"].");
+            return localStorage.getItem(location);
+        } else {
+            if (Oversimplified.DEBUG.showMessages) console.log("No data saved in localStorage[\"" + location + "\"].");
+        }
+    } else {
+        if (Oversimplified.DEBUG.showMessages) console.log("This browser does not support loading from localStorage.");
+    }
+    return false;
+}
+
+Oversimplified.Erase = function (location) {
+    // Remove data at specified location in browser's Local Storage
+    if(typeof(Storage) !== "undefined") {
+        if (localStorage.getItem(location)) {
+            localStorage.removeItem(location);
+            if (!localStorage.getItem(location)) {
+                if (Oversimplified.DEBUG.showMessages) console.log("Successfully erased localStorage[\"" + location + "\"].");
+                return true;
+            } else {
+                if (Oversimplified.DEBUG.showMessages) console.log("Could not erase localStorage[\"" + location + "\"].");
+            }
+        } else {
+            if (Oversimplified.DEBUG.showMessages) console.log("There is no data to remove from localStorage[\"" + location + "\"].");
+        }
+    } else {
+        if (Oversimplified.DEBUG.showMessages) console.log("This browser does not support manipulating localStorage.");
+    }
+    return false;
+}
+
 // DEBUG object
 Oversimplified.DEBUG = {
     // Show console.log messages.
