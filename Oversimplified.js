@@ -10,6 +10,7 @@ Oversimplified.canvas = null;
 Oversimplified.context = null;
 Oversimplified.nextID = 0;
 Oversimplified.loadingScripts = [];
+Oversimplified.loadedScripts = [];
 Oversimplified.emptyImage = new Image();
 Oversimplified.emptyImage.src = "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
 Oversimplified.emptyImage.width = 1;
@@ -1541,7 +1542,9 @@ Oversimplified.SetCanvasToCameraSize = function () {
 
 // Defines the order of operations for the Frame.
 Oversimplified.Frame = function () {
-    if (Oversimplified.loadingScripts.length == 0) {
+    if ((Oversimplified.Settings.numberOfScriptsToLoad > 0 && Oversimplified.loadedScripts.length == Oversimplified.Settings.numberOfScriptsToLoad) ||
+        (Oversimplified.Settings.numberOfScriptsToLoad <= 0 &&Oversimplified.loadingScripts.length == 0))
+    {
         Oversimplified.now = Oversimplified.timestamp();
         Oversimplified.dateTime = Oversimplified.dateTime + Math.min(1, (Oversimplified.now - Oversimplified.lastFrame) / 1000);
         while (Oversimplified.dateTime > Oversimplified.step) {
@@ -1552,7 +1555,34 @@ Oversimplified.Frame = function () {
         }
         Oversimplified.lastFrame = Oversimplified.now;
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("Loading scripts: " + Oversimplified.loadingScripts.toString());
+        if (Oversimplified.DEBUG.showMessages) {
+            var debugMessage = "Loaded " + Oversimplified.loadedScripts.length.toString();
+            debugMessage += (Oversimplified.Settings.numberOfScriptsToLoad > 0) ? " of " + Oversimplified.Settings.numberOfScriptsToLoad.toString() : "";
+            debugMessage += " scripts:\n" + Oversimplified.loadedScripts.toString() + ".\nWaiting for:\n" + Oversimplified.loadingScripts.toString();
+            console.log(debugMessage);
+        }
+        
+        if (Oversimplified.Settings.numberOfScriptsToLoad > 0) {
+            var percentage = Oversimplified.loadedScripts.length / Oversimplified.Settings.numberOfScriptsToLoad;
+            var barHeight = 32;
+            var maxBarWidth = Math.round(Oversimplified.camera.width * 0.6);
+            var barWidth = Math.round(maxBarWidth * percentage);
+            var barX = Math.round(Oversimplified.camera.width * 0.2);
+            var barY = Math.round(Oversimplified.camera.height * 0.5) - Math.round(barHeight / 2);
+
+            var saveFillStyle = OS.context.fillStyle;
+            var saveStrokeStyle = OS.context.strokeStyle;
+
+            OS.context.fillStyle = "#DD5511";
+            OS.context.fillRect(barX, barY, barWidth, barHeight);
+
+            OS.context.strokeStyle= "#882200";
+            OS.context.lineWidth=5;
+            OS.context.strokeRect(barX, barY, maxBarWidth, barHeight);
+
+            OS.context.fillStyle = saveFillStyle;
+            OS.context.strokeStyle = saveStrokeStyle;
+        }
     }
     
     requestAnimationFrame(Oversimplified.Frame);
@@ -1682,6 +1712,7 @@ Oversimplified.AddScript = function (pathToScript, mainFunction) {
             }
         }
         
+        Oversimplified.loadedScripts.push(pathToScript);
         Oversimplified.loadingScripts.splice(Oversimplified.loadingScripts.indexOf(pathToScript), 1);
     };
     document.body.appendChild(script);
@@ -1689,7 +1720,9 @@ Oversimplified.AddScript = function (pathToScript, mainFunction) {
 
 // Callback function that prevents any added scripts from executing until all scripts are loaded.
 Oversimplified.WaitForScriptsToLoad = function (Function) {
-    if (Oversimplified.loadingScripts.length > 0) {
+    if (Oversimplified.DEBUG.showMessages && Oversimplified.Settings.numberOfScriptsToLoad > 0) console.log("Waiting for " + (Oversimplified.Settings.numberOfScriptsToLoad - Oversimplified.loadedScripts.length).toString() + " scripts to load");
+    if (Oversimplified.loadingScripts.length > 0)
+    {
         setTimeout(function(){Oversimplified.WaitForScriptsToLoad(Function)}, 0.1);
     } else {
         Function();
