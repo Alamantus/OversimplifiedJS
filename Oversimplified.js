@@ -1380,7 +1380,7 @@ Oversimplified.SetupCanvas = function () {
     }
     
     //Disable right click menu on canvas
-    Oversimplified.canvas.oncontextmenu = function() {return false;};
+    if (Oversimplified.Settings.preventRightClick) Oversimplified.canvas.oncontextmenu = function() {return false;};
 }
 
 Oversimplified.SetupControls = function () {
