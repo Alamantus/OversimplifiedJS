@@ -993,7 +993,7 @@ Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, check
 // Removes the specified object from memory.
 Oversimplified.GameObject.prototype.Destroy = function () {
     this.End();
-    delete Oversimplified.R[Oversimplified.R.currentRoom].objects[this.name];
+    delete Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[this.name];
 }
 
 // Check if the point (x, y) lies inside the bounds of ANY object in the room.
@@ -1311,7 +1311,7 @@ Oversimplified.DEBUG = {
                 roomInQuestion = Oversimplified.Rooms[roomName];
             }
         } else {
-            roomInQuestion = Oversimplified.Rooms[Oversimplified.R.currentRoom];
+            roomInQuestion = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom];
         }
         for (var objects in roomInQuestion.objects) {
             count++;
@@ -1561,17 +1561,17 @@ Oversimplified.Update = function () {
     Oversimplified.Rooms.AllAfterDo();
     
     if (Oversimplified.camera.following != "") {    //If the camera is following an object, keep the object within its borders.
-        if (Oversimplified.R[Oversimplified.R.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.x > Oversimplified.camera.width - Oversimplified.camera.hBorder) {
-            Oversimplified.camera.x = Oversimplified.R[Oversimplified.R.currentRoom].objects[Oversimplified.camera.following].x - (Oversimplified.camera.width - Oversimplified.camera.hBorder);
+        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.x > Oversimplified.camera.width - Oversimplified.camera.hBorder) {
+            Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].x - (Oversimplified.camera.width - Oversimplified.camera.hBorder);
         }
-        if (Oversimplified.R[Oversimplified.R.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.x < Oversimplified.camera.hBorder) {
-            Oversimplified.camera.x = Oversimplified.R[Oversimplified.R.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.hBorder;
+        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.x < Oversimplified.camera.hBorder) {
+            Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.hBorder;
         }
-        if (Oversimplified.R[Oversimplified.R.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.y > Oversimplified.camera.height - Oversimplified.camera.vBorder) {
-            Oversimplified.camera.y = Oversimplified.R[Oversimplified.R.currentRoom].objects[Oversimplified.camera.following].y - (Oversimplified.camera.height - Oversimplified.camera.vBorder);
+        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.y > Oversimplified.camera.height - Oversimplified.camera.vBorder) {
+            Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].y - (Oversimplified.camera.height - Oversimplified.camera.vBorder);
         }
-        if (Oversimplified.R[Oversimplified.R.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.y < Oversimplified.camera.vBorder) {
-            Oversimplified.camera.y = Oversimplified.R[Oversimplified.R.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.vBorder;
+        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.y < Oversimplified.camera.vBorder) {
+            Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.vBorder;
         }
     }
     
@@ -1579,14 +1579,14 @@ Oversimplified.Update = function () {
     if (Oversimplified.camera.x < 0) {
         Oversimplified.camera.x = 0;
     }
-    if (Oversimplified.camera.x + Oversimplified.camera.width > Oversimplified.R[Oversimplified.R.currentRoom].width) {
-        Oversimplified.camera.x = Oversimplified.R[Oversimplified.R.currentRoom].width - Oversimplified.camera.width;
+    if (Oversimplified.camera.x + Oversimplified.camera.width > Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].width) {
+        Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].width - Oversimplified.camera.width;
     }
     if (Oversimplified.camera.y < 0) {
         Oversimplified.camera.y = 0;
     }
-    if (Oversimplified.camera.y + Oversimplified.camera.height > Oversimplified.R[Oversimplified.R.currentRoom].height) {
-        Oversimplified.camera.y = Oversimplified.R[Oversimplified.R.currentRoom].height - Oversimplified.camera.height;
+    if (Oversimplified.camera.y + Oversimplified.camera.height > Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].height) {
+        Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].height - Oversimplified.camera.height;
     }
 }
 
