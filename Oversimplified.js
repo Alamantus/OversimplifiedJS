@@ -559,13 +559,14 @@ Oversimplified.Room.prototype.Draw = function () {
 }
 
 // Add a GameObject or PremadeObject to the room.
-Oversimplified.Room.prototype.AddObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
+Oversimplified.Room.prototype.AddObject = function (newObjectName, newObjectOptions) {
+    newObjectOptions = (typeof newObjectOptions !== 'undefined') ? newObjectOptions : {};
     var self = this;
     
     if (newObjectName.type == "GameObject") {    //Create from prefabricated object
         var newID = Oversimplified.nextID++;
         var newName = newObjectName.name + newID.toString();
-        self.objects[newName] = Oversimplified.CopyObject(newObjectName, newID, newName);
+        self.objects[newName] = Oversimplified.CopyObject(newObjectName, newID, newName, newObjectOptions);
         
         return self.objects[newName];
     }
@@ -574,7 +575,7 @@ Oversimplified.Room.prototype.AddObject = function (newObjectName, x, y, imageSr
             if (Oversimplified.DEBUG.showMessages) console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
             return false;
         }
-        self.objects[newObjectName] = new Oversimplified.GameObject(newObjectName, x, y, imageSrc, maskImageSrc, animationsArray);
+        self.objects[newObjectName] = new Oversimplified.GameObject(newObjectName, newObjectOptions);
         
         return self.objects[newObjectName];
     }
@@ -598,9 +599,9 @@ Oversimplified.SetRoom = function (room) {
 Oversimplified.PremadeObjects = {};
 
 // Add a GameObject to the list of PremadeObjects.
-Oversimplified.PremadeObjects.Add = function (name, x, y, imageSrc, maskImageSrc, animationsArray) {
+Oversimplified.PremadeObjects.Add = function (name, objectOptions) {// x, y, imageSrc, maskImageSrc, animationsArray) {
     if (typeof Oversimplified.PremadeObjects[name] === 'undefined') {
-        Oversimplified.PremadeObjects[name] = new Oversimplified.GameObject(name, x, y, imageSrc, maskImageSrc, animationsArray);
+        Oversimplified.PremadeObjects[name] = new Oversimplified.GameObject(name, objectOptions);// x, y, imageSrc, maskImageSrc, animationsArray);
         return Oversimplified.PremadeObjects[name];
     } else {
         if (Oversimplified.DEBUG.showMessages) console.log("A Premade Object with the name \"" + name + "\" already exists!");
@@ -616,59 +617,64 @@ Oversimplified.Prefabs = Oversimplified.PremadeObjects;    // In case someone li
 Oversimplified.P = Oversimplified.PremadeObjects;
 
 // GameObject class
-Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animationsArray) {
+Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskImageSrc, animationsArray) {
     this.id = Oversimplified.nextID++;
     
     var self = this;
     this.self = self;
+    this.doFirstHasRun = false;
     
+    //Required Options
     this.name = name;
-    this.depth = 0;
-    this.solid = false;
-    this.persistent = false;
-    
-    this.x = typeof x !== 'undefined' ? x : -1;
-    this.y = typeof y !== 'undefined' ? y : -1;
+
+    //Optional Options
+    this.depth = typeof options.depth !== 'undefined' ? options.depth : 0; // Objects with higher depth are drawn *later* than (above) objects with lower depths. Objects with the same depth are drawn in the order they are created.
+    this.solid = typeof options.solid !== 'undefined' ? options.solid : false;
+    this.persistent = typeof options.persistent !== 'undefined' ? options.persistent : false;
+    this.x = typeof options.x !== 'undefined' ? options.x : -1;
+    this.y = typeof options.y !== 'undefined' ? options.y : -1;
 	this.xPrevious = this.x;
 	this.yPrevious = this.y;
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
     
-    if (typeof imageSrc !== 'undefined' && imageSrc != "") {
+    if (typeof options.imageSrc !== 'undefined' && options.imageSrc != "") {
         this.image = new Image();
-        this.image.src = imageSrc;
+        this.image.src = options.imageSrc;
     } else {
         this.image = Oversimplified.emptyImage;
     }
-    this.image.xScale = 1;
-    this.image.yScale = 1;
-    this.image.rotation = 0;
+    
+    this.image.xScale = typeof options.xScale !== 'undefined' ? options.xScale : 1;
+    this.image.yScale = typeof options.yScale !== 'undefined' ? options.yScale : this.image.xScale;
+
+    this.image.rotation = typeof options.rotation !== 'undefined' ? Math.clampAngle(options.rotation) : 0;
     
     this.image.animations = {};
     
     this.image.frameColumn = 0;
     this.image.frameRow = 0;
     
-    if (typeof animationsArray !== 'undefined') {
-        for (var i = 0; i < animationsArray.length; i++) {
-            if (i == 0 && animationsArray[i].name != "Default") {
-                this.image.animations["Default"] = animationsArray[i];    // Creates a duplicate animation of the first animation called "Default" in addition to the named animation below (unless the animation's name is "Default")
+    if (typeof options.animations !== 'undefined') {
+        for (var i = 0; i < options.animations.length; i++) {
+            if (i == 0 && options.animations[i].name != "Default") {
+                this.image.animations["Default"] = options.animations[i];    // Creates a duplicate animation of the first animation called "Default" in addition to the named animation below (unless the animation's name is "Default")
             }
-            this.image.animations[animationsArray[i].name] = animationsArray[i];
+            this.image.animations[options.animations[i].name] = options.animations[i];
         }
     } else {
         if (this.image != Oversimplified.emptyImage) {
             //If no animations array is included, then just show the whole image
-            this.image.onload = function(){this.animations["Default"] = new Oversimplified.Animation("newAnimation", this.width, this.height)};    // Creates the default animation as the whole image once the image is loaded.
+            this.image.onload = function(){this.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.width, height: this.height});}    // Creates the default animation as the whole image once the image is loaded.
         } else {
-            this.image.animations["Default"] = new Oversimplified.Animation("newAnimation", this.image.width, this.image.height)
+            this.image.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.image.width, height: this.image.height});
         }
     }
     
     this.image.currentAnimation = "Default";
     
-    this.mask = (maskImageSrc) ? new Image() : {};
-    this.mask.src = (maskImageSrc) ? maskImageSrc : "";
+    this.mask = (options.maskImageSrc) ? new Image() : {};
+    this.mask.src = (options.maskImageSrc) ? options.maskImageSrc : "";
     if (this.mask.src == "") {
         this.mask.width = this.image.animations["Default"].width;
         this.mask.height = this.image.animations["Default"].height;
@@ -676,12 +682,19 @@ Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animat
     
     if (this.mask.src != "") {
         this.mask.onload = function(){
-            self.xBound = this.width / 2;
-            self.yBound = this.height / 2;
+            self.xBound = this.width / 2 * self.image.xScale;
+            self.yBound = this.height / 2 * self.image.yScale;
         };
     } else {
-        self.xBound = this.mask.width / 2;
-        self.yBound = this.mask.height / 2;
+        self.xBound = this.mask.width / 2 * self.image.xScale;
+        self.yBound = this.mask.height / 2 * self.image.yScale;
+    }
+
+    // Set any extra properties from Options.
+    for (var property in options) {
+        if (typeof this[property] === 'undefined') {
+            this[property] = options[property];
+        }
     }
     
     this.DoFirst = function () {};
@@ -696,13 +709,13 @@ Oversimplified.GameObject = function (name, x, y, imageSrc, maskImageSrc, animat
     this.DrawAbove = function () {};
 }
 Oversimplified.GameObject.prototype.type = "GameObject";
-Oversimplified.GameObject.prototype.AddAnimation = function (animation, width, height, columns, rows, speed, xOffset, yOffset) {
+Oversimplified.GameObject.prototype.AddAnimation = function (animation, animationWidth, animationHeight, animationOptions) {//columns, rows, speed, xOffset, yOffset) {
     //Takes either an animation or the name of an animation in the Animations namespace and adds it to the object.
-    if (animation.name) {
-        this.image.animations[animation.name] = animation;
+    if (typeof animation.name !== 'undefined') {
+        this.image.animations[animationOptions.name] = animation;
     } else {
         if (typeof Oversimplified.Animations[animation] === 'undefined') {
-            Oversimplified.Animations.Add(animation, width, height, columns, rows, speed, xOffset, yOffset);
+            Oversimplified.Animations.Add(animation, animationWidth, animationHeight, animationOptions);
         }
         this.image.animations[Oversimplified.Animations[animation].name] = Oversimplified.Animations[animation];
     }
@@ -782,6 +795,11 @@ Oversimplified.GameObject.prototype.Update = function () {
     this.screenY = this.y - Oversimplified.camera.y;
 	this.xPrevious = this.x;
 	this.yPrevious = this.y;
+
+    if (!this.doFirstHasRun) {
+        this.DoFirst();
+        this.doFirstHasRun = true;
+    }
     
     this.BeforeDo();
     this.Do();
@@ -998,12 +1016,12 @@ Oversimplified.CollisionAtPoint = function (x, y) {
 
 // Animations Namespace
 Oversimplified.Animations = {};
-Oversimplified.Animations.Add = function (name, width, height, columns, rows, speed, xOffset, yOffset) {
-    if (typeof Oversimplified.Animations[name] === 'undefined') {
-        Oversimplified.Animations[name] = new Oversimplified.Animation(name, width, height, columns, rows, speed, xOffset, yOffset);
-        return Oversimplified.Animations[name];
+Oversimplified.Animations.Add = function (animationName, animationWidth, animationHeight, animationOptions) {
+    if (typeof Oversimplified.Animations[animationName] === 'undefined') {
+        Oversimplified.Animations[animationName] = new Oversimplified.Animation(animationName, animationWidth, animationHeight, animationOptions);
+        return Oversimplified.Animations[animationName];
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("An animation with the name \"" + name + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.log("An animation with the name \"" + animationName + "\" already exists!");
         return false;
     }
 };
@@ -1013,25 +1031,20 @@ Oversimplified.A = Oversimplified.Animations;
 // Animation class (for use with sprite sheets)
 //
 // Prevents animation mess-ups by preventing speeds higher than one with Math.clamp01.
-Oversimplified.Animation = function (name, width, height, columns, rows, speed, xOffset, yOffset) {
+Oversimplified.Animation = function (name, width, height, options) {
     this.id = Oversimplified.nextID++;
-    
-    columns = typeof columns !== 'undefined' ? columns : 1;
-    rows = typeof rows !== 'undefined' ? rows : 1;
-    speed = typeof speed !== 'undefined' ? speed : 1;
-    xOffset = typeof xOffset !== 'undefined' ? xOffset : 0;
-    yOffset = typeof yOffset !== 'undefined' ? yOffset : 0;
-    
-    speed = Math.clamp01(speed);
-    
+
+    //Required Options
     this.name = name;
     this.width = width;
     this.height = height;
-    this.columns = columns;
-    this.rows = rows;
-    this.xOffset = xOffset;
-    this.yOffset = yOffset;
-    this.speed = speed;
+
+    //Optional Options
+    this.columns = typeof options.columns !== 'undefined' ? options.columns : 1;;
+    this.rows = typeof options.rows !== 'undefined' ? options.rows : 1;
+    this.speed = typeof options.speed !== 'undefined' ? Math.clamp01(options.speed) : 1;
+    this.xOffset = typeof options.xOffset !== 'undefined' ? options.xOffset : 0;
+    this.yOffset = typeof options.yOffset !== 'undefined' ? options.yOffset : 0;
 }
 Oversimplified.Animation.prototype.type = "Animation";
 
