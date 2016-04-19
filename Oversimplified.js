@@ -1105,6 +1105,7 @@ Oversimplified.Sound = function (name, source, secondarySource) {
     
     document.getElementById("audio").appendChild(this.audioElement);
     this.audioElement.load();
+    this.element = this.audioElement;
 }
 Oversimplified.Sound.prototype.type = "Sound";
 
@@ -1112,6 +1113,10 @@ Oversimplified.Sound.prototype.Play = function () {
     this.element.currentTime = 0;
     this.element.volume = Oversimplified.Settings.soundVolume;
     this.element.play();
+}
+Oversimplified.Sound.prototype.Stop = function () {
+    this.element.pause();
+    this.element.currentTime = 0;
 }
 Oversimplified.Sound.prototype.IsPlaying = function () {
     return !this.element.paused && !this.element.ended && 0 < this.element.currentTime;
@@ -1147,6 +1152,7 @@ Oversimplified.Tune = function (name, source, secondarySource, duration) {
     
     document.getElementById("audio").appendChild(this.audioElement);
     this.audioElement.load();
+    this.element = this.audioElement;
 }
 Oversimplified.Tune.prototype.type = "Tune";
 
@@ -1155,6 +1161,10 @@ Oversimplified.Tune.prototype.Play = function () {
     this.element.volume = Oversimplified.Settings.musicVolume;
     this.element.loop = true;
     this.element.play();
+}
+Oversimplified.Tune.prototype.Stop = function () {
+    this.element.pause();
+    this.element.currentTime = 0;
 }
 Oversimplified.Tune.prototype.CheckLoop = function () {
     if (this.duration < this.element.duration) {
