@@ -1207,7 +1207,7 @@ Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImage
 newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
 Use "identical" to copy name and id of original object.
 */
-Oversimplified.CopyObject = function (object, newID, newName) {
+Oversimplified.CopyObject = function (object, newID, newName, objectOptions) {
     var resultingCopy = {};
     if (newID != "identical") {
         resultingCopy.id = typeof newID !== 'undefined' ? newID : Oversimplified.nextID++;
@@ -1241,7 +1241,19 @@ Oversimplified.CopyObject = function (object, newID, newName) {
     }
     for (var property in object) {
         if (typeof resultingCopy[property] === 'undefined') {
-            resultingCopy[property] = object[property];
+            if (object[property].slice) {      // If it's an array, copy its values.
+                resultingCopy[property] = object[property].slice();
+            } else {
+                resultingCopy[property] = object[property];
+            }
+        }
+    }
+    for (var option in objectOptions) {
+        //Overwrite any properties.
+        if (object[option].slice) {      // If it's an array, copy its values.
+            resultingCopy[option] = object[option].slice();
+        } else {
+            resultingCopy[option] = objectOptions[option];
         }
     }
     
