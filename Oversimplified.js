@@ -372,9 +372,9 @@ Oversimplified.Rooms = {
 }
 
 // Add a Room to the collection of Rooms
-Oversimplified.Rooms.Add = function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
+Oversimplified.Rooms.Add = function (name, options) {
     if (typeof Oversimplified.Rooms[name] === 'undefined') {
-        Oversimplified.Rooms[name] = new Oversimplified.Room(name, width, height, backgroundSrc, stepSpeed, extraParameters);
+        Oversimplified.Rooms[name] = new Oversimplified.Room(name, options);
         
         return Oversimplified.Rooms[name];
     } else {
@@ -395,36 +395,35 @@ Oversimplified.O = null;
 /* Room Class
 
 name (required) : The unique identifier of the room. Used to locate the room within the Rooms namespace.
-width (optional) : The width of the room. The camera will not travel beyond this to the right. If it is larger than the camera's width and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's width, it will be set to the camera's width. -- default = Oversimplified.camera.width
-height (optional) : The height of the room. The camera will not travel beyond this to the bottom. If it is larger than the camera's height and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's height, it will be set to the camera's height. -- default = Oversimplified.camera.height
-backgroundSrc (optional) : The image that will be displayed as the room's background. If excluded or set to empty string (""), no background will show.
-stepSpeed (optional) : The step speed for the Room. If excluded or set to 0, the default is used. -- default = Oversimplified.Settings.defaultStep
-extraParameters (optional) : An array of extra parameters for the Room. Options include:
-
-"background size" = sets the room size to whatever the backgroundSrc image size is, regardless of what is entered as width and height!
-
-"#FF0000" (any hex color value) = sets the far background color (behind the background image, visible only if transparent or excluded). A JavaScript alternative to setting the HTML5 canvas's background color CSS.
-
-"foreground.png" (path to any .png or .gif file) = sets the foreground image that displays over the background and all objects in the room. Appears below the Room's DrawAbove() function but above any GameObject's DrawAbove() function.
+options (optional) : An object with extra parameters for the Room. Options include:
+    width : The width of the room. The camera will not travel beyond this to the right. If it is larger than the camera's width and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's width, it will be set to the camera's width. -- default = Oversimplified.camera.width
+    height : The height of the room. The camera will not travel beyond this to the bottom. If it is larger than the camera's height and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's height, it will be set to the camera's height. -- default = Oversimplified.camera.height
+    backgroundSrc : The image that will be displayed as the room's background. If excluded or set to empty string (""), no background will show.
+    stepSpeed : The step speed for the Room. If excluded or set to 0, the default is used. -- default = Oversimplified.Settings.defaultStep
+    backgroundSize : Sets the room size to whatever the backgroundSrc image size is, regardless of what is entered as width and height!
+    backgroundColor : Any hex color value. Sets the far background color (behind the background image, visible only if transparent or excluded). A JavaScript alternative to setting the HTML5 canvas's background color CSS.
+    foreground : Path to any image file, though .png or .gif file with transparency is ideal. Sets the foreground image that displays over the background and all objects in the room. Appears below the Room's DrawAbove() function but above any GameObject's DrawAbove() function.
 */
-Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, extraParameters) {
+Oversimplified.Room = function (name, options) {
     this.id = Oversimplified.nextID++;
     var self = this;
     
-    stepSpeed = (typeof stepSpeed !== 'undefined' && stepSpeed > 0) ? stepSpeed : Oversimplified.Settings.defaultStep;
-    extraParameters = typeof extraParameters !== 'undefined' ? extraParameters : [];
-    width = (typeof width !== 'undefined' && width >= Oversimplified.camera.width) ? width : Oversimplified.camera.width;
-    height = (typeof height !== 'undefined' && height >= Oversimplified.camera.height) ? height : Oversimplified.camera.height;
-    
     this.name = name;
-    this.width = width;
-    this.height = height;
+
+    options = typeof options !== 'undefined' ? options : {};
     
-    if (typeof backgroundSrc !== 'undefined' && backgroundSrc != "") {
+    options.width = (typeof options.width !== 'undefined' && options.width >= Oversimplified.camera.width) ? options.width : Oversimplified.camera.width;
+    options.height = (typeof options.height !== 'undefined' && options.height >= Oversimplified.camera.height) ? options.height : Oversimplified.camera.height;
+    options.stepSpeed = (typeof options.stepSpeed !== 'undefined' && options.stepSpeed > 0) ? options.stepSpeed : Oversimplified.Settings.defaultStep;
+    
+    this.width = options.width;
+    this.height = options.height;
+    
+    if (typeof options.backgroundSrc !== 'undefined' && options.backgroundSrc != "") {
         this.background = new Image();
-        this.background.src = backgroundSrc;
+        this.background.src = options.backgroundSrc;
     } else {
-        // If backgroundSrc is excluded or an empty string, instead use Oversimplified.emptyImage instead.
+        // If options.backgroundSrc is excluded or an empty string, instead use Oversimplified.emptyImage instead.
         this.background = Oversimplified.emptyImage;
     }
     this.background.loaded = false;
@@ -432,8 +431,8 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
     if (this.background != Oversimplified.emptyImage) {
         this.background.onload = function () {
             this.loaded = true;
-            // If extraParameters contains "background size", then make room the size of the background image.
-            if (extraParameters.indexOf("background size") != -1) {
+            // If options "backgroundSize" is set to true, then make room the size of the background image.
+            if (options.backgroundSize == true) {
                 self.width = this.width;
                 self.height = this.height;
             }
@@ -441,32 +440,25 @@ Oversimplified.Room = function (name, width, height, backgroundSrc, stepSpeed, e
     }
     
     
-    this.stepSpeed = stepSpeed;
+    this.stepSpeed = options.stepSpeed;
     
     this.objects = {};
     this.O = this.objects;
-    
-    if (extraParameters.length > 0) {
-        for (var p = 0; p < extraParameters.length; p++) {
-            switch (typeof extraParameters[p]) {
-                case "string":
-                    // If the parameter starts with #, then it is a background color hex.
-                    if (extraParameters[p].substring(0,1) == "#") {
-                        self.background.color = extraParameters[p];
-                    } else {
-                        var ext = extraParameters[p].substr(extraParameters[p].length - 4);
-                        if (ext == ".png" || ext == ".gif") {   // If the string is a PNG or GIF, set it as foreground.
-                            self.foreground = new Image();
-                            self.foreground.loaded = false;
-                            self.foreground.src = extraParameters[p];
-                            self.foreground.onload = function () {this.loaded = true;}
-                        }
-                    }
-                    break;
-                // Can be expanded later.
-                default:
-                    break;
-            }
+
+    if (typeof options.backgroundColor !== 'undefined') {
+        self.background.color = options.backgroundColor;
+    }
+    if (typeof options.foreground !== 'undefined') {
+        self.foreground = new Image();
+        self.foreground.loaded = false;
+        self.foreground.src = options.foreground;
+        self.foreground.onload = function () {this.loaded = true;}
+    }
+
+    // Set any extra properties from Options.
+    for (var property in options) {
+        if (typeof this[property] === 'undefined') {
+            this[property] = options[property];
         }
     }
     
@@ -487,7 +479,7 @@ Oversimplified.Room.prototype.type = "Room";
 Oversimplified.Room.prototype.Start = function () {
     this.DoFirst();
     
-    if (this.name === Oversimplified.R.currentRoom) {
+    if (this.name === Oversimplified.Rooms.currentRoom) {
         for (var object in this.objects) {
             this.objects[object].Start();
         }
@@ -499,7 +491,7 @@ Oversimplified.Room.prototype.Update = function () {
     }
     
     this.drawOrder = [];        //Determine draw order every frame
-    for (object in this.objects) {
+    for (var object in this.objects) {
         if (this.objects[object].type == 'GameObject') {
             if (this.drawOrder.length <= 0) {    //If this is the first object checked,
                 this.drawOrder = [object];        //Add it to the array
@@ -522,7 +514,7 @@ Oversimplified.Room.prototype.Update = function () {
     
     this.Do();
     
-    if (this.name === Oversimplified.R.currentRoom) {
+    if (this.name === Oversimplified.Rooms.currentRoom) {
         for (var object in this.objects) {
             this.objects[object].Update();
         }
@@ -536,7 +528,7 @@ Oversimplified.Room.prototype.End = function () {
 Oversimplified.Room.prototype.Draw = function () {
     var self = this;
     //Always draw background first if there is one
-    if (typeof this.background.color !== "undefined") {
+    if (typeof this.background.color !== 'undefined') {
         var tmp = Oversimplified.context.fillStyle;
         Oversimplified.context.fillStyle = this.background.color;
         Oversimplified.context.fillRect(0, 0, Oversimplified.camera.width, Oversimplified.camera.height);
@@ -548,16 +540,16 @@ Oversimplified.Room.prototype.Draw = function () {
     
     this.DrawBelow();    //Draw this before any objects are drawn
     
-    if (this.name === Oversimplified.R.currentRoom) {
+    // if (this.name === Oversimplified.Rooms.currentRoom) {
         for (var i = 0; i < this.drawOrder.length; i++) {
             if (typeof this.objects[this.drawOrder[i]] !== 'undefined') {
                 this.objects[this.drawOrder[i]].Draw();
             }
         }
-    }
+    // }
     
     // If there is a foreground, draw it.
-    if (typeof this.foreground !== "undefined") {
+    if (typeof this.foreground !== 'undefined') {
         if (this.foreground.loaded) {
             Oversimplified.context.drawImage(self.foreground, Oversimplified.camera.x, Oversimplified.camera.y, Oversimplified.camera.width, Oversimplified.camera.height, 0, 0, self.foreground.width, self.foreground.height);
         }
@@ -591,15 +583,15 @@ Oversimplified.Room.prototype.AddObject = function (newObjectName, x, y, imageSr
 // Change to the specified room.
 // Runs the current Room's End() function, changes the room, and runs the specified Room's Start() function.
 Oversimplified.SetRoom = function (room) {
-    if (typeof Oversimplified.R[Oversimplified.R.currentRoom] !== 'undefined') {
-        Oversimplified.R[Oversimplified.R.currentRoom].End();
+    if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoom] !== 'undefined') {
+        Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].End();
     }
     
-    Oversimplified.R.currentRoom = room.name;
-    Oversimplified.O = Oversimplified.Rooms[Oversimplified.R.currentRoom].objects;    //Update the Oversimplified.O alias when room changes
+    Oversimplified.Rooms.currentRoom = room.name;
+    Oversimplified.O = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects;    //Update the Oversimplified.O alias when room changes
     Oversimplified.camera.following = "";
     
-    Oversimplified.R[Oversimplified.R.currentRoom].Start();
+    Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].Start();
 }
 
 // PremadeObjects (Prefab) Namespace
