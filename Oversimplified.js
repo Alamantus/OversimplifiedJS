@@ -1177,10 +1177,10 @@ Oversimplified.Sound = function (name, sourcesObject) {
     // Alias for this.audioElement
     this.element = this.audioElement;
     
-    for (var source in this.source) {
-        if (source !== false) {
+    for (var type in this.source) {
+        if (type !== false) {
             var audioSource = document.createElement("source");
-            audioSource.src = source;
+            audioSource.src = this.source[type];
             this.audioElement.appendChild(audioSource);
         }
     }
@@ -1226,10 +1226,10 @@ Oversimplified.Tune = function (name, tuneOptions) {
     // Alias for this.audioElement
     this.element = this.audioElement;
     
-    for (var source in this.source) {
-        if (source !== false) {
+    for (var type in this.source) {
+        if (type !== false) {
             var audioSource = document.createElement("source");
-            audioSource.src = source;
+            audioSource.src = this.source[type];
             this.audioElement.appendChild(audioSource);
         }
     }
