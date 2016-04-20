@@ -560,23 +560,23 @@ Oversimplified.Room.prototype.Draw = function () {
 }
 
 // Add a GameObject or PremadeObject to the room.
-Oversimplified.Room.prototype.AddObject = function (newObjectName, newObjectOptions) {
-    newObjectOptions = (typeof newObjectOptions !== 'undefined') ? newObjectOptions : {};
+Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptions) {
+    objectOptions = (typeof objectOptions !== 'undefined') ? objectOptions : {};
     var self = this;
     
-    if (newObjectName.type == "GameObject") {    //Create from prefabricated object
-        self.objects[newName] = Oversimplified.CopyObject(newObjectName, newObjectOptions);
+    if (objectOrNewName.type == "GameObject") {    //Create from prefabricated object
+        self.objects[newName] = Oversimplified.CopyObject(objectOrNewName, objectOptions);
         
         return self.objects[newName];
     }
     else {
-        if (self.objects[newObjectName]) {
-            if (Oversimplified.DEBUG.showMessages) console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
+        if (self.objects[objectOrNewName]) {
+            if (Oversimplified.DEBUG.showMessages) console.log("Object with name \"" + objectOrNewName + "\" already exists in current room!");
             return false;
         }
-        self.objects[newObjectName] = new Oversimplified.GameObject(newObjectName, newObjectOptions);
+        self.objects[objectOrNewName] = new Oversimplified.GameObject(objectOrNewName, objectOptions);
         
-        return self.objects[newObjectName];
+        return self.objects[objectOrNewName];
     }
 }
 
@@ -632,8 +632,8 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
     this.persistent = typeof options.persistent !== 'undefined' ? options.persistent : false;
     this.x = typeof options.x !== 'undefined' ? options.x : -1;
     this.y = typeof options.y !== 'undefined' ? options.y : -1;
-	this.xPrevious = this.x;
-	this.yPrevious = this.y;
+    this.xPrevious = this.x;
+    this.yPrevious = this.y;
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
     
@@ -792,8 +792,8 @@ Oversimplified.GameObject.prototype.Start = function () {
 Oversimplified.GameObject.prototype.Update = function () {
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
-	this.xPrevious = this.x;
-	this.yPrevious = this.y;
+    this.xPrevious = this.x;
+    this.yPrevious = this.y;
 
     if (!this.doFirstHasRun) {
         this.DoFirst();
@@ -894,20 +894,20 @@ Oversimplified.GameObject.prototype.IsOverlapping = function (doSimple) {
 //
 // Accepts true, false, or no value.
 Oversimplified.GameObject.prototype.IfOverlappingThenMove = function (doSimple) {
-	var overlappingObject = this.IsOverlapping(doSimple);
-	
-	if (overlappingObject != false) {
-		if (this.x < overlappingObject.x)
+    var overlappingObject = this.IsOverlapping(doSimple);
+    
+    if (overlappingObject != false) {
+        if (this.x < overlappingObject.x)
             this.x--;
-		if (this.x >= overlappingObject.x)
+        if (this.x >= overlappingObject.x)
             this.x++;
-		if (this.y < overlappingObject.y)
+        if (this.y < overlappingObject.y)
             this.y--;
-		if (this.y >= overlappingObject.y)
+        if (this.y >= overlappingObject.y)
             this.y++;
 
         return true;
-	} else {
+    } else {
         return false;
     }
 }
@@ -915,7 +915,7 @@ Oversimplified.GameObject.prototype.IfOverlappingThenMove = function (doSimple) 
 // Prevents the object from moving outside of the room's boundaries.
 Oversimplified.GameObject.prototype.KeepInsideRoom = function () {
     var currentRoom = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom]
-	if (this.x < this.xBound || this.x > currentRoom.width - this.xBound)
+    if (this.x < this.xBound || this.x > currentRoom.width - this.xBound)
     {
         this.x = this.xPrevious;
     }
@@ -1068,7 +1068,7 @@ Oversimplified.GUIs.Add = function (guiName, guiOptions) {
         Oversimplified.GUIs[guiName] = new Oversimplified.Animation(guiName, guiOptions);
         return Oversimplified.GUIs[guiName];
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("An GUI with the name \"" + guiName + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.log("A GUI with the name \"" + guiName + "\" already exists!");
         return false;
     }
 }
@@ -1120,11 +1120,7 @@ Oversimplified.Effects = {
 
 // Aliases for Sounds and Tunes
 Oversimplified.Effects.S = Oversimplified.Effects.Sounds;
-Oversimplified.Effects.T = Oversimplified.Effects.Tunes;
-
-// Alias for "Tunes" in case it's too hard to remember.
-Oversimplified.Effects.Music = Oversimplified.Effects.Tunes;
-Oversimplified.Effects.M = Oversimplified.Effects.Tunes;
+Oversimplified.Effects.T = Oversimplified.Effects.Music = Oversimplified.Effects.M = Oversimplified.Effects.Tunes;
 
 // Alias for Effects
 Oversimplified.E = Oversimplified.Effects;
@@ -1138,6 +1134,7 @@ Oversimplified.Effects.AddSound = function (soundName, soundSources) {
         return false;
     }
 }
+Oversimplified.Effects.NewSound = Oversimplified.Effects.AddSound;
 
 Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
     if (typeof Oversimplified.Effects.Tunes[tuneName] === 'undefined') {
@@ -1148,7 +1145,7 @@ Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
         return false;
     }
 }
-Oversimplified.Effects.AddMusic = Oversimplified.Effects.AddTune;
+Oversimplified.Effects.AddMusic = Oversimplified.Effects.NewTune = Oversimplified.Effects.NewMusic = Oversimplified.Effects.AddTune;
 
 Oversimplified.Effects.Tunes.CheckLoops = function () {
     for (var tune in Oversimplified.Effects.Tunes) {
@@ -1264,9 +1261,6 @@ Oversimplified.Tune.prototype.IsPlaying = function () {
 }
 
 /* Copy a GameObject
-
-newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
-Use "identical" to copy name and id of original object.
 */
 Oversimplified.CopyObject = function (object, objectOptions) {
     var resultingCopy = {};
