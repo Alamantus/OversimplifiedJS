@@ -565,9 +565,7 @@ Oversimplified.Room.prototype.AddObject = function (newObjectName, newObjectOpti
     var self = this;
     
     if (newObjectName.type == "GameObject") {    //Create from prefabricated object
-        var newID = Oversimplified.nextID++;
-        var newName = newObjectName.name + newID.toString();
-        self.objects[newName] = Oversimplified.CopyObject(newObjectName, newID, newName, newObjectOptions);
+        self.objects[newName] = Oversimplified.CopyObject(newObjectName, newObjectOptions);
         
         return self.objects[newName];
     }
@@ -1265,48 +1263,19 @@ Oversimplified.Tune.prototype.IsPlaying = function () {
     return !this.element.paused && !this.element.ended && 0 < this.element.currentTime;
 }
 
-// Create a new GameObject inside the current Room and return it.
-Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
-    if (newObjectName.type == "GameObject") {    //Create from prefabricated object
-        var newID = Oversimplified.nextID++;
-        var newName = newObjectName.name + newID.toString();
-        Oversimplified.O[newName] = Oversimplified.CopyObject(newObjectName, newID, newName);
-        
-        Oversimplified.O[newName].x = x;
-        Oversimplified.O[newName].y = y;
-        
-        return Oversimplified.O[newName];
-    }
-    else {
-        if (Oversimplified.O[newObjectName]) {
-            if (Oversimplified.DEBUG.showMessages) console.log("Object with name \"" + newObjectName + "\" already exists in current room!");
-            return false;
-        }
-        Oversimplified.O[newObjectName] = new Oversimplified.GameObject(newObjectName, x, y, imageSrc, maskImageSrc, animationsArray);
-    }
-    
-    Oversimplified.O[newObjectName].Start();
-    
-    return Oversimplified.O[newObjectName];
-}
-
 /* Copy a GameObject
 
 newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
 Use "identical" to copy name and id of original object.
 */
-Oversimplified.CopyObject = function (object, newID, newName, objectOptions) {
+Oversimplified.CopyObject = function (object, objectOptions) {
     var resultingCopy = {};
-    if (newID != "identical") {
-        resultingCopy.id = typeof newID !== 'undefined' ? newID : Oversimplified.nextID++;
-        resultingCopy.name = typeof newName !== 'undefined' ? newName : object.name + resultingCopy.id.toString();
-    } else {    //If second argument is "identical" with quotes, then copy id and name, too.
-        resultingCopy.id = object.id;
-        resultingCopy.name = object.name;
-    }
+
     //Copy Oversimplified.GameObject-unique properties
     if (object.type == 'GameObject') {
         resultingCopy.self = resultingCopy;
+        resultingCopy.id = Oversimplified.nextID++;
+        resultingCopy.name = object.name + resultingCopy.id.toString();
         resultingCopy.image = new Image();
         resultingCopy.image.src = object.image.src;
         resultingCopy.image.xScale = object.image.xScale;
@@ -1342,45 +1311,6 @@ Oversimplified.CopyObject = function (object, newID, newName, objectOptions) {
             resultingCopy[option] = object[option].slice();
         } else {
             resultingCopy[option] = objectOptions[option];
-        }
-    }
-    
-    return resultingCopy;
-}
-
-/* Copy any class (needs expanding)
-
-newID and newName are optional. If excluded, they are auto-populated with the next id value and the original object's name.
-Use "identical" to copy the id and name of the original object.
-*/
-Oversimplified.Copy = function (object, newID, newName) {
-    var resultingCopy = {};
-    if (newID != "identical") {
-        resultingCopy.id = typeof newID !== 'undefined' ? newID : Oversimplified.nextID++;
-        resultingCopy.name = typeof newName !== 'undefined' ? newName : object.name + resultingCopy.id.toString();
-    } else {    //If second argument is "identical" with quotes, then copy id and name, too.
-        resultingCopy.id = object.id;
-        resultingCopy.name = object.name;
-    }
-    //Copy Oversimplified.GameObject-unique properties
-    if (object.type == 'GameObject') {
-        resultingCopy = Oversimplified.CopyObject(object, newID, newName);
-    }
-    if (object.type == 'Room') {
-        /* resultingCopy.background = new Image();
-        resultingCopy.background.loaded = false;
-        resultingCopy.background.src = object.background.src;
-        resultingCopy.background.onload = function () {
-                resultingCopy.loaded = true;
-            } */
-        resultingCopy.objects = {};
-        for (var subObject in object.objects) {
-            resultingCopy.objects[subObject] = Oversimplified.Copy(object.objects[subObject]);
-        }
-    }
-    for (var property in object) {
-        if (typeof resultingCopy[property] === 'undefined') {
-            resultingCopy[property] = object[property];
         }
     }
     
