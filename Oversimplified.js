@@ -565,9 +565,13 @@ Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptio
     var self = this;
     
     if (objectOrNewName.type == "GameObject") {    //Create from prefabricated object
-        self.objects[newName] = Oversimplified.CopyObject(objectOrNewName, objectOptions);
+        // Overwrite manual id or name, if entered.
+        objectOptions.id = Oversimplified.nextID++;
+        objectOptions.name = objectOrNewName.name + objectOptions.id.toString();
+        // console.log(objectOptions.name);
+        self.objects[objectOptions.name] = Oversimplified.CopyObject(objectOrNewName, objectOptions);
         
-        return self.objects[newName];
+        return self.objects[objectOptions.name];
     }
     else {
         if (self.objects[objectOrNewName]) {
@@ -1268,8 +1272,6 @@ Oversimplified.CopyObject = function (object, objectOptions) {
     //Copy Oversimplified.GameObject-unique properties
     if (object.type == 'GameObject') {
         resultingCopy.self = resultingCopy;
-        resultingCopy.id = Oversimplified.nextID++;
-        resultingCopy.name = object.name + resultingCopy.id.toString();
         resultingCopy.image = new Image();
         resultingCopy.image.src = object.image.src;
         resultingCopy.image.xScale = object.image.xScale;
@@ -1300,13 +1302,17 @@ Oversimplified.CopyObject = function (object, objectOptions) {
         }
     }
     for (var option in objectOptions) {
-        //Overwrite any properties.
-        if (object[option].slice) {      // If it's an array, copy its values.
-            resultingCopy[option] = object[option].slice();
+        //Overwrite any extra properties specified in objectOptions.
+        if (objectOptions[option].slice) {      // If it's an array, copy its values.
+            resultingCopy[option] = objectOptions[option].slice();
         } else {
             resultingCopy[option] = objectOptions[option];
         }
     }
+
+    // If id and name were not specified in the objectOptions and are therefore not set, set them!
+    if (typeof resultingCopy.id === 'undefined') resultingCopy.id = Oversimplified.nextID++;
+    if (typeof resultingCopy.name === 'undefined') resultingCopy.name = object.name + resultingCopy.id.toString();
     
     return resultingCopy;
 }
