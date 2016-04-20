@@ -1116,9 +1116,41 @@ Oversimplified.GUI.prototype.AddElement = function (options) {
 /*  Effects namespace
 */
 Oversimplified.Effects = {
-    Sounds: [],
-    Tunes: [],
+    Sounds: {},
+    Tunes: {}
 }
+
+// Aliases for Sounds and Tunes
+Oversimplified.Effects.S = Oversimplified.Effects.Sounds;
+Oversimplified.Effects.T = Oversimplified.Effects.Tunes;
+
+// Alias for "Tunes" in case it's too hard to remember.
+Oversimplified.Effects.Music = Oversimplified.Effects.Tunes;
+Oversimplified.Effects.M = Oversimplified.Effects.Tunes;
+
+// Alias for Effects
+Oversimplified.E = Oversimplified.Effects;
+
+Oversimplified.Effects.AddSound = function (soundName, soundSources) {
+    if (typeof Oversimplified.Effects.Sounds[soundName] === 'undefined') {
+        Oversimplified.Effects.Sounds[soundName] = new Oversimplified.Sound(soundName, soundSources);
+        return Oversimplified.Effects.Sounds[soundName];
+    } else {
+        if (Oversimplified.DEBUG.showMessages) console.log("A Sound with the name \"" + soundName + "\" already exists!");
+        return false;
+    }
+}
+
+Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
+    if (typeof Oversimplified.Effects.Tunes[tuneName] === 'undefined') {
+        Oversimplified.Effects.Tunes[tuneName] = new Oversimplified.Sound(tuneName, tuneSources);
+        return Oversimplified.Effects.Tunes[tuneName];
+    } else {
+        if (Oversimplified.DEBUG.showMessages) console.log("A Tune with the name \"" + tuneName + "\" already exists!");
+        return false;
+    }
+}
+Oversimplified.Effects.AddMusic = Oversimplified.Effects.AddTune;
 
 Oversimplified.Effects.Tunes.CheckLoops = function () {
     for (var tune in Oversimplified.Effects.Tunes) {
@@ -1133,30 +1165,33 @@ Oversimplified.Effects.Tunes.CheckLoops = function () {
     Plays a sound effect once.    
     Preferably source should be a .wav file and secondarySource should be a .mp3 file.
 */
-Oversimplified.Sound = function (name, source, secondarySource) {
+Oversimplified.Sound = function (name, sourcesObject) {
     this.id = Oversimplified.nextID++;
     
-    secondarySource = typeof secondarySource !== 'undefined' ? secondarySource : false;
+    sourcesObject = typeof sourcesObject !== 'undefined' ? sourcesObject : {};
     
     this.name = name;
-    this.source = source;
-    this.secondarySource = secondarySource;
+    this.source = {
+        mp3: (typeof sourcesObject.mp3 !== 'undefined' && sourcesObject.mp3.length > 0) ? sourcesObject.mp3 : false,
+        wav: (typeof sourcesObject.wav !== 'undefined' && sourcesObject.wav.length > 0) ? sourcesObject.wav : false,
+        ogg: (typeof sourcesObject.ogg !== 'undefined' && sourcesObject.ogg.length > 0) ? sourcesObject.ogg : false
+    };
     
     this.audioElement = document.createElement("audio");
     this.audioElement.id = this.name + this.id.toString();
+    // Alias for this.audioElement
+    this.element = this.audioElement;
     
-    var audioSource = document.createElement("source");
-    audioSource.src = this.source;
-    this.audioElement.appendChild(audioSource);
-    
-    if (this.secondarySource != false) {
-        audioSource.src = this.secondarySource;
-        this.audioElement.appendChild(audioSource);
+    for (var source in this.source) {
+        if (source !== false) {
+            var audioSource = document.createElement("source");
+            audioSource.src = source;
+            this.audioElement.appendChild(audioSource);
+        }
     }
     
     document.getElementById("audio").appendChild(this.audioElement);
     this.audioElement.load();
-    this.element = this.audioElement;
 }
 Oversimplified.Sound.prototype.type = "Sound";
 
@@ -1178,32 +1213,34 @@ Oversimplified.Sound.prototype.IsPlaying = function () {
     Preferably source should be a .mp3 file and secondarySource should be a .ogg file.    
     If duration is specified, loop when duration is reached.
 */
-Oversimplified.Tune = function (name, source, secondarySource, duration) {
+Oversimplified.Tune = function (name, tuneOptions) {
     this.id = Oversimplified.nextID++;
     
-    secondarySource = typeof secondarySource !== 'undefined' ? secondarySource : false;
-    duration = typeof duration !== 'undefined' ? duration : false;
+    tuneOptions = (typeof tuneOptions !== 'undefined') ? tuneOptions : {};
     
     this.name = name;
-    this.source = source;
-    this.secondarySource = secondarySource;
-    this.duration = duration;
+    this.source = {
+        mp3: (typeof tuneOptions.mp3 !== 'undefined' && tuneOptions.mp3.length > 0) ? tuneOptions.mp3 : false,
+        wav: (typeof tuneOptions.wav !== 'undefined' && tuneOptions.wav.length > 0) ? tuneOptions.wav : false,
+        ogg: (typeof tuneOptions.ogg !== 'undefined' && tuneOptions.ogg.length > 0) ? tuneOptions.ogg : false
+    };
+    this.duration = (typeof tuneOptions.duration !== 'undefined') ? tuneOptions.duration : false;
     
     this.audioElement = document.createElement("audio");
     this.audioElement.id = this.name + this.id.toString();
+    // Alias for this.audioElement
+    this.element = this.audioElement;
     
-    var audioSource = document.createElement("source");
-    audioSource.src = this.source;
-    this.audioElement.appendChild(audioSource);
-    
-    if (this.secondarySource != false) {
-        audioSource.src = this.secondarySource;
-        this.audioElement.appendChild(audioSource);
+    for (var source in this.source) {
+        if (source !== false) {
+            var audioSource = document.createElement("source");
+            audioSource.src = source;
+            this.audioElement.appendChild(audioSource);
+        }
     }
     
     document.getElementById("audio").appendChild(this.audioElement);
     this.audioElement.load();
-    this.element = this.audioElement;
 }
 Oversimplified.Tune.prototype.type = "Tune";
 
@@ -1227,17 +1264,6 @@ Oversimplified.Tune.prototype.CheckLoop = function () {
 Oversimplified.Tune.prototype.IsPlaying = function () {
     return !this.element.paused && !this.element.ended && 0 < this.element.currentTime;
 }
-
-// Aliases for Sounds and Tunes
-Oversimplified.Effects.S = Oversimplified.Effects.Sounds;
-Oversimplified.Effects.T = Oversimplified.Effects.Tunes;
-
-// Alias for "Tunes" in case it's too hard to remember.
-Oversimplified.Effects.Music = Oversimplified.Effects.Tunes;
-Oversimplified.Effects.M = Oversimplified.Effects.Tunes;
-
-// Alias for Effects
-Oversimplified.E = Oversimplified.Effects;
 
 // Create a new GameObject inside the current Room and return it.
 Oversimplified.CreateObject = function (newObjectName, x, y, imageSrc, maskImageSrc, animationsArray) {
