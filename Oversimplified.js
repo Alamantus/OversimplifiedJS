@@ -308,9 +308,9 @@ Oversimplified.Control = function (keycode) {
     this.keyCode = keycode;
     this.keyName = Oversimplified.Key[keycode];
     
-    this.down = false;
+    this.down = this.pressed = false;
     this.held = false;
-    this.up = false;
+    this.up = this.released = false;
 }
 Oversimplified.Control.prototype.type = "Control";
 Oversimplified.Control.prototype.Check = function () {
@@ -320,14 +320,14 @@ Oversimplified.Control.prototype.Check = function () {
         this.held = false;
     }
     if (Oversimplified.pressedKeys.indexOf(this.keyCode) != -1) {
-        this.down = true;
+        this.down = this.pressed = true;
     } else {
-        this.down = false;
+        this.down = this.pressed = false;
     }
     if (Oversimplified.releasedKeys.indexOf(this.keyCode) != -1) {
-        this.up = true;
+        this.up = this.released = true;
     } else {
-        this.up = false;
+        this.up = this.released = false;
     }
 }
 
@@ -582,6 +582,11 @@ Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptio
         
         return self.objects[objectOrNewName];
     }
+}
+
+// Create an object in the current room.
+Oversimplified.Create = function (objectOrNewName, objectOptions) {
+    return Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].AddObject(objectOrNewName, objectOptions);
 }
 
 // Change to the specified room.
