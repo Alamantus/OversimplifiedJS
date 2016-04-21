@@ -100,7 +100,8 @@ var ani_idle = OS.Animations.Add("Idle", spriteWidth, spriteHeight, {
 	xOffset: xOffsetOnSheet,
 	yOffset: yOffsetOnSheet
 });
-var ani_walkLeft = OS.Animations.New("Walk Left", spriteWidth, spriteHeight, {	// OS.C.New is an alias of OS.C.Add and can be used if you prefer.
+// OS.A.New is an alias of OS.A.Add and can be used if you prefer.
+var ani_walkLeft = OS.Animations.New("Walk Left", spriteWidth, spriteHeight, {
 	columns: numberOfColumns,
 	xOffset: xOffsetOnSheet
 });
@@ -142,6 +143,7 @@ player.Do = function () {		//Due to JavaScript's syntax, you MUST either create 
 ```
 If you're not experienced with game development, heed this warning: you'll mostly want to use `Do()` for things like checking controls and events rather than say creating objects or writing to the console. There are lots of other object functions that you can create and access that perform differently and at different times, like `BeforeDo()` and `DoLast()`, but those will be covered in the wiki once it is built. Until then, you'll have to dig in the source to find it all. :)
 
+#### PremadeObjects (a.k.a. Prefabs)
 The last thing you need to know about are `OS.PremadeObjects` (or `OS.Prefabs`). You can create a PremadeObject that can then be used to easily add to Rooms or be created after the Room has been running for a while. To do this, you would create an object in the `OS.PremadeObjects` namespace instead of directly in the room first. PremadeObjects live in the `OS.PremadeObjects` namespace (aliased with either `OS.Prefabs` or `OS.P`) and can be created using the `OS.PremadeObjects.Add()` syntax:  
 ```javascript
 var bulletPrefab = PremadeObjects.Add("Bullet", {
@@ -191,9 +193,9 @@ Planned Additions
 Things I'm planning to add to OversimplifiedJS at some point in the future include (in no particular order):
 * Grouped bounding boxes for complex collisions
 * Sample Modules
-* ~Sound and Music classes~ Added in Version 0.8 within the `OS.Effects` namespace: `OS.Effects.AddSound()` and `OS.Effects.AddTune()`.
+* ~~Sound and Music classes~~ Added in Version 0.8 within the `OS.Effects` namespace: `OS.Effects.AddSound()` and `OS.Effects.AddTune()`.
 * ~~Touch controls~~ Added in Version 0.62&mdash;touches emulate mouse buttons (1 finger = left mouse, 2 fingers = right mouse, 3 fingers = middle mouse)
-* ~Easy-access Settings adjustments~ Added in Version 0.8 with more options probably coming.
+* ~~Easy-access Settings adjustments~~ Added in Version 0.8 with more options probably coming.
 * ~~Maybe scale the canvas and its contents if the window can't fit it.~~ Because of HTML5 canvas' AA, this would not be ideal.
 * ~~`Axis` control class that returns positive, negative, or 0 based on a set of 2 keys~~ Added in Version 0.6
 * ~~`AddAnimation()` function for easily adding Animations to GameObjects after creation.~~ Added in Version 0.6
