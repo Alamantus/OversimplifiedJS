@@ -10,8 +10,10 @@ You'll need to get the `index.html`, `Oversimplified.js` _(or Oversimplified.min
 
 Once you have your directory ready, you begin by editing the `start.js` file. When you open the file, you'll find nothing but a sad, empty `function start() {}`. As its name implies, however, this is the function where everything starts! It's the first function called even before the first frame of your game, and it is required in order for OversimplifiedJS to work, so always have a `start.js` file with a start function in it in the same directory as your index! _(Note, you can edit the `Oversimplified.js` file to change this expected location, but I'd recommend only doing that if you know how to read JavaScript well enough to not accidentally break something.)_
 
+### Set Things Up
 To start making your game, you'll want to make sure all the settings are in order (i.e. step speed, camera settings, controls, etc.). The `OS.Settings` namespace (aliased by `OS.S`) contains several useful elements like `OS.S.defaultStep`, `OS.S.preventRightClick`, and audio volume settings. The default step speed is `1/30`, which is to say 30 frames per second _(or more accurately, one thirtieth of a second passes per frame)_. If you want to change this, just access the `OS.Settings.defaultStep` variable and set it to your preferred default step speed. (Note: you can also set step speed per room, as you will see below.) Information about all of the options within `OS.Settings` can be found on the [Settings](https://github.com/Alamantus/OversimplifiedJS/wiki/Settings) page in the wiki.
 
+#### The Camera
 The camera size determines the size of the canvas on the page and is set to `640x480` by default. You can change this by using the `OS.SetCamera()` function:  
 ```javascript
 // All of the options in the object below are optional and default to the values presented.
@@ -27,6 +29,7 @@ OS.SetCamera({
 ```  
 You can learn about all of `OS.camera`'s properties and behaviors on the [Camera](https://github.com/Alamantus/OversimplifiedJS/wiki/Camera) page in the wiki.
 
+#### Controls
 Finally, you'll want to set up controls to use. Controls live in the `OS.Controls` namespace, which has a convenient alias `OS.C` that you can use instead, and are created using the `OS.Controls.Add()` function and the values in `OS.Keycode`. There are two kinds of controls in OversimplifiedJS: `OS.Control` and `OS.Axis`. A `OS.Control` checks for just one key to be pressed and provides data like `pressed`, `held`, and `released`, while an `OS.Axis` checks 2 keys as "directions" and returns `-1`, `0`, or `1` depending on which direction is pressed.
 
 Here is an example of how these could each be useful:  
@@ -41,7 +44,11 @@ var ax_vertical = OS.C.New("Vertical", OS.Keycode.down, OS.Keycode.up);
 ```  
 You can find all of the keycode shortcuts on the [Keycodes](https://github.com/Alamantus/OversimplifiedJS-Engine/wiki/Keycodes) page in the wiki. And all of the information you could possibly need to know about Controls are on the [Controls](https://github.com/Alamantus/OversimplifiedJS-Engine/wiki/Controls) page in the wiki.
 
-Next you'll want to create a room. You create rooms in the `OS.Rooms` namespace (which has a convenient alias `OS.R`). The first room that Oversimplifed expects is called "Default", but you can create that room and access it with a variable like this.  
+### Make a Space
+Next you'll want to create a room.
+
+#### Rooms
+You create rooms in the `OS.Rooms` namespace (which has a convenient alias `OS.R`). The first room that Oversimplifed expects is called "Default", but you can create that room and access it with a variable like this.  
 ```javascript
 var rm_FirstRoom = OS.R.Add("Default", {
 	width: 640,		// The width of the room. Can be bigger than the camera's width.
@@ -54,7 +61,11 @@ var rm_FirstRoom = OS.R.Add("Default", {
 ```  
 To make things a little bit simpler, all of the arguments (except for the name) are optional! If you leave out the options (i.e. `R.Add("Room Name");`), it defaults to the camera's size and prevents camera movement. If you leave out the path to the backgroundSrc or a backgroundColor, then it doesn't draw a background and becomes transparent, showing the background of either the canvas or the page (specified through CSS). If you leave out the step speed, then it uses the `OS.Settings.defaultStep` value.
 
-Last, you'll want to add objects to the room. Each Room you create holds its own objects in its `OS.Room.objects` property (accessible from `OS.R["Room Name"].objects` or `rm_FirstRoom.objects` if using a variable like the above example), so to add an object to a Room at the start of the game (so those objects will be there when the room is on screen), you'll use the `OS.Room.AddObject()` function or `OS.Create()` to add to the current room. How you created your room determines how you'll use this function. For example:  
+### Fill the Space
+Last, you'll want to add objects to the room.
+
+#### GameObjects
+Each Room you create holds its own objects in its `OS.Room.objects` property (accessible from `OS.R["Room Name"].objects` or `rm_FirstRoom.objects` if using a variable like the above example), so to add an object to a Room at the start of the game (so those objects will be there when the room is on screen), you'll use the `OS.Room.AddObject()` function or `OS.Create()` to add to the current room. How you created your room determines how you'll use this function. For example:  
 ```javascript
 //If you created a room and set a variable reference...
 var rm_MainRoom = OS.R.Add("Default");
@@ -77,7 +88,9 @@ var enemy = OS.R["Another Room"].AddObject("Enemy", {
 	animations: [array, of, animations]
 });
 ```  
-In the above example, `imageSrc` specifies the sprite sheet you want to use for that object at "path/to/image.png". This is explained below with `OS.Animations`. `maskImageSrc` specifies an image whose size is used as reference for the object's bounding box and lives at "path/to/mask.png". If you exclude this option, it will use the size of the default Animation.  
+In the above example, `imageSrc` specifies the sprite sheet you want to use for that object at "path/to/image.png". This is explained below with `OS.Animations`. `maskImageSrc` specifies an image whose size is used as reference for the object's bounding box and lives at "path/to/mask.png". If you exclude this option, it will use the size of the default Animation.
+
+#### Animations
 `animations` above refers to an array of the last kind of thing you need for your game: Animations. Animations live in the `OS.Animations` namespace (which can be accessed using the alias `OS.A`. Hopefully you've seen the pattern with the namespaces by now.) and can be created by, you guessed it, the `OS.Animations.Add()` syntax. You'll want to create your animations before you create your objects so you can actually access them. For example:  
 ```javascript
 var ani_idle = OS.Animations.Add("Idle", spriteWidth, spriteHeight, {
@@ -120,6 +133,7 @@ if (ct_jump.pressed) {
 ```  
 Note the last instance uses this JavaScript syntax: `Object["property"]`. This is how you access things with spaces in their names, rather than using `Object.property`.
 
+### Get Things Working
 Once you've got your animations and objects set up in your room, you're ready to start setting the objects' actions! To do or check something every frame, use the `OS.GameObject.Do()` function:
 ```javascript
 player.Do = function () {		//Due to JavaScript's syntax, you MUST either create your function ahead of time OR use this function() {} syntax to set your object's Do().
