@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Lowrez-jam-2016 by AlamantusGameDev</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <script src="Oversimplified.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <p style="color:orange;"><i>You may need to refresh the page a couple of times to get all the assets to load.</i><br>
+    <strong>Read the instructions below for controls!</strong></p>
+    <canvas style="border:solid 1px black;" id="game">
+    Your browser is really old, dude - no canvas support! Update this thing!
+    </canvas>
+    <div id="audio"></div>
+
+    <h2>About</h2>
+
+    <p>This page contains the in-dev version of the game, and the most recent stable version will be <a href="https://alamantus-gamedev.itch.io/trade-winds">on Itch.io</a>.</p>
+
+    <h2>Controls</h2>
+
+    <strong>In-Game Controls</strong>
+    <ul>
+    <li>Turn Left: <code>←</code> or <code>A</code>
+    </li>
+    <li>Turn Right: <code>→</code> or <code>D</code>
+    </li>
+    <li>Increase Speed: <code>↑</code> or <code>W</code>
+    </li>
+    <li>Decrease Speed: <code>↓</code> or <code>S</code>
+    </li>
+    <li>Open/Close Storage Screen: <code>X</code> or <code>Shift</code>
+    </li>
+    <li>Interact with Island: <code>Z</code> or <code>Space</code>
+    </li>
+    <li>Show Map: <code>M</code>
+    </li>
+    </ul>
+
+    <strong>Menu Controls</strong>
+    <ul>
+    <li>Move Cursor Up: <code>↑</code> or <code>W</code>
+    </li>
+    <li>Move Cursor Down: <code>↓</code> or <code>S</code>
+    </li>
+    <li>Next Page: <code>→</code> or <code>D</code>
+    </li>
+    <li>Previous Page: <code>←</code> or <code>A</code>
+    </li>
+    <li>Select Option: <code>Z</code> or <code>Space</code>
+    </li>
+    <li>Go Back/Close Menu: <code>X</code> or <code>Shift</code>
+    </li>
+    </ul>
+
+    <strong>On Title Screen</strong>
+    <ul>
+    <li>Show Credits: <code>X</code> or <code>Shift</code>
+    </li>
+    </ul>
+
+    <h2>How to Play</h2>
+
+    <p>The speed gauge in the bottom left corner shows your current speed level. The energy bar next to it shows how long you can go as fast as you are going and refills over time. If you crash into the island, you lose all momentum and your speed resets to 0.</p>
+    <p>The bottom right side shows the clock. When the dial rotates back around to the top, the prices of items are all refactored. Time doesn't move when you're on a trade screen.</p>
+    <p>You can only buy 20 of one item and you can only hold 3 different kinds of items. Choose wisely!</p>
+    <p>You can haggle on an island with a 5% success rate. You can only haggle 5 times per island before they won't let you haggle anymore. If you haggle successfully, buying prices decrease and selling prices increase for the day.</p>
+    <p>Throughout the day as you sail, your crew has a small chance of getting ill, which will negatively affect your ship's energy. You can pay to heal at an island's Tavern.</p>
+    <p>Press right or left on the Storage screen to show the Map. Green pixels are islands and the red pixel is your current position. You can continue moving forward while the map is pulled up, but you can't control your ship. You have to exit the menu screen to control your ship.</p>
+    <p>The game saves at the start of each day. If you stop in the middle of the day, you will lose your progress for that day.</p>
+
+    <p>There's no end game yet, but you can sail around and trade as long as you want. Try to make as much money as you can!</p>
+  </body>
+</html>
