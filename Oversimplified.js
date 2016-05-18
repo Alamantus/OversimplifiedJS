@@ -420,18 +420,22 @@ Oversimplified.Room = function (name, options) {
     this.width = options.width;
     this.height = options.height;
     
+    // Room Background Image is held within the "bg" variable so the information about the background can be held in the "background" variable.
     if (typeof options.backgroundSrc !== 'undefined' && options.backgroundSrc != "") {
-        this.background = new Image();
-        this.background.src = options.backgroundSrc;
+        this.bg = new Image();
+        this.bg.src = options.backgroundSrc;
     } else {
         // If options.backgroundSrc is excluded or an empty string, instead use Oversimplified.emptyImage instead.
-        this.background = Oversimplified.emptyImage;
+        this.bg = Oversimplified.emptyImage;
     }
+    this.background = {};
     this.background.loaded = false;
     
-    if (this.background != Oversimplified.emptyImage) {
-        this.background.onload = function () {
-            this.loaded = true;
+    if (this.bg != Oversimplified.emptyImage) {
+        this.bg.onload = function () {
+            self.background.loaded = true;
+            self.background.width = this.width;
+            self.background.height = this.height;
             // If options "backgroundSize" is set to true, then make room the size of the background image.
             if (options.backgroundSize == true) {
                 self.width = this.width;
@@ -447,13 +451,14 @@ Oversimplified.Room = function (name, options) {
     this.O = this.objects;
 
     if (typeof options.backgroundColor !== 'undefined') {
-        self.background.color = options.backgroundColor;
+        this.background.color = options.backgroundColor;
+        // if (Oversimplified.DEBUG.showMessages) console.log(this.name + " has a background color of " + this.background.color);
     }
     if (typeof options.foreground !== 'undefined') {
-        self.foreground = new Image();
-        self.foreground.loaded = false;
-        self.foreground.src = options.foreground;
-        self.foreground.onload = function () {this.loaded = true;}
+        this.foreground = new Image();
+        this.foreground.loaded = false;
+        this.foreground.src = options.foreground;
+        this.foreground.onload = function () {this.loaded = true;}
     }
 
     // Set any extra properties from Options.
@@ -536,7 +541,7 @@ Oversimplified.Room.prototype.Draw = function () {
         Oversimplified.context.fillStyle = tmp;
     }
     if (this.background.loaded) {
-        Oversimplified.context.drawImage(self.background, Oversimplified.camera.x, Oversimplified.camera.y, (Oversimplified.camera.width <= self.background.width) ? Oversimplified.camera.width : self.background.width, (Oversimplified.camera.height <= self.background.height) ? Oversimplified.camera.height : self.background.height, 0, 0, self.background.width, self.background.height);
+        Oversimplified.context.drawImage(self.bg, Oversimplified.camera.x, Oversimplified.camera.y, (Oversimplified.camera.width <= self.background.width) ? Oversimplified.camera.width : self.background.width, (Oversimplified.camera.height <= self.background.height) ? Oversimplified.camera.height : self.background.height, 0, 0, self.background.width, self.background.height);
     }
     
     this.DrawBelow();    //Draw this before any objects are drawn
@@ -646,56 +651,54 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
     
-    if (typeof options.imageSrc !== 'undefined' && options.imageSrc != "") {
-        this.image = new Image();
-        this.image.src = options.imageSrc;
-    } else {
-        this.image = Oversimplified.emptyImage;
-    }
+    // If there is no options.imageSrc, use Oversimplified.emptyImage. If there is and it has a .src already, use the image, otherwise, create a new Image.
+    this.image = (options.imageSrc) ? ((options.imageSrc.src) ? options.imageSrc : new Image()) : Oversimplified.emptyImage;
+    this.image.src = (this.image.src) ? this.imageSrc.src : options.imageSrc;
     
-    this.image.xScale = typeof options.xScale !== 'undefined' ? options.xScale : 1;
-    this.image.yScale = typeof options.yScale !== 'undefined' ? options.yScale : this.image.xScale;
+    this.sprite = {};
+    this.sprite.xScale = typeof options.xScale !== 'undefined' ? options.xScale : 1;
+    this.sprite.yScale = typeof options.yScale !== 'undefined' ? options.yScale : this.sprite.xScale;
 
-    this.image.rotation = typeof options.rotation !== 'undefined' ? Math.clampAngle(options.rotation) : 0;
+    this.sprite.rotation = typeof options.rotation !== 'undefined' ? Math.clampAngle(options.rotation) : 0;
     
-    this.image.animations = {};
+    this.sprite.animations = {};
     
-    this.image.frameColumn = 0;
-    this.image.frameRow = 0;
+    this.sprite.frameColumn = 0;
+    this.sprite.frameRow = 0;
     
     if (typeof options.animations !== 'undefined') {
         for (var i = 0; i < options.animations.length; i++) {
             if (i == 0 && options.animations[i].name != "Default") {
-                this.image.animations["Default"] = options.animations[i];    // Creates a duplicate animation of the first animation called "Default" in addition to the named animation below (unless the animation's name is "Default")
+                this.sprite.animations["Default"] = options.animations[i];    // Creates a duplicate animation of the first animation called "Default" in addition to the named animation below (unless the animation's name is "Default")
             }
-            this.image.animations[options.animations[i].name] = options.animations[i];
+            this.sprite.animations[options.animations[i].name] = options.animations[i];
         }
     } else {
         if (this.image != Oversimplified.emptyImage) {
             //If no animations array is included, then just show the whole image
-            this.image.onload = function(){this.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.width, height: this.height});}    // Creates the default animation as the whole image once the image is loaded.
+            this.image.onload = function(){self.sprite.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.width, height: this.height});}    // Creates the default animation as the whole image once the image is loaded.
         } else {
-            this.image.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.image.width, height: this.image.height});
+            this.sprite.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.image.width, height: this.image.height});
         }
     }
     
-    this.image.currentAnimation = "Default";
+    this.sprite.currentAnimation = "Default";
     
     this.mask = (options.maskImageSrc) ? new Image() : {};
     this.mask.src = (options.maskImageSrc) ? options.maskImageSrc : "";
     if (this.mask.src == "") {
-        this.mask.width = this.image.animations["Default"].width;
-        this.mask.height = this.image.animations["Default"].height;
+        this.mask.width = this.sprite.animations["Default"].width;
+        this.mask.height = this.sprite.animations["Default"].height;
     }
     
     if (this.mask.src != "") {
         this.mask.onload = function(){
-            self.xBound = this.width / 2 * self.image.xScale;
-            self.yBound = this.height / 2 * self.image.yScale;
+            self.xBound = this.width / 2 * self.sprite.xScale;
+            self.yBound = this.height / 2 * self.sprite.yScale;
         };
     } else {
-        self.xBound = this.mask.width / 2 * self.image.xScale;
-        self.yBound = this.mask.height / 2 * self.image.yScale;
+        self.xBound = this.mask.width / 2 * self.sprite.xScale;
+        self.yBound = this.mask.height / 2 * self.sprite.yScale;
     }
 
     // Set any extra properties from Options.
@@ -720,47 +723,47 @@ Oversimplified.GameObject.prototype.type = "GameObject";
 Oversimplified.GameObject.prototype.AddAnimation = function (animation, animationWidth, animationHeight, animationOptions) {//columns, rows, speed, xOffset, yOffset) {
     //Takes either an animation or the name of an animation in the Animations namespace and adds it to the object.
     if (typeof animation.name !== 'undefined') {
-        this.image.animations[animationOptions.name] = animation;
+        this.sprite.animations[animationOptions.name] = animation;
     } else {
         if (typeof Oversimplified.Animations[animation] === 'undefined') {
             Oversimplified.Animations.Add(animation, animationWidth, animationHeight, animationOptions);
         }
-        this.image.animations[Oversimplified.Animations[animation].name] = Oversimplified.Animations[animation];
+        this.sprite.animations[Oversimplified.Animations[animation].name] = Oversimplified.Animations[animation];
     }
 }
 Oversimplified.GameObject.prototype.Draw = function () {
     this.DrawBelow();
     
     var self = this;
-    var animation = self.image.currentAnimation;
-    if (self.image.animations[animation]) {
-        var animationWidth = self.image.animations[animation].width;
-        var animationHeight = self.image.animations[animation].height;
-        var width = self.image.animations[animation].width * self.image.xScale;
-        var height = self.image.animations[animation].height * self.image.yScale;
-        var columns = self.image.animations[animation].columns;
-        var rows = self.image.animations[animation].rows;
-        var xOffset = self.image.animations[animation].xOffset;
-        var yOffset = self.image.animations[animation].yOffset;
-        var animationSpeed = self.image.animations[animation].speed;
+    var animation = self.sprite.currentAnimation;
+    if (self.sprite.animations[animation]) {
+        var animationWidth = self.sprite.animations[animation].width;
+        var animationHeight = self.sprite.animations[animation].height;
+        var width = self.sprite.animations[animation].width * self.sprite.xScale;
+        var height = self.sprite.animations[animation].height * self.sprite.yScale;
+        var columns = self.sprite.animations[animation].columns;
+        var rows = self.sprite.animations[animation].rows;
+        var xOffset = self.sprite.animations[animation].xOffset;
+        var yOffset = self.sprite.animations[animation].yOffset;
+        var animationSpeed = self.sprite.animations[animation].speed;
         
-        if (self.image.frameColumn < columns) {
-            self.image.frameColumn += animationSpeed;
+        if (self.sprite.frameColumn < columns) {
+            self.sprite.frameColumn += animationSpeed;
         }
-        if (self.image.frameColumn >= columns) {
-            self.image.frameColumn = 0;
-            self.image.frameRow++;
+        if (self.sprite.frameColumn >= columns) {
+            self.sprite.frameColumn = 0;
+            self.sprite.frameRow++;
         }
-        if (self.image.frameRow > rows - 1) {
-            self.image.frameRow = 0;
+        if (self.sprite.frameRow > rows - 1) {
+            self.sprite.frameRow = 0;
         }
         
         if (Oversimplified.IsOnCamera(self)) {
-            var adjustedColumn = Math.floor(self.image.frameColumn);
-            var adjustedRow = Math.floor(self.image.frameRow);
+            var adjustedColumn = Math.floor(self.sprite.frameColumn);
+            var adjustedRow = Math.floor(self.sprite.frameRow);
             
             Oversimplified.context.translate(self.x - Oversimplified.camera.x, self.y - Oversimplified.camera.y);
-            var angleInRadians = self.image.rotation * (Math.PI/180);
+            var angleInRadians = self.sprite.rotation * (Math.PI/180);
             Oversimplified.context.rotate(angleInRadians);
             Oversimplified.context.drawImage(self.image, (animationWidth * adjustedColumn) + xOffset, (animationHeight * adjustedRow) + yOffset, animationWidth, animationHeight, -(width / 2), -(height / 2), width, height);
             Oversimplified.context.rotate(-angleInRadians);
@@ -776,24 +779,24 @@ Oversimplified.GameObject.prototype.Draw = function () {
 }
 Oversimplified.GameObject.prototype.SetScale = function (xScale, yScale) {
     //Negative scale does not flip image.
-    this.image.xScale = xScale;
-    this.image.yScale = typeof yScale !== 'undefined' ? yScale : xScale;
-    this.xBound = (this.mask.width / 2) * this.image.xScale;
-    this.yBound = (this.mask.height / 2) * this.image.yScale;
+    this.sprite.xScale = xScale;
+    this.sprite.yScale = typeof yScale !== 'undefined' ? yScale : xScale;
+    this.xBound = (this.mask.width / 2) * this.sprite.xScale;
+    this.yBound = (this.mask.height / 2) * this.sprite.yScale;
 }
 Oversimplified.GameObject.prototype.SetImageRotation = function (rotation) {
-    this.image.rotation = Math.clampAngle(rotation);
+    this.sprite.rotation = Math.clampAngle(rotation);
 }
 Oversimplified.GameObject.prototype.RotateImage = function (amount) {
-    this.image.rotation += Math.clampAngle(amount);
+    this.sprite.rotation += Math.clampAngle(amount);
 }
 Oversimplified.GameObject.prototype.SetAnimation = function (which) {
     if (which.name) {    //If you enter an actual animation instead of just its name,
         which = which.name;    //only use its name
     }
-    this.image.currentAnimation = which;
-    this.image.frameColumn = 0;
-    this.image.frameRow = 0;
+    this.sprite.currentAnimation = which;
+    this.sprite.frameColumn = 0;
+    this.sprite.frameRow = 0;
 }
 Oversimplified.GameObject.prototype.Start = function () {
     this.DoFirst();
@@ -814,7 +817,7 @@ Oversimplified.GameObject.prototype.Update = function () {
     this.AfterDo();
     
     //Make sure rotation is a valid angle before drawing
-    this.image.rotation = Math.clampAngle(this.image.rotation);
+    this.sprite.rotation = Math.clampAngle(this.sprite.rotation);
 }
 Oversimplified.GameObject.prototype.End = function () {
     this.DoLast();
@@ -1230,18 +1233,19 @@ Oversimplified.CopyObject = function (object, objectOptions) {
         resultingCopy.self = resultingCopy;
         resultingCopy.image = new Image();
         resultingCopy.image.src = object.image.src;
-        resultingCopy.image.xScale = object.image.xScale;
-        resultingCopy.image.yScale = object.image.yScale;
-        resultingCopy.image.rotation = object.image.rotation;
-        resultingCopy.image.frameColumn = 0;
-        resultingCopy.image.frameRow = 0;
-        resultingCopy.image.animations = object.image.animations;
-        resultingCopy.image.currentAnimation = object.image.currentAnimation;
+        resultingCopy.sprite = {};
+        resultingCopy.sprite.xScale = object.sprite.xScale;
+        resultingCopy.sprite.yScale = object.sprite.yScale;
+        resultingCopy.sprite.rotation = object.sprite.rotation;
+        resultingCopy.sprite.frameColumn = 0;
+        resultingCopy.sprite.frameRow = 0;
+        resultingCopy.sprite.animations = object.sprite.animations;
+        resultingCopy.sprite.currentAnimation = object.sprite.currentAnimation;
         resultingCopy.mask = new Image();
         resultingCopy.mask.src = object.mask.src;
         if (resultingCopy.mask.src == "") {
-            resultingCopy.mask.width = resultingCopy.image.animations["Default"].width;
-            resultingCopy.mask.height = resultingCopy.image.animations["Default"].height;
+            resultingCopy.mask.width = resultingCopy.sprite.animations["Default"].width;
+            resultingCopy.mask.height = resultingCopy.sprite.animations["Default"].height;
         }
         resultingCopy.mask.onload = function(){
             resultingCopy.xBound = this.width / 2;
