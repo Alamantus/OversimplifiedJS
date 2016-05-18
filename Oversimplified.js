@@ -411,6 +411,8 @@ Oversimplified.Room = function (name, options) {
     
     this.name = name;
 
+    this.hasRunStart = false;
+
     options = typeof options !== 'undefined' ? options : {};
     
     options.width = (typeof options.width !== 'undefined' && options.width >= Oversimplified.camera.width) ? options.width : Oversimplified.camera.width;
@@ -490,6 +492,7 @@ Oversimplified.Room.prototype.Start = function () {
             this.objects[object].Start();
         }
     }
+    this.hasRunStart = true;
 }
 Oversimplified.Room.prototype.Update = function () {
     if (Oversimplified.step != this.stepSpeed) {
@@ -515,6 +518,10 @@ Oversimplified.Room.prototype.Update = function () {
             }
         }
     }
+
+    if (!this.hasRunStart) {
+        this.Start();
+    }
     
     this.BeforeDo();
     
@@ -530,6 +537,7 @@ Oversimplified.Room.prototype.Update = function () {
 }
 Oversimplified.Room.prototype.End = function () {
     this.DoLast();
+    if (this) this.hasRunStart = false;
 }
 Oversimplified.Room.prototype.Draw = function () {
     var self = this;
@@ -589,6 +597,11 @@ Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptio
     }
 }
 
+// Set the specified room as the current room.
+Oversimplified.Room.prototype.SetAsCurrentRoom = function () {
+    Oversimplified.SetRoom(this);
+}
+
 // Create an object in the current room.
 Oversimplified.Create = function (objectOrNewName, objectOptions) {
     return Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].AddObject(objectOrNewName, objectOptions);
@@ -606,6 +619,7 @@ Oversimplified.SetRoom = function (room) {
     Oversimplified.camera.following = "";
     
     Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].Start();
+    if (Oversimplified.DEBUG.showMessages) console.log("The current room is \"" + Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].name + "\".");
 }
 
 // PremadeObjects (Prefab) Namespace
@@ -635,7 +649,7 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
     
     var self = this;
     this.self = self;
-    this.doFirstHasRun = false;
+    this.hasRunStart = false;
     
     //Required Options
     this.name = name;
@@ -800,6 +814,7 @@ Oversimplified.GameObject.prototype.SetAnimation = function (which) {
 }
 Oversimplified.GameObject.prototype.Start = function () {
     this.DoFirst();
+    this.hasRunStart = true;
 }
 Oversimplified.GameObject.prototype.Update = function () {
     this.screenX = this.x - Oversimplified.camera.x;
@@ -807,9 +822,8 @@ Oversimplified.GameObject.prototype.Update = function () {
     this.xPrevious = this.x;
     this.yPrevious = this.y;
 
-    if (!this.doFirstHasRun) {
-        this.DoFirst();
-        this.doFirstHasRun = true;
+    if (!this.hasRunStart) {
+        this.Start();
     }
     
     this.BeforeDo();
@@ -821,6 +835,7 @@ Oversimplified.GameObject.prototype.Update = function () {
 }
 Oversimplified.GameObject.prototype.End = function () {
     this.DoLast();
+    if (this) this.hasRunStart = false;
 }
 
 // Move toward the given point at the given speed.
