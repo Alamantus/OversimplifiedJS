@@ -64,7 +64,7 @@ Oversimplified.SetCamera = function (options) {
 
     Oversimplified.camera.x = typeof options.x !== 'undefined' ? options.x : Oversimplified.camera.x;
     Oversimplified.camera.y = typeof options.y !== 'undefined' ? options.y : Oversimplified.camera.y;
-    
+
     if (typeof options.objectToFollow !== 'undefined') {
         if (options.objectToFollow.name) {
             Oversimplified.camera.Follow(options.objectToFollow);
@@ -72,10 +72,10 @@ Oversimplified.SetCamera = function (options) {
             if (Oversimplified.DEBUG.showMessages) console.log("Oversimplified.Settings.SetCamera()'s objectToFollow argument must be a Oversimplified.GameObject.");
         }
     }
-    
+
     Oversimplified.camera.hBorder = (typeof options.hBorder !== 'undefined') ? options.hBorder : Oversimplified.camera.hBorder;
     Oversimplified.camera.vBorder = (typeof options.vBorder !== 'undefined') ? options.vBorder : Oversimplified.camera.vBorder;
-    
+
 }
 
 // Mouse Object
@@ -304,10 +304,10 @@ Oversimplified.C = Oversimplified.Controls;
 // Control Class
 Oversimplified.Control = function (keycode) {
     var self = this;
-    
+
     this.keyCode = keycode;
     this.keyName = Oversimplified.Key[keycode];
-    
+
     this.down = this.pressed = false;
     this.held = false;
     this.up = this.released = false;
@@ -335,12 +335,12 @@ Oversimplified.Control.prototype.Check = function () {
 Oversimplified.Axis = function (positiveKeycode, negativeKeycode) {
     //Keeps track of a direction, either -1, 0, or 1
     var self = this;
-    
+
     this.positiveKeycode = positiveKeycode;
     this.positiveKeyName = Oversimplified.Key[positiveKeycode];
     this.negativeKeycode = negativeKeycode;
     this.negativeKeyName = Oversimplified.Key[negativeKeycode];
-    
+
     this.direction = 0;
 }
 Oversimplified.Axis.prototype.type = "Axis";
@@ -366,17 +366,22 @@ Oversimplified.Axis.prototype.Check = function () {
 
 //Rooms Namespace
 Oversimplified.Rooms = {
-    currentRoom: "Default",
+    currentRoomName: "Default",
     AllBeforeDo: function () {},
     AllDo: function () {},
     AllAfterDo: function () {}
+}
+
+// Get the current room
+Oversimplified.Rooms.Current = function () {
+    return Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName];
 }
 
 // Add a Room to the collection of Rooms
 Oversimplified.Rooms.Add = function (name, options) {
     if (typeof Oversimplified.Rooms[name] === 'undefined') {
         Oversimplified.Rooms[name] = new Oversimplified.Room(name, options);
-        
+
         return Oversimplified.Rooms[name];
     } else {
         if (Oversimplified.DEBUG.showMessages) console.log("A Room with the name \"" + name + "\" already exists!");
@@ -408,20 +413,20 @@ options (optional) : An object with extra parameters for the Room. Options inclu
 Oversimplified.Room = function (name, options) {
     this.id = Oversimplified.nextID++;
     var self = this;
-    
+
     this.name = name;
 
     this.hasRunStart = false;
 
     options = typeof options !== 'undefined' ? options : {};
-    
+
     options.width = (typeof options.width !== 'undefined' && options.width >= Oversimplified.camera.width) ? options.width : Oversimplified.camera.width;
     options.height = (typeof options.height !== 'undefined' && options.height >= Oversimplified.camera.height) ? options.height : Oversimplified.camera.height;
     options.stepSpeed = (typeof options.stepSpeed !== 'undefined' && options.stepSpeed > 0) ? options.stepSpeed : Oversimplified.Settings.defaultStep;
-    
+
     this.width = options.width;
     this.height = options.height;
-    
+
     // Room Background Image is held within the "bg" variable so the information about the background can be held in the "background" variable.
     if (typeof options.backgroundSrc !== 'undefined' && options.backgroundSrc != "") {
         this.bg = new Image();
@@ -432,7 +437,7 @@ Oversimplified.Room = function (name, options) {
     }
     this.background = {};
     this.background.loaded = false;
-    
+
     if (this.bg != Oversimplified.emptyImage) {
         this.bg.onload = function () {
             self.background.loaded = true;
@@ -445,10 +450,10 @@ Oversimplified.Room = function (name, options) {
             }
         }
     }
-    
-    
+
+
     this.stepSpeed = options.stepSpeed;
-    
+
     this.objects = {};
     this.O = this.objects;
 
@@ -469,25 +474,25 @@ Oversimplified.Room = function (name, options) {
             this[property] = options[property];
         }
     }
-    
+
     this.drawOrder = [];
-    
+
     this.DoFirst = function () {};
-    
+
     this.BeforeDo = function () {};
     this.Do = function () {};
     this.AfterDo = function () {};
-    
+
     this.DoLast = function () {};
-    
+
     this.DrawBelow = function () {};
     this.DrawAbove = function () {};
 }
 Oversimplified.Room.prototype.type = "Room";
 Oversimplified.Room.prototype.Start = function () {
     this.DoFirst();
-    
-    if (this.name === Oversimplified.Rooms.currentRoom) {
+
+    if (this.name === Oversimplified.Rooms.currentRoomName) {
         for (var object in this.objects) {
             this.objects[object].Start();
         }
@@ -498,7 +503,7 @@ Oversimplified.Room.prototype.Update = function () {
     if (Oversimplified.step != this.stepSpeed) {
         Oversimplified.step = this.stepSpeed;
     }
-    
+
     this.drawOrder = [];        //Determine draw order every frame
     for (var object in this.objects) {
         if (this.objects[object].type == 'GameObject') {
@@ -522,17 +527,17 @@ Oversimplified.Room.prototype.Update = function () {
     if (!this.hasRunStart) {
         this.Start();
     }
-    
+
     this.BeforeDo();
-    
+
     this.Do();
-    
-    if (this.name === Oversimplified.Rooms.currentRoom) {
+
+    if (this.name === Oversimplified.Rooms.currentRoomName) {
         for (var object in this.objects) {
             this.objects[object].Update();
         }
     }
-    
+
     this.AfterDo();
 }
 Oversimplified.Room.prototype.End = function () {
@@ -551,24 +556,22 @@ Oversimplified.Room.prototype.Draw = function () {
     if (this.background.loaded) {
         Oversimplified.context.drawImage(self.bg, Oversimplified.camera.x, Oversimplified.camera.y, (Oversimplified.camera.width <= self.background.width) ? Oversimplified.camera.width : self.background.width, (Oversimplified.camera.height <= self.background.height) ? Oversimplified.camera.height : self.background.height, 0, 0, self.background.width, self.background.height);
     }
-    
+
     this.DrawBelow();    //Draw this before any objects are drawn
-    
-    // if (this.name === Oversimplified.Rooms.currentRoom) {
-        for (var i = 0; i < this.drawOrder.length; i++) {
-            if (typeof this.objects[this.drawOrder[i]] !== 'undefined') {
-                this.objects[this.drawOrder[i]].Draw();
-            }
+
+    for (var i = 0; i < this.drawOrder.length; i++) {
+        if (typeof this.objects[this.drawOrder[i]] !== 'undefined') {
+            this.objects[this.drawOrder[i]].Draw();
         }
-    // }
-    
+    }
+
     // If there is a foreground, draw it.
     if (typeof this.foreground !== 'undefined') {
         if (this.foreground.loaded) {
             Oversimplified.context.drawImage(self.foreground, Oversimplified.camera.x, Oversimplified.camera.y, Oversimplified.camera.width, Oversimplified.camera.height, 0, 0, self.foreground.width, self.foreground.height);
         }
     }
-    
+
     this.DrawAbove();    //Draw this after all other drawing is done
 }
 
@@ -576,14 +579,14 @@ Oversimplified.Room.prototype.Draw = function () {
 Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptions) {
     objectOptions = (typeof objectOptions !== 'undefined') ? objectOptions : {};
     var self = this;
-    
+
     if (objectOrNewName.type == "GameObject") {    //Create from prefabricated object
         // Overwrite manual id or name, if entered.
         objectOptions.id = Oversimplified.nextID++;
         objectOptions.name = objectOrNewName.name + objectOptions.id.toString();
         // console.log(objectOptions.name);
         self.objects[objectOptions.name] = Oversimplified.CopyObject(objectOrNewName, objectOptions);
-        
+
         return self.objects[objectOptions.name];
     }
     else {
@@ -592,7 +595,7 @@ Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptio
             return false;
         }
         self.objects[objectOrNewName] = new Oversimplified.GameObject(objectOrNewName, objectOptions);
-        
+
         return self.objects[objectOrNewName];
     }
 }
@@ -604,22 +607,22 @@ Oversimplified.Room.prototype.SetAsCurrentRoom = function () {
 
 // Create an object in the current room.
 Oversimplified.Create = function (objectOrNewName, objectOptions) {
-    return Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].AddObject(objectOrNewName, objectOptions);
+    return Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].AddObject(objectOrNewName, objectOptions);
 }
 
 // Change to the specified room.
 // Runs the current Room's End() function, changes the room, and runs the specified Room's Start() function.
 Oversimplified.SetRoom = function (room) {
-    if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoom] !== 'undefined') {
-        Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].End();
+    if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName] !== 'undefined') {
+        Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].End();
     }
-    
-    Oversimplified.Rooms.currentRoom = room.name;
-    Oversimplified.O = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects;    //Update the Oversimplified.O alias when room changes
+
+    Oversimplified.Rooms.currentRoomName = room.name;
+    Oversimplified.O = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects;    //Update the Oversimplified.O alias when room changes
     Oversimplified.camera.following = "";
-    
-    Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].Start();
-    if (Oversimplified.DEBUG.showMessages) console.log("The current room is \"" + Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].name + "\".");
+
+    Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].Start();
+    if (Oversimplified.DEBUG.showMessages) console.log("The current room is \"" + Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].name + "\".");
 }
 
 // PremadeObjects (Prefab) Namespace
@@ -646,11 +649,11 @@ Oversimplified.P = Oversimplified.PremadeObjects;
 // GameObject class
 Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskImageSrc, animationsArray) {
     this.id = Oversimplified.nextID++;
-    
+
     var self = this;
     this.self = self;
     this.hasRunStart = false;
-    
+
     //Required Options
     this.name = name;
 
@@ -664,22 +667,22 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
     this.yPrevious = this.y;
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
-    
+
     // If there is no options.imageSrc, use Oversimplified.emptyImage. If there is and it has a .src already, use the image, otherwise, create a new Image.
     this.image = (options.imageSrc) ? ((options.imageSrc.src) ? options.imageSrc : new Image()) : Oversimplified.emptyImage;
     this.image.src = (this.image.src) ? this.imageSrc.src : options.imageSrc;
-    
+
     this.sprite = {};
     this.sprite.xScale = typeof options.xScale !== 'undefined' ? options.xScale : 1;
     this.sprite.yScale = typeof options.yScale !== 'undefined' ? options.yScale : this.sprite.xScale;
 
     this.sprite.rotation = typeof options.rotation !== 'undefined' ? Math.clampAngle(options.rotation) : 0;
-    
+
     this.sprite.animations = {};
-    
+
     this.sprite.frameColumn = 0;
     this.sprite.frameRow = 0;
-    
+
     if (typeof options.animations !== 'undefined') {
         for (var i = 0; i < options.animations.length; i++) {
             if (i == 0 && options.animations[i].name != "Default") {
@@ -695,16 +698,16 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
             this.sprite.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.image.width, height: this.image.height});
         }
     }
-    
+
     this.sprite.currentAnimation = "Default";
-    
+
     this.mask = (options.maskImageSrc) ? new Image() : {};
     this.mask.src = (options.maskImageSrc) ? options.maskImageSrc : "";
     if (this.mask.src == "") {
         this.mask.width = this.sprite.animations["Default"].width;
         this.mask.height = this.sprite.animations["Default"].height;
     }
-    
+
     if (this.mask.src != "") {
         this.mask.onload = function(){
             self.xBound = this.width / 2 * self.sprite.xScale;
@@ -721,15 +724,15 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
             this[property] = options[property];
         }
     }
-    
+
     this.DoFirst = function () {};
-    
+
     this.BeforeDo = function () {};
     this.Do = function () {};
     this.AfterDo = function () {};
-    
+
     this.DoLast = function () {};
-    
+
     this.DrawBelow = function () {};
     this.DrawAbove = function () {};
 }
@@ -747,7 +750,7 @@ Oversimplified.GameObject.prototype.AddAnimation = function (animation, animatio
 }
 Oversimplified.GameObject.prototype.Draw = function () {
     this.DrawBelow();
-    
+
     var self = this;
     var animation = self.sprite.currentAnimation;
     if (self.sprite.animations[animation]) {
@@ -760,7 +763,7 @@ Oversimplified.GameObject.prototype.Draw = function () {
         var xOffset = self.sprite.animations[animation].xOffset;
         var yOffset = self.sprite.animations[animation].yOffset;
         var animationSpeed = self.sprite.animations[animation].speed;
-        
+
         if (self.sprite.frameColumn < columns) {
             self.sprite.frameColumn += animationSpeed;
         }
@@ -771,24 +774,24 @@ Oversimplified.GameObject.prototype.Draw = function () {
         if (self.sprite.frameRow > rows - 1) {
             self.sprite.frameRow = 0;
         }
-        
+
         if (Oversimplified.IsOnCamera(self)) {
             var adjustedColumn = Math.floor(self.sprite.frameColumn);
             var adjustedRow = Math.floor(self.sprite.frameRow);
-            
+
             Oversimplified.context.translate(self.x - Oversimplified.camera.x, self.y - Oversimplified.camera.y);
             var angleInRadians = self.sprite.rotation * (Math.PI/180);
             Oversimplified.context.rotate(angleInRadians);
             Oversimplified.context.drawImage(self.image, (animationWidth * adjustedColumn) + xOffset, (animationHeight * adjustedRow) + yOffset, animationWidth, animationHeight, -(width / 2), -(height / 2), width, height);
             Oversimplified.context.rotate(-angleInRadians);
             Oversimplified.context.translate(-(self.x - Oversimplified.camera.x), -(self.y - Oversimplified.camera.y));
-            
+
             Oversimplified.DEBUG.objectsOnScreen++;
         }
     } else {
         if (Oversimplified.DEBUG.showMessages) console.log("No animation at " + animation);
     }
-    
+
     this.DrawAbove();
 }
 Oversimplified.GameObject.prototype.SetScale = function (xScale, yScale) {
@@ -825,11 +828,11 @@ Oversimplified.GameObject.prototype.Update = function () {
     if (!this.hasRunStart) {
         this.Start();
     }
-    
+
     this.BeforeDo();
     this.Do();
     this.AfterDo();
-    
+
     //Make sure rotation is a valid angle before drawing
     this.sprite.rotation = Math.clampAngle(this.sprite.rotation);
 }
@@ -874,7 +877,7 @@ Oversimplified.GameObject.prototype.PointOverlaps = function (x, y) {
 // Accepts true, false, or no value.
 Oversimplified.GameObject.prototype.IsOverlapping = function (doSimple) {
     doSimple = (typeof doSimple !== 'undefined') ? doSimple : false;
-    
+
     for (var obj in Oversimplified.O) {
         var object = Oversimplified.O[obj];
         if (object != this) {
@@ -885,7 +888,7 @@ Oversimplified.GameObject.prototype.IsOverlapping = function (doSimple) {
                     for (var j = 0; j < 2 * object.yBound; j++) {
                         var xToCheck = (object.x - object.xBound) + i;
                         var yToCheck = (object.y - object.yBound) + j;
-                        
+
                         if (xToCheck > this.x - this.xBound &&
                             xToCheck < this.x + this.xBound &&
                             yToCheck > this.y - this.yBound &&
@@ -913,7 +916,7 @@ Oversimplified.GameObject.prototype.IsOverlapping = function (doSimple) {
             }
         }
     }
-    
+
     return false;
 }
 
@@ -922,7 +925,7 @@ Oversimplified.GameObject.prototype.IsOverlapping = function (doSimple) {
 // Accepts true, false, or no value.
 Oversimplified.GameObject.prototype.IfOverlappingThenMove = function (doSimple) {
     var overlappingObject = this.IsOverlapping(doSimple);
-    
+
     if (overlappingObject != false) {
         if (this.x < overlappingObject.x)
             this.x--;
@@ -941,7 +944,7 @@ Oversimplified.GameObject.prototype.IfOverlappingThenMove = function (doSimple) 
 
 // Prevents the object from moving outside of the room's boundaries.
 Oversimplified.GameObject.prototype.KeepInsideRoom = function () {
-    var currentRoom = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom]
+    var currentRoom = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName];
     if (this.x < this.xBound || this.x > currentRoom.width - this.xBound)
     {
         this.x = this.xPrevious;
@@ -1019,7 +1022,7 @@ Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, check
 // Removes the specified object from memory.
 Oversimplified.GameObject.prototype.Destroy = function () {
     this.End();
-    delete Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[this.name];
+    delete Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[this.name];
 }
 
 // Check if the point (x, y) lies inside the bounds of ANY object in the room.
@@ -1034,7 +1037,7 @@ Oversimplified.GameObjectsAtPoint = function (x, y) {
             objectsAtPoint.push(object);
         }
     }
-    
+
     if (objectsAtPoint.length > 0) {
         return objectsAtPoint;
     } else {
@@ -1134,27 +1137,27 @@ Oversimplified.Effects.Tunes.CheckLoops = function () {
 }
 
 /*  Sound Class
-    
-    Plays a sound effect once.    
+
+    Plays a sound effect once.
     Preferably source should be a .wav file and secondarySource should be a .mp3 file.
 */
 Oversimplified.Sound = function (name, sourcesObject) {
     this.id = Oversimplified.nextID++;
-    
+
     sourcesObject = typeof sourcesObject !== 'undefined' ? sourcesObject : {};
-    
+
     this.name = name;
     this.source = {
         mp3: (typeof sourcesObject.mp3 !== 'undefined' && sourcesObject.mp3.length > 0) ? sourcesObject.mp3 : false,
         wav: (typeof sourcesObject.wav !== 'undefined' && sourcesObject.wav.length > 0) ? sourcesObject.wav : false,
         ogg: (typeof sourcesObject.ogg !== 'undefined' && sourcesObject.ogg.length > 0) ? sourcesObject.ogg : false
     };
-    
+
     this.audioElement = document.createElement("audio");
     this.audioElement.id = this.name + this.id.toString();
     // Alias for this.audioElement
     this.element = this.audioElement;
-    
+
     for (var type in this.source) {
         if (type !== false) {
             var audioSource = document.createElement("source");
@@ -1162,7 +1165,7 @@ Oversimplified.Sound = function (name, sourcesObject) {
             this.audioElement.appendChild(audioSource);
         }
     }
-    
+
     document.getElementById("audio").appendChild(this.audioElement);
     this.audioElement.load();
 }
@@ -1182,15 +1185,15 @@ Oversimplified.Sound.prototype.IsPlaying = function () {
 }
 
 /*  Tune Class
-    
-    Preferably source should be a .mp3 file and secondarySource should be a .ogg file.    
+
+    Preferably source should be a .mp3 file and secondarySource should be a .ogg file.
     If duration is specified, loop when duration is reached.
 */
 Oversimplified.Tune = function (name, tuneOptions) {
     this.id = Oversimplified.nextID++;
-    
+
     tuneOptions = (typeof tuneOptions !== 'undefined') ? tuneOptions : {};
-    
+
     this.name = name;
     this.source = {
         mp3: (typeof tuneOptions.mp3 !== 'undefined' && tuneOptions.mp3.length > 0) ? tuneOptions.mp3 : false,
@@ -1198,12 +1201,12 @@ Oversimplified.Tune = function (name, tuneOptions) {
         ogg: (typeof tuneOptions.ogg !== 'undefined' && tuneOptions.ogg.length > 0) ? tuneOptions.ogg : false
     };
     this.duration = (typeof tuneOptions.duration !== 'undefined') ? tuneOptions.duration : false;
-    
+
     this.audioElement = document.createElement("audio");
     this.audioElement.id = this.name + this.id.toString();
     // Alias for this.audioElement
     this.element = this.audioElement;
-    
+
     for (var type in this.source) {
         if (type !== false) {
             var audioSource = document.createElement("source");
@@ -1211,7 +1214,7 @@ Oversimplified.Tune = function (name, tuneOptions) {
             this.audioElement.appendChild(audioSource);
         }
     }
-    
+
     document.getElementById("audio").appendChild(this.audioElement);
     this.audioElement.load();
 }
@@ -1288,7 +1291,7 @@ Oversimplified.CopyObject = function (object, objectOptions) {
     // If id and name were not specified in the objectOptions and are therefore not set, set them!
     if (typeof resultingCopy.id === 'undefined') resultingCopy.id = Oversimplified.nextID++;
     if (typeof resultingCopy.name === 'undefined') resultingCopy.name = object.name + resultingCopy.id.toString();
-    
+
     return resultingCopy;
 }
 
@@ -1347,7 +1350,7 @@ Oversimplified.Erase = function (location) {
 Oversimplified.DEBUG = {
     // Show console.log messages.
     showMessages: true,
-    
+
     // Draw a magenta bounding box around the specified object representing the object's collision extents.
     DrawBoundingBox: function (object) {
         var fillStyle = Oversimplified.context.fillStyle;
@@ -1355,7 +1358,7 @@ Oversimplified.DEBUG = {
         Oversimplified.context.fillRect(object.x - object.xBound - Oversimplified.camera.x, object.y - object.yBound - Oversimplified.camera.y, object.xBound * 2, object.yBound * 2);
         Oversimplified.context.fillStyle = fillStyle;
     },
-    
+
     // Return the number of objects currently in the room.
     CountObjectsInRoom: function (roomName) {
         var roomInQuestion;
@@ -1367,30 +1370,30 @@ Oversimplified.DEBUG = {
                 roomInQuestion = Oversimplified.Rooms[roomName];
             }
         } else {
-            roomInQuestion = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom];
+            roomInQuestion = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName];
         }
         for (var objects in roomInQuestion.objects) {
             count++;
         }
         return count;
     },
-    
+
     objectsOnScreen: 0,
-    
+
     // Return the number of objects currently being drawn on the canvas.
     CountObjectsOnScreen: function () {return Oversimplified.DEBUG.objectsOnScreen;},
-    
+
     // List all current controls to the console.
     ListControls: function () {
         var numControls = 0;
         var numAxes = 0;
         var total = 0;
-        
+
         for (var control in Oversimplified.Controls) {
             if (typeof Oversimplified.Controls[control].Check !== 'undefined') {   //Only return values in Control that have Check(), i.e. controls & axes
                 total++;
                 var message = "Oversimplified.C[\"" + control + "\"] "
-                
+
                 if (Oversimplified.Controls[control].type == "Control") {
                     message += "(Control): " + Oversimplified.C[control].keyName;
                     numControls++;
@@ -1399,11 +1402,11 @@ Oversimplified.DEBUG = {
                     message += "(Axis) Positive: " + Oversimplified.C[control].positiveKeyName + ", Negative: " + Oversimplified.C[control].negativeKeyName;
                     numAxes++;
                 }
-                
+
                 console.log(message);
             }
         }
-        
+
         console.log(numControls + " Controls and " + numAxes + " Axes.\n" + total + " in all");
     },
 };
@@ -1417,9 +1420,9 @@ window.onload = function () {Oversimplified.Initialize();};
 // Set up important engine pieces.
 Oversimplified.Initialize = function () {
     Oversimplified.SetupCanvas();
-    
+
     Oversimplified.SetupControls();
-    
+
     Oversimplified.AddScript("start.js", function(){
         start();
         Oversimplified.SetCanvasToCameraSize();
@@ -1434,7 +1437,7 @@ Oversimplified.SetupCanvas = function () {
     } else {
         alert("No 2D Canvas Context for game.");
     }
-    
+
     //Disable right click menu on canvas
     if (Oversimplified.Settings.preventRightClick) Oversimplified.canvas.oncontextmenu = function() {return false;};
 }
@@ -1457,7 +1460,7 @@ Oversimplified.SetupMouseListeners = function () {
             }
             else if (e.button === Oversimplified.mouse.middleCode) {
                 e.preventDefault(); //Prevent browser from using the scroll wheel.
-                
+
                 if (!Oversimplified.mouse.middle) Oversimplified.mouse.middleDown = true;
                 Oversimplified.mouse.middle = true;
             }
@@ -1484,11 +1487,11 @@ Oversimplified.SetupMouseListeners = function () {
     Oversimplified.canvas.addEventListener('mouseout', function () {
             Oversimplified.mouse.left = Oversimplified.mouse.middle = Oversimplified.mouse.right = false;
         }, false);
-    
+
     //mouse wheel functionality
     Oversimplified.canvas.addEventListener("mousewheel", Oversimplified.MouseWheelHandler, false);
     Oversimplified.canvas.addEventListener("DOMMouseScroll", Oversimplified.MouseWheelHandler, false); //for (old?) Firefox
-    
+
     //Touch Mouse Emulation
     Oversimplified.canvas.addEventListener("touchstart", function(e) {
             e.preventDefault();
@@ -1551,7 +1554,7 @@ Oversimplified.SetupKeyboardListeners = function () {
             e.preventDefault();
         }
     }, false);
-    
+
     document.addEventListener("keydown", function(e) {
         var thisKey = e.which;
         if (Oversimplified.pressedKeys.indexOf(thisKey) == -1 && Oversimplified.heldKeys.indexOf(thisKey) == -1) {
@@ -1573,12 +1576,12 @@ Oversimplified.SetupKeyboardListeners = function () {
 Oversimplified.SetCanvasToCameraSize = function () {
     if (Oversimplified.canvas.width != Oversimplified.camera.width) {
         if (Oversimplified.DEBUG.showMessages) console.log("Adjusting Camera Width from " + Oversimplified.canvas.width + " to " + Oversimplified.camera.width);
-        
+
         Oversimplified.canvas.width = Oversimplified.camera.width;
     }
     if (Oversimplified.canvas.height != Oversimplified.camera.height) {
         if (Oversimplified.DEBUG.showMessages) console.log("Adjusting Camera Height from " + Oversimplified.canvas.height + " to " + Oversimplified.camera.height);
-        
+
         Oversimplified.canvas.height = Oversimplified.camera.height;
     }
 }
@@ -1604,7 +1607,7 @@ Oversimplified.Frame = function () {
             debugMessage += " scripts:\n" + Oversimplified.loadedScripts.toString() + ".\nWaiting for:\n" + Oversimplified.loadingScripts.toString();
             console.log(debugMessage);
         }
-        
+
         if (Oversimplified.Settings.numberOfScriptsToLoad > 0) {
             var percentage = Oversimplified.loadedScripts.length / Oversimplified.Settings.numberOfScriptsToLoad;
             var barHeight = 32;
@@ -1627,51 +1630,51 @@ Oversimplified.Frame = function () {
             OS.context.strokeStyle = saveStrokeStyle;
         }
     }
-    
+
     requestAnimationFrame(Oversimplified.Frame);
 }
 
 // Mechanical/action-based/calculation functions
 Oversimplified.Update = function () {
     Oversimplified.Controls.CheckAll();
-    
+
     Oversimplified.Rooms.AllBeforeDo();
     Oversimplified.Rooms.AllDo();
-    if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoom] !== 'undefined') {
-        Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].Update();
+    if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName] !== 'undefined') {
+        Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].Update();
     } else {
         if (Oversimplified.DEBUG.showMessages) console.log("There is no current room. Please add one or make sure you are referencing the correct room with Oversimplified.Rooms.SetRoom().");
     }
-    
+
     Oversimplified.Rooms.AllAfterDo();
-    
+
     if (Oversimplified.camera.following != "") {    //If the camera is following an object, keep the object within its borders.
-        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.x > Oversimplified.camera.width - Oversimplified.camera.hBorder) {
-            Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].x - (Oversimplified.camera.width - Oversimplified.camera.hBorder);
+        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[Oversimplified.camera.following].x - Oversimplified.camera.x > Oversimplified.camera.width - Oversimplified.camera.hBorder) {
+            Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[Oversimplified.camera.following].x - (Oversimplified.camera.width - Oversimplified.camera.hBorder);
         }
-        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.x < Oversimplified.camera.hBorder) {
-            Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].x - Oversimplified.camera.hBorder;
+        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[Oversimplified.camera.following].x - Oversimplified.camera.x < Oversimplified.camera.hBorder) {
+            Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[Oversimplified.camera.following].x - Oversimplified.camera.hBorder;
         }
-        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.y > Oversimplified.camera.height - Oversimplified.camera.vBorder) {
-            Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].y - (Oversimplified.camera.height - Oversimplified.camera.vBorder);
+        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[Oversimplified.camera.following].y - Oversimplified.camera.y > Oversimplified.camera.height - Oversimplified.camera.vBorder) {
+            Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[Oversimplified.camera.following].y - (Oversimplified.camera.height - Oversimplified.camera.vBorder);
         }
-        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.y < Oversimplified.camera.vBorder) {
-            Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].objects[Oversimplified.camera.following].y - Oversimplified.camera.vBorder;
+        if (Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[Oversimplified.camera.following].y - Oversimplified.camera.y < Oversimplified.camera.vBorder) {
+            Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[Oversimplified.camera.following].y - Oversimplified.camera.vBorder;
         }
     }
-    
+
     // Don't let camera move past room boundaries.
     if (Oversimplified.camera.x < 0) {
         Oversimplified.camera.x = 0;
     }
-    if (Oversimplified.camera.x + Oversimplified.camera.width > Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].width) {
-        Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].width - Oversimplified.camera.width;
+    if (Oversimplified.camera.x + Oversimplified.camera.width > Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].width) {
+        Oversimplified.camera.x = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].width - Oversimplified.camera.width;
     }
     if (Oversimplified.camera.y < 0) {
         Oversimplified.camera.y = 0;
     }
-    if (Oversimplified.camera.y + Oversimplified.camera.height > Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].height) {
-        Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].height - Oversimplified.camera.height;
+    if (Oversimplified.camera.y + Oversimplified.camera.height > Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].height) {
+        Oversimplified.camera.y = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].height - Oversimplified.camera.height;
     }
 }
 
@@ -1679,9 +1682,9 @@ Oversimplified.Update = function () {
 Oversimplified.Draw = function () {
     Oversimplified.context.clearRect(0, 0, Oversimplified.canvas.width, Oversimplified.canvas.height);
     Oversimplified.DEBUG.objectsOnScreen = 0;
-    
-    if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoom] !== 'undefined') {
-        Oversimplified.Rooms[Oversimplified.Rooms.currentRoom].Draw();
+
+    if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName] !== 'undefined') {
+        Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].Draw();
     } else {
         if (Oversimplified.DEBUG.showMessages) console.log("There is no current room. Please add one or make sure you are referencing the correct room with Oversimplified.Rooms.SetRoom().");
     }
@@ -1690,7 +1693,7 @@ Oversimplified.Draw = function () {
 // Anything left over/resetting the mouse and keys.
 Oversimplified.EndFrame = function () {
     Oversimplified.mouse.wheel = 0;
-    
+
     Oversimplified.mouse.leftDown = false;
     Oversimplified.mouse.middleDown = false;
     Oversimplified.mouse.rightDown = false;
@@ -1699,14 +1702,14 @@ Oversimplified.EndFrame = function () {
     Oversimplified.mouse.rightUp = false;
     Oversimplified.pressedKeys = [];
     Oversimplified.releasedKeys = [];
-    
-    
+
+
 }
 
 // Prevent scrolling page when scrolling inside canvas.
 Oversimplified.MouseWheelHandler = function (e) {
     e.preventDefault();
-    
+
     Oversimplified.mouse.wheel = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));    //reverse Firefoxs detail value and return either 1 for up or -1 for down
 }
 
@@ -1730,7 +1733,7 @@ Oversimplified.IsOnCamera = function (x, y) {
             return false;
         }
     }
-        
+
 }
 
 /* Dynamically add a source script to the page.
@@ -1739,9 +1742,9 @@ You can either specify a main function or just make the main function within the
 */
 Oversimplified.AddScript = function (pathToScript, mainFunction) {
     mainFunction = typeof mainFunction !== 'undefined' ? mainFunction : pathToScript.slice(((pathToScript.lastIndexOf("/")>-1)?pathToScript.lastIndexOf("/")+1:0), pathToScript.indexOf("."));
-    
+
     Oversimplified.loadingScripts.push(pathToScript);
-    
+
     var script = document.createElement('script');
     script.src = pathToScript;
     script.onload = function () {
@@ -1754,7 +1757,7 @@ Oversimplified.AddScript = function (pathToScript, mainFunction) {
                 if (Oversimplified.DEBUG.showMessages) console.log(mainFunction + " is not a function!");
             }
         }
-        
+
         Oversimplified.loadedScripts.push(pathToScript);
         Oversimplified.loadingScripts.splice(Oversimplified.loadingScripts.indexOf(pathToScript), 1);
     };
@@ -1799,7 +1802,7 @@ Math.clamp = function (value, min, max) {
         if (Oversimplified.DEBUG.showMessages) console.log("Min must be less than Max!");
         return false;
     }
-    
+
     if (value < min) {
         value = min;
     }
@@ -1839,7 +1842,7 @@ Math.clampAngle = function (value, min, max) {
     while (value < 0) {
         value += 360;
     }
-    
+
     if (typeof min !== 'undefined' && typeof max !== 'undefined') {
         // Adjust min and max values to be between 0 and 360
         while (min >= 360) {
@@ -1854,7 +1857,7 @@ Math.clampAngle = function (value, min, max) {
         while (max < 0) {
             max += 360;
         }
-        
+
         if (min == max) {
             if (Oversimplified.DEBUG.showMessages) console.log("Min and Max cannot be the same number!");
             return false;
@@ -1863,7 +1866,7 @@ Math.clampAngle = function (value, min, max) {
             if (Oversimplified.DEBUG.showMessages) console.log("Min must be less than Max!");
             return false;
         }
-        
+
         if (value < min) {
             value = min;
         }
