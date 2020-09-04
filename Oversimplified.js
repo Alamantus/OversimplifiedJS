@@ -667,9 +667,9 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
 
-    // If there is no options.imageSrc, use Oversimplified.emptyImage. If there is and it has a .src already, use the image, otherwise, create a new Image.
-    this.image = (options.imageSrc) ? ((options.imageSrc.src) ? options.imageSrc : new Image()) : Oversimplified.emptyImage;
-    this.image.src = (this.image.src) ? this.imageSrc.src : options.imageSrc;
+    // If provided options.imageSrc is an image, use it. If there's no options.imageSrc, use Oversimplified.emptyImage's src in a new image.
+    this.image = (options.imageSrc && options.imageSrc.src) ? options.imageSrc : new Image();
+    this.image.src = (this.image.src) ? this.image.src : (options.imageSrc ? options.imageSrc : Oversimplified.emptyImage.src);
 
     this.sprite = {};
     this.sprite.xScale = typeof options.xScale !== 'undefined' ? options.xScale : 1;
@@ -681,8 +681,8 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
 
     this.sprite.frameColumn = 0;
     this.sprite.frameRow = 0;
-
-    if (typeof options.animations !== 'undefined') {
+    
+    if (typeof options.animations !== 'undefined' && options.animations.length > 0) {
         for (var i = 0; i < options.animations.length; i++) {
             if (i == 0 && options.animations[i].name != "Default") {
                 this.sprite.animations["Default"] = options.animations[i];    // Creates a duplicate animation of the first animation called "Default" in addition to the named animation below (unless the animation's name is "Default")
@@ -690,31 +690,44 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
             this.sprite.animations[options.animations[i].name] = options.animations[i];
         }
     } else {
-        if (this.image != Oversimplified.emptyImage) {
+        var newAnimationName = "Default_GameObject" + this.id.toString();
+        if (this.image.src != Oversimplified.emptyImage.src) {
             //If no animations array is included, then just show the whole image
-            this.image.onload = function(){self.sprite.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.width, height: this.height});}    // Creates the default animation as the whole image once the image is loaded.
+            this.image.stillLoading = true;
+            this.image.onload = function(){
+                // Creates the default animation as the whole image once the image is loaded.
+                self.sprite.animations["Default"] = new Oversimplified.Animation(newAnimationName, this.width, this.height);
+                setupMask();
+                self.image.stillLoading = false;
+            }
         } else {
-            this.sprite.animations["Default"] = new Oversimplified.Animation("newAnimation", {width: this.image.width, height: this.image.height});
+            this.sprite.animations["Default"] = new Oversimplified.Animation(newAnimationName, this.image.width, this.image.height);
         }
     }
-
+    
     this.sprite.currentAnimation = "Default";
 
-    this.mask = (options.maskImageSrc) ? new Image() : {};
-    this.mask.src = (options.maskImageSrc) ? options.maskImageSrc : "";
-    if (this.mask.src == "") {
-        this.mask.width = this.sprite.animations["Default"].width;
-        this.mask.height = this.sprite.animations["Default"].height;
+    if (!this.image.stillLoading) {
+        setupMask();
     }
-
-    if (this.mask.src != "") {
-        this.mask.onload = function(){
-            self.xBound = this.width / 2 * self.sprite.xScale;
-            self.yBound = this.height / 2 * self.sprite.yScale;
-        };
-    } else {
-        self.xBound = this.mask.width / 2 * self.sprite.xScale;
-        self.yBound = this.mask.height / 2 * self.sprite.yScale;
+    
+    function setupMask() {
+        self.mask = (options.maskImageSrc) ? new Image() : {};
+        self.mask.src = (options.maskImageSrc) ? options.maskImageSrc : "";
+        if (self.mask.src == "") {
+            self.mask.width = self.sprite.animations["Default"].width;
+            self.mask.height = self.sprite.animations["Default"].height;
+        }
+        
+        if (self.mask.src != "") {
+            self.mask.onload = function(){
+                self.xBound = self.width / 2 * self.sprite.xScale;
+                self.yBound = self.height / 2 * self.sprite.yScale;
+            };
+        } else {
+            self.xBound = self.mask.width / 2 * self.sprite.xScale;
+            self.yBound = self.mask.height / 2 * self.sprite.yScale;
+        }
     }
 
     // Set any extra properties from Options.
