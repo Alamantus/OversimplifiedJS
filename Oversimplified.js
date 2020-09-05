@@ -11,6 +11,7 @@ Oversimplified.context = null;
 Oversimplified.nextID = 0;
 Oversimplified.loadingScripts = [];
 Oversimplified.loadedScripts = [];
+Oversimplified.numberOfScriptsToLoad = 0;
 Oversimplified.emptyImage = new Image();
 Oversimplified.emptyImage.src = "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
 Oversimplified.emptyImage.width = 1;
@@ -19,7 +20,7 @@ Oversimplified.emptyImage.height = 1;
 // Settings Namespace
 Oversimplified.Settings = {
     defaultStep : 1/30,
-    numberOfScriptsToLoad : 0,
+    loadingBar : false,
     soundVolume : 0.75,
     musicVolume : 0.75,
     preventRightClick : true
@@ -1602,9 +1603,10 @@ Oversimplified.SetCanvasToCameraSize = function () {
 
 // Defines the order of operations for the Frame.
 Oversimplified.Frame = function () {
-    if ((Oversimplified.Settings.numberOfScriptsToLoad > 0 && Oversimplified.loadedScripts.length == Oversimplified.Settings.numberOfScriptsToLoad) ||
-        (Oversimplified.Settings.numberOfScriptsToLoad <= 0 &&Oversimplified.loadingScripts.length == 0))
+    if (Oversimplified.loadedScripts.length >= Oversimplified.numberOfScriptsToLoad
+        || Oversimplified.loadingScripts.length == 0)
     {
+        // console.log(Oversimplified.loadedScripts);
         Oversimplified.now = Oversimplified.timestamp();
         Oversimplified.dateTime = Oversimplified.dateTime + Math.min(1, (Oversimplified.now - Oversimplified.lastFrame) / 1000);
         while (Oversimplified.dateTime > Oversimplified.step) {
@@ -1617,13 +1619,13 @@ Oversimplified.Frame = function () {
     } else {
         if (Oversimplified.DEBUG.showMessages) {
             var debugMessage = "Loaded " + Oversimplified.loadedScripts.length.toString();
-            debugMessage += (Oversimplified.Settings.numberOfScriptsToLoad > 0) ? " of " + Oversimplified.Settings.numberOfScriptsToLoad.toString() : "";
+            debugMessage += (Oversimplified.numberOfScriptsToLoad > 0) ? " of " + Oversimplified.numberOfScriptsToLoad.toString() : "";
             debugMessage += " scripts:\n" + Oversimplified.loadedScripts.toString() + ".\nWaiting for:\n" + Oversimplified.loadingScripts.toString();
             console.log(debugMessage);
         }
         
-        if (Oversimplified.Settings.numberOfScriptsToLoad > 0) {
-            var percentage = Oversimplified.loadedScripts.length / Oversimplified.Settings.numberOfScriptsToLoad;
+        if (Oversimplified.numberOfScriptsToLoad > 0) {
+            var percentage = Oversimplified.loadedScripts.length / Oversimplified.numberOfScriptsToLoad;
             var barHeight = 32;
             var maxBarWidth = Math.round(Oversimplified.camera.width * 0.6);
             var barWidth = Math.round(maxBarWidth * percentage);
@@ -1746,18 +1748,23 @@ Oversimplified.IsOnCamera = function (x, y) {
 You can either specify a main function or just make the main function within the script the same as the script's name (minus ".js")
 */
 Oversimplified.AddScript = function (pathToScript, mainFunction) {
-    mainFunction = typeof mainFunction !== 'undefined' ? mainFunction : pathToScript.slice(((pathToScript.lastIndexOf("/")>-1)?pathToScript.lastIndexOf("/")+1:0), pathToScript.indexOf("."));
+    mainFunction = typeof mainFunction !== 'undefined'
+        ? mainFunction
+        : pathToScript.slice((
+            pathToScript.lastIndexOf("/") > -1 ? pathToScript.lastIndexOf("/") + 1 : 0
+        ), pathToScript.lastIndexOf("."));
     
+    Oversimplified.numberOfScriptsToLoad++;
     Oversimplified.loadingScripts.push(pathToScript);
     
     var script = document.createElement('script');
     script.src = pathToScript;
     script.onload = function () {
         if (typeof mainFunction !== 'string') {
-            Oversimplified.WaitForScriptsToLoad(function(){mainFunction()});
+            mainFunction();
         } else {
             if (typeof window[mainFunction] === 'function') {
-                Oversimplified.WaitForScriptsToLoad(function(){window[mainFunction]()});
+                window[mainFunction]();
             } else {
                 if (Oversimplified.DEBUG.showMessages) console.log(mainFunction + " is not a function!");
             }
@@ -1771,9 +1778,9 @@ Oversimplified.AddScript = function (pathToScript, mainFunction) {
 
 // Callback function that prevents any added scripts from executing until all scripts are loaded.
 Oversimplified.WaitForScriptsToLoad = function (Function) {
-    if (Oversimplified.DEBUG.showMessages && Oversimplified.Settings.numberOfScriptsToLoad > 0) console.log("Waiting for " + (Oversimplified.Settings.numberOfScriptsToLoad - Oversimplified.loadedScripts.length).toString() + " scripts to load");
-    if (Oversimplified.loadingScripts.length > 0)
-    {
+    if (Oversimplified.DEBUG.showMessages && Oversimplified.loadingScripts.length > 0) console.log("Waiting for " + (Oversimplified.numberOfScriptsToLoad - Oversimplified.loadedScripts.length).toString() + " scripts to load");
+
+    if (Oversimplified.loadingScripts.length > 0) {
         setTimeout(function(){Oversimplified.WaitForScriptsToLoad(Function)}, 0.1);
     } else {
         Function();
