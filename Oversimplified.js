@@ -680,7 +680,7 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
     this.sprite.xScale = typeof options.xScale !== 'undefined' ? options.xScale : 1;
     this.sprite.yScale = typeof options.yScale !== 'undefined' ? options.yScale : this.sprite.xScale;
 
-    this.sprite.rotation = typeof options.rotation !== 'undefined' ? Math.clampAngle(options.rotation) : 0;
+    this.sprite.rotation = typeof options.rotation !== 'undefined' ? Oversimplified.Math.clampAngle(options.rotation) : 0;
 
     this.sprite.animations = {};
 
@@ -819,10 +819,10 @@ Oversimplified.GameObject.prototype.SetScale = function (xScale, yScale) {
     this.yBound = (this.mask.height / 2) * this.sprite.yScale;
 }
 Oversimplified.GameObject.prototype.SetImageRotation = function (rotation) {
-    this.sprite.rotation = Math.clampAngle(rotation);
+    this.sprite.rotation = Oversimplified.Math.clampAngle(rotation);
 }
 Oversimplified.GameObject.prototype.RotateImage = function (amount) {
-    this.sprite.rotation += Math.clampAngle(amount);
+    this.sprite.rotation += Oversimplified.Math.clampAngle(amount);
 }
 Oversimplified.GameObject.prototype.SetAnimation = function (which) {
     if (which.name) {    //If you enter an actual animation instead of just its name,
@@ -851,7 +851,7 @@ Oversimplified.GameObject.prototype.Update = function () {
     this.AfterDo();
     
     //Make sure rotation is a valid angle before drawing
-    this.sprite.rotation = Math.clampAngle(this.sprite.rotation);
+    this.sprite.rotation = Oversimplified.Math.clampAngle(this.sprite.rotation);
 }
 Oversimplified.GameObject.prototype.End = function () {
     this.DoLast();
@@ -1091,7 +1091,7 @@ Oversimplified.A = Oversimplified.Animations;
 
 // Animation class (for use with sprite sheets)
 //
-// Prevents animation mess-ups by preventing speeds higher than one with Math.clamp01.
+// Prevents animation mess-ups by preventing speeds higher than one with Oversimplified.Math.clamp01.
 Oversimplified.Animation = function (name, width, height, options) {
     options = typeof options !== 'undefined' ? options : {};
     
@@ -1105,7 +1105,7 @@ Oversimplified.Animation = function (name, width, height, options) {
     //Optional Options
     this.columns = typeof options.columns !== 'undefined' ? options.columns : 1;
     this.rows = typeof options.rows !== 'undefined' ? options.rows : 1;
-    this.speed = typeof options.speed !== 'undefined' ? Math.clamp01(options.speed) : 1;
+    this.speed = typeof options.speed !== 'undefined' ? Oversimplified.Math.clamp01(options.speed) : 1;
     this.xOffset = typeof options.xOffset !== 'undefined' ? options.xOffset : 0;
     this.yOffset = typeof options.yOffset !== 'undefined' ? options.yOffset : 0;
 }
@@ -1803,13 +1803,14 @@ function IsInternetExplorer () {
     }
 }
 
-// Add more functionality to Math namespace
+// Oversimplified.Math namespace
+Oversimplified.Math = {};
 
 /* Make sure the value does not fall outide the min-max range
 
-Usage: numberValue = Math.clamp(numberValue, 3, 10);
+Usage: numberValue = Oversimplified.Math.clamp(numberValue, 3, 10);
 */
-Math.clamp = function (value, min, max) {
+Oversimplified.Math.clamp = function (value, min, max) {
     if (min == max) {
         if (Oversimplified.DEBUG.showMessages) console.log("Min and Max cannot be the same number!");
         return false;
@@ -1831,9 +1832,9 @@ Math.clamp = function (value, min, max) {
 
 /* Make sure the given value does not fall outide the 0-1 range
 
-Usage: numberValue = Math.clamp01(numberValue);
+Usage: numberValue = Oversimplified.Math.clamp01(numberValue);
 */
-Math.clamp01 = function (value) {
+Oversimplified.Math.clamp01 = function (value) {
     if (value < 0) {
         value = 0;
     }
@@ -1846,11 +1847,11 @@ Math.clamp01 = function (value) {
 
 /* Return the given numberValue as a clamped angle between 0 and 360
 
-Usage: numberValue = Math.clampAngle(numberValue, 0, 180);
+Usage: numberValue = Oversimplified.Math.clampAngle(numberValue, 0, 180);
 
-Alternate: numberValue = Math.clampAngle(numberValue);
+Alternate: numberValue = Oversimplified.Math.clampAngle(numberValue);
 */
-Math.clampAngle = function (value, min, max) {
+Oversimplified.Math.clampAngle = function (value, min, max) {
     // Make sure angle is between 0 and 360
     while (value >= 360) {
         value -= 360;
@@ -1896,41 +1897,41 @@ Math.clampAngle = function (value, min, max) {
 
 /* Convert a radian value to degrees
 
-Usage: degreeValue = Math.radToDeg(radianValue);
+Usage: degreeValue = Oversimplified.Math.radToDeg(radianValue);
 */
-Math.radToDeg = function (radians) {
+Oversimplified.Math.radToDeg = function (radians) {
     return radians / (Math.PI / 180);
 };
 
 /* Convert a degree value to radians
 
-Usage: radianValue = Math.degToRad(degreeValue);
+Usage: radianValue = Oversimplified.Math.degToRad(degreeValue);
 */
-Math.degToRad = function (degrees) {
+Oversimplified.Math.degToRad = function (degrees) {
     return degrees * (Math.PI / 180);
 };
 
 /* Get the cosine of an angle given in degrees
 
-Usage: cosine = Math.getCos(angleInDegrees);
+Usage: cosine = Oversimplified.Math.getCos(angleInDegrees);
 */
-Math.getCos = function (angle) {
-    return Math.cos(Math.degToRad(angle));
+Oversimplified.Math.getCos = function (angle) {
+    return Math.cos(Oversimplified.Math.degToRad(angle));
 };
 
 /* Get the sine of an angle given in degrees
 
-Usage: sine = Math.getSin(angleInDegrees);
+Usage: sine = Oversimplified.Math.getSin(angleInDegrees);
 */
-Math.getSin = function (angle) {
-    return Math.sin(Math.degToRad(angle));
+Oversimplified.Math.getSin = function (angle) {
+    return Math.sin(Oversimplified.Math.degToRad(angle));
 };
 
 /* Return true or false based on a 50% chance
 
-Usage: flippedHeads = Math.coinFlip();
+Usage: flippedHeads = Oversimplified.Math.coinFlip();
 */
-Math.coinFlip = function () {
+Oversimplified.Math.coinFlip = function () {
     if (Math.random() >= 0.5) {
         return true;
     } else {
@@ -1940,8 +1941,8 @@ Math.coinFlip = function () {
 
 /* Return a random number between min and max (inclusive)
 
-Usage: numberBetween3And15 = Math.randomRange(3, 15);
+Usage: numberBetween3And15 = Oversimplified.Math.randomRange(3, 15);
 */
-Math.randomRange = function (min, max) {
+Oversimplified.Math.randomRange = function (min, max) {
     return Math.random() * (max - min) + min;
 };
