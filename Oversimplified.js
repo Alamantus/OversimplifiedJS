@@ -291,7 +291,7 @@ Oversimplified.Controls.Add = function(name, positiveKeycode, negativeKeycode) {
     return Oversimplified.Controls[name];
 };
 
-// Alias for OS.Controls.Add()
+// Alias for Oversimplified.Controls.Add()
 Oversimplified.Controls.New = Oversimplified.Controls.Add;
 
 // Checks each control every frame for presses/releases/holds
@@ -1636,18 +1636,18 @@ Oversimplified.Frame = function () {
             var barX = Math.round(Oversimplified.camera.width * 0.2);
             var barY = Math.round(Oversimplified.camera.height * 0.5) - Math.round(barHeight / 2);
 
-            var saveFillStyle = OS.context.fillStyle;
-            var saveStrokeStyle = OS.context.strokeStyle;
+            var saveFillStyle = Oversimplified.context.fillStyle;
+            var saveStrokeStyle = Oversimplified.context.strokeStyle;
 
-            OS.context.fillStyle = Oversimplified.Settings.loadingBar.fillColor;
-            OS.context.fillRect(barX, barY, barWidth, barHeight);
+            Oversimplified.context.fillStyle = Oversimplified.Settings.loadingBar.fillColor;
+            Oversimplified.context.fillRect(barX, barY, barWidth, barHeight);
 
-            OS.context.strokeStyle = Oversimplified.Settings.loadingBar.outlineColor;
-            OS.context.lineWidth = Oversimplified.Settings.loadingBar.outlineWidth;
-            OS.context.strokeRect(barX, barY, maxBarWidth, barHeight);
+            Oversimplified.context.strokeStyle = Oversimplified.Settings.loadingBar.outlineColor;
+            Oversimplified.context.lineWidth = Oversimplified.Settings.loadingBar.outlineWidth;
+            Oversimplified.context.strokeRect(barX, barY, maxBarWidth, barHeight);
 
-            OS.context.fillStyle = saveFillStyle;
-            OS.context.strokeStyle = saveStrokeStyle;
+            Oversimplified.context.fillStyle = saveFillStyle;
+            Oversimplified.context.strokeStyle = saveStrokeStyle;
         }
     }
     
