@@ -19,11 +19,15 @@ Oversimplified.emptyImage.height = 1;
 
 // Settings Namespace
 Oversimplified.Settings = {
-    defaultStep : 1/30,
-    loadingBar : false,
-    soundVolume : 0.75,
-    musicVolume : 0.75,
-    preventRightClick : true
+    defaultStep: 1/30,
+    loadingBar: {
+        fillColor: "#DD5511",
+        outlineColor: "#882200",
+        outlineWidth: 5,
+    },
+    soundVolume: 0.75,
+    musicVolume: 0.75,
+    preventRightClick: true
 }
 // Convenient alias for Settings.
 Oversimplified.S = Oversimplified.Settings;
@@ -1624,7 +1628,7 @@ Oversimplified.Frame = function () {
             console.log(debugMessage);
         }
         
-        if (Oversimplified.numberOfScriptsToLoad > 0) {
+        if (Oversimplified.Settings.loadingBar !== false && Oversimplified.numberOfScriptsToLoad > 0) {
             var percentage = Oversimplified.loadedScripts.length / Oversimplified.numberOfScriptsToLoad;
             var barHeight = 32;
             var maxBarWidth = Math.round(Oversimplified.camera.width * 0.6);
@@ -1635,11 +1639,11 @@ Oversimplified.Frame = function () {
             var saveFillStyle = OS.context.fillStyle;
             var saveStrokeStyle = OS.context.strokeStyle;
 
-            OS.context.fillStyle = "#DD5511";
+            OS.context.fillStyle = Oversimplified.Settings.loadingBar.fillColor;
             OS.context.fillRect(barX, barY, barWidth, barHeight);
 
-            OS.context.strokeStyle= "#882200";
-            OS.context.lineWidth=5;
+            OS.context.strokeStyle = Oversimplified.Settings.loadingBar.outlineColor;
+            OS.context.lineWidth = Oversimplified.Settings.loadingBar.outlineWidth;
             OS.context.strokeRect(barX, barY, maxBarWidth, barHeight);
 
             OS.context.fillStyle = saveFillStyle;
