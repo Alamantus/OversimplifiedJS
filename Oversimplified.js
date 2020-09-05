@@ -1,21 +1,39 @@
 /** The main namespace that acts as a container for everything that the game engine has to offer.
  * 
- * Conveniently aliased with `OS`, for example `OS.SetCamera({ width: 600, height: 400 });` is
- * the same as `Oversimplified.SetCamera({ width: 600, height: 400 });`
+ * Conveniently aliased with `{@link OS}`, for example
+ * 
+ * ```
+ * {@link OS}.SetCamera({ width: 600, height: 400 });
+ * ```
+ * 
+ * is the same as
+ * 
+ * ```
+ * {@link Oversimplified.SetCamera}({ width: 600, height: 400 });
+ * ```
  * @namespace
  */
 var Oversimplified = {};
+
+/** A convenient alias for {@link Oversimplified}.
+ * 
+ * _Anywhere_ you might type `Oversimplified`, you can substitute `OS` instead to save some typing.
+ * @namespace
+ * @see {@link Oversimplified}
+ */
 var OS = Oversimplified;
 
-/** Stores the HTML5 canvas element in `index.html` with the id of `game`.
- * @type {(Canvas|null)}
+/** _NOT FOR REGULAR USE._ Stores the HTML5 canvas element in `index.html` with the id of `game`.
+ * @type {(HTMLCanvasElement|null)}
  * @readonly
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement|HTMLCanvasElement}
  */
 Oversimplified.canvas = null;
 
 /** Stores the HTML5 canvas context of {@link Oversimplified.canvas}.
- * @type {(Context|null)}
+ * @type {(CanvasRenderingContext2D|null)}
  * @readonly
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D|CanvasRenderingContext2D}
  */
 Oversimplified.context = null;
 
@@ -54,6 +72,9 @@ Oversimplified.numberOfScriptsToLoad = 0;
 
 /** An empty image to use as reference when no images are provided for a {@link Oversimplified.GameObject}
  * @type {Image}
+ * @property {string} src="data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA="
+ * @property {number} width=1
+ * @property {number} height=1
  * @readonly
  */
 Oversimplified.emptyImage = new Image();
@@ -65,55 +86,47 @@ Oversimplified.emptyImage.height = 1;
 
 /** Stores various settings. Maybe you can make good use of it for your own game settings, so long as you don't overwrite the existing values.
  *
- * Conveniently aliased with `S`, for example `OS.S.loadingBar = false;` is
- * the same as `Oversimplified.Settings.loadingBar = false;`
+ * Conveniently aliased with `{@link OS.S}`, for example
+ * 
+ * ```
+ * {@link OS.S}.loadingBar = false;
+ * ```
+ * is the same as
+ * 
+ * ```
+ * {@link Oversimplified.Settings|Oversimplified.Settings}.loadingBar = false;
+ * ```
  * @namespace
+ * @property {number} defaultStep=1/3 - The default frame speed for {@link Oversimplified.Room|Rooms}. Represents the number of seconds that pass before the next frame plays.
+ * @property {(Object|false)} loadingBar - The style values for the loading bar that appears when scripts are being loaded.
+ * 
+ * Can be set to `false` to disable the loading bar completely and just show a blank screen when loading is happening instead.
+ * @property {string} loadingBar.fillColor="#DD5511" - The color hex (including `#`) of the loading bar that fills in the outlined space.
+ * @property {string} loadingBar.outlineColor="#882200" - The color hex (including `#`) of the outline that surrounds the loading bar.
+ * @property {number} loadingBar.outlineWidth=5 - The number of pixels that the loading bar's outline has.
+ * @property {number} soundVolume=0.75 - The level of volume between 0 and 1 that {@link Oversimplified.Sound|Sounds} play at.
+ * @property {number} musicVolume=0.75 - The level of volume between 0 and 1 that {@link Oversimplified.Tune|Tunes} play at.
+ * @property {boolean} preventRightClick=true - Whether or not to allow people viewing your game to right click the canvas.
  */
 Oversimplified.Settings = {
-    /** The default frame speed for {@link Oversimplified.Room|Rooms}. Represents the number of seconds that pass before the next frame plays.
-     * @type {number}
-     * @memberof Oversimplified.Settings
-    */
     defaultStep: 1 / 30,
-    
-    /** The style values for the loading bar that appears when scripts are being loaded.
-     * 
-     * Can be set to `false` to disable the loading bar completely and just show a blank screen when loading is happening instead.
-     * @type {(Object|false)}
-     * @memberof Oversimplified.Settings
-     * @example
-     * // The following is the structure and parameters  default value
-     * Oversimplified.Settings.loadingBar = {
-     *     fillColor: "#DD5511",   // The color hex (including `#`) of the loading bar that fills in the outlined space.
-     *     outlineColor: "#882200",    // The color hex (including `#`) of the outline that surrounds the loading bar.
-     *     outlineWidth: 5,    // The number of pixels that the loading bar's outline has.
-     * }
-     */
     loadingBar: {
         fillColor: "#DD5511",
         outlineColor: "#882200",
         outlineWidth: 5,
     },
-
-    /** The level of volume between 0 and 1 that {@link Oversimplified.Sound|Sounds} play at.
-     * @type {number}
-     * @default
-    */
     soundVolume: 0.75,
-
-    /** The level of volume between 0 and 1 that {@link Oversimplified.Tune|Tunes} play at.
-     * @type {number}
-     * @default
-    */
     musicVolume: 0.75,
-
-    /** Whether or not to allow people viewing your game to right click the canvas.
-     * Enabling this might allow people to save screenshots and whatnot depending on their browser.
-     * @type {boolean}
-     * @default
-    */
     preventRightClick: true
 }
+
+/** A convenient alias for {@link Oversimplified.Settings}.
+ * 
+ * _Anywhere_ you might type `Oversimplified.Settings`, you can substitute `OS.S` instead to save some typing.
+ * @namespace
+ * @alias OS.S
+ * @see {@link Oversimplified.Settings}
+ */
 Oversimplified.S = Oversimplified.Settings;
 
 
@@ -161,62 +174,39 @@ Oversimplified.step = Oversimplified.Settings.defaultStep;
  * If it is smaller than the current room, then it will only display what is visible within the area of the camera.
  * 
  * Intended only to be manipulated via the {@link Oversimplified.SetCamera} method.
- * @static
+ * 
+ * Also accessible via `{@link OS}.camera`.
  * @namespace
+ * @property {number} x - The x position of the top left corner of the camera within the current {@link Oversimplified.Room|Room}.
+ * @property {number} y - The y position of the top left corner of the camera within the current {@link Oversimplified.Room|Room}.
+ * @property {number} width=640 - The width of the HTML5 canvas and of the visible portion of the current {@link Oversimplified.Room|Room}.
+ * @property {number} height=480 - The height of the HTML5 canvas and of the visible portion of the current {@link Oversimplified.Room|Room}.
+ * @property {string} following="" - The `name` of the {@link Oversimplified.GameObject|GameObject} that the camera is following within the current {@link Oversimplified.Room|Room}
+ * @property {number} hBorder=64 - The number of pixels away from the camera's edge horizontally that the {@link Oversimplified.GameObject|GameObject} being followed via `following` must be before the camera scrolls.
+ * @property {number} vBorder=64 - The number of pixels away from the camera's edge vertically that the {@link Oversimplified.GameObject|GameObject} being followed via `following` must be before the camera scrolls.
  * @see {@link Oversimplified.SetCamera}
  */
 Oversimplified.camera = {
-    /** The x position of the top left corner of the camera within the current {@link Oversimplified.Room|Room}.
-     * @type {number}
-     * @readonly
-     */
     x: 0,
-
-    /** The y position of the top left corner of the camera within the current {@link Oversimplified.Room|Room}.
-     * @type {number}
-     * @readonly
-     */
     y: 0,
-
-    /** The width of the HTML5 canvas and of the visible portion of the current {@link Oversimplified.Room|Room}.
-     * @type {number}
-     * @readonly
-     */
     width: 640,
-
-    /** The height of the HTML5 canvas and of the visible portion of the current {@link Oversimplified.Room|Room}.
-     * @type {number}
-     * @readonly
-     */
     height: 480,
-
-    /** The number of pixels away from the camera's edge horizontally that the {@link Oversimplified.camera.following|GameObject being followed} must be before the camera scrolls.
-     * @type {number}
-     * @readonly
-     */
-    hBorder: 64,
-
-    /** The number of pixels away from the camera's edge vertically that the {@link Oversimplified.camera.following|GameObject being followed} must be before the camera scrolls.
-     * @type {number}
-     * @readonly
-     */
-    vBorder: 64,
-    
-    /** The `name` of the {@link Oversimplified.GameObject|GameObject} that the camera is following within the current {@link Oversimplified.Room|Room}
-     * @type {string}
-     * @readonly
-     */
     following: "",
+    hBorder: 64,
+    vBorder: 64,
 
     /** Set the object for the camera to follow.
      * @function
+     * @param {Oversimplified.GameObject} object - The GameObject to follow in the current room.
+     * 
+     * Takes only the `name` and sets the `{@link Oversimplified.camera}.following` property.
      */
     Follow: function (object) {
         this.following = object.name;
     }
 }
 
-/** Set up the camera.
+/** Set up {@link Oversimplified.camera}.
  *
  * It is important that this is done first at the time the game is loaded because this determines the size of the HTML5 canvas.
  * Be sure that the objectToFollow has already been created in the current room. Can be referenced with a variable.
@@ -227,7 +217,7 @@ Oversimplified.camera = {
  * @param {number} [options.height=Oversimplified.camera.width] - The height specified here will set the height of the HTML5 canvas.
  * @param {number} [options.x=Oversimplified.camera.x] - The x position of the top left corner of the camera within the current room.
  * @param {number} [options.y=Oversimplified.camera.y] - The y position of the top left corner of the camera within the current room.
- * @param {Oversimplified.GameObject} [options.objectToFollow] - A reference to an OversimplifiedJS GameObject.
+ * @param {Oversimplified.GameObject} [options.objectToFollow] - A reference to an OversimplifiedJS GameObject. Runs {@link Oversimplified.camera.Follow} to set the {@link Oversimplified.camera|camera}'s `following` property.
  * @param {number} [options.hBorder=Oversimplified.camera.hBorder] - The number of pixels away from the camera's edge horizontally that the options.objectToFollow must be before the camera scrolls.
  * @param {number} [options.vBorder=Oversimplified.camera.vBorder] - The number of pixels away from the camera's edge vertically that the options.objectToFollow must be before the camera scrolls.
  * @example
@@ -266,110 +256,69 @@ Oversimplified.SetCamera = function (options) {
 
 /** Stores data about the mouse and touch information.
  * 
- * Touches emulate mouse buttons (1 finger = left mouse, 2 fingers = right mouse, 3 fingers = middle mouse)
+ * Touches emulate mouse buttons:
+ * 
+ * * 1 finger = left mouse
+ * * 2 fingers = right mouse
+ * * 3 fingers = middle mouse)
  * @static
  * @namespace
+ * @property {number} x - The x position of the mouse relative to the top left corner of the canvas.
+ * @property {number} y - The y position of the mouse relative to the top left corner of the canvas.
+ * @property {number} leftCode - The event code of the left mouse button for internal use.
+ * 
+ * Set dependent upon whether the browser is Internet Explorer or not.
+ * @property {number} middleCode - The event code of the middle mouse button for internal use.
+ * 
+ * Set dependent upon whether the browser is Internet Explorer or not.
+ * @property {number} rightCode - The event code of the right mouse button for internal use.
+ * @property {boolean} leftDown - Whether the left mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
+ * 
+ * Only returns true during the frame it was clicked down.
+ * @property {boolean} left - Whether the left mouse button is held.
+ * @property {boolean} leftUp - Whether the left mouse button has been released this {@link Oversimplified.Frame|Frame}.
+ * 
+ * Only returns true during the frame it was unclicked.
+ * @property {boolean} middleDown - Whether the middle mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
+ * 
+ * Only returns true during the frame it was clicked down.
+ * @property {boolean} middle - Whether the middle mouse button is held.
+ * @property {boolean} middleUp - Whether the middle mouse button has been released this {@link Oversimplified.Frame|Frame}.
+ * 
+ * Only returns true during the frame it was unclicked.
+ * @property {boolean} rightDown - Whether the right mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
+ * 
+ * Only returns true during the frame it was clicked down.
+ * @property {boolean} right - Whether the right mouse button is held.
+ * @property {boolean} rightUp - Whether the right mouse button has been released this {@link Oversimplified.Frame|Frame}.
+ * 
+ * Only returns true during the frame it was unclicked.
+ * @property {number} wheel - Returns the direction that the scroll wheel was moved this {@link Oversimplified.Frame|Frame}:
+ *
+ * * 0 if it has not been moved,
+ * * 1 if it was moved up, or
+ * * -1 if it was moved down.
  */
 Oversimplified.mouse = {
-    /** The x position of the mouse relative to the top left corner of the canvas.
-     * @type {number}
-     * @readonly
-     */
     x: 0,
-
-    /** The y position of the mouse relative to the top left corner of the canvas.
-     * @type {number}
-     * @readonly
-     */
     y: 0,
 
-    /** The event code of the left mouse button for internal use.
-     * 
-     * Set dependent upon whether the browser is Internet Explorer or not.
-     * @type {number}
-     * @readonly
-     */
     leftCode: IsInternetExplorer() ? 1 : 0,
-
-    /** The event code of the middle mouse button for internal use.
-     * 
-     * Set dependent upon whether the browser is Internet Explorer or not.
-     * @type {number}
-     * @readonly
-     */
     middleCode: IsInternetExplorer() ? 4 : 1,
-
-    /** The event code of the right mouse button for internal use.
-     * @type {number}
-     * @readonly
-     */
     rightCode: 2,
 
-    /** Whether the left mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
-     * Only returns true during the frame it was clicked down.
-     * @type {boolean}
-     * @readonly
-     */
     leftDown: false,
-
-    /** Whether the left mouse button is held.
-     * @type {boolean}
-     * @readonly
-     */
     left: false,
-
-    /** Whether the left mouse button has been released this {@link Oversimplified.Frame|Frame}.
-     * Only returns true during the frame it was unclicked.
-     * @type {boolean}
-     * @readonly
-     */
     leftUp: false,
 
-    /** Whether the middle mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
-     * Only returns true during the frame it was clicked down.
-     * @type {boolean}
-     * @readonly
-     */
     middleDown: false,
-
-    /** Whether the middle mouse button is held.
-     * @type {boolean}
-     * @readonly
-     */
     middle: false,
-    
-    /** Whether the middle mouse button has been released this {@link Oversimplified.Frame|Frame}.
-     * Only returns true during the frame it was unclicked.
-     * @type {boolean}
-     * @readonly
-     */
     middleUp: false,
 
-    /** Whether the right mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
-     * Only returns true during the frame it was clicked down.
-     * @type {boolean}
-     * @readonly
-     */
     rightDown: false,
-
-    /** Whether the right mouse button is held.
-     * @type {boolean}
-     * @readonly
-     */
     right: false,
-
-    /** Whether the right mouse button has been released this {@link Oversimplified.Frame|Frame}.
-     * Only returns true during the frame it was unclicked.
-     * @type {boolean}
-     * @readonly
-     */
     rightUp: false,
 
-    /** Returns the direction that the scroll wheel was moved this {@link Oversimplified.Frame|Frame}:
-     * 0 if it has not been moved, 1 if it was moved up, and -1 if it was moved down.
-     * @type {number}
-     * @readonly
-     */
     wheel: 0
 }
 
@@ -380,11 +329,15 @@ Oversimplified.mouse = {
  * @readonly
  */
 Oversimplified.heldKeys = [];
-/** Lists any keycodes for keys that are being held down.
+/** Lists any keycodes for keys that have been pressed down this {@link Oversimplified.Frame|Frame}.
  * @type {number[]}
  * @readonly
  */
 Oversimplified.pressedKeys = [];
+ /** Lists any keycodes for keys that have been released this {@link Oversimplified.Frame|Frame}.
+  * @type {number[]}
+  * @readonly
+  */
 Oversimplified.releasedKeys = [];
 
 /**
@@ -761,7 +714,7 @@ Oversimplified.Controls.Add = function(name, positiveKeycode, negativeKeycode) {
 // Alias for Oversimplified.Controls.Add()
 Oversimplified.Controls.New = Oversimplified.Controls.Add;
 
-/** _NOT FOR USE._ Internal function that checks each control every frame for presses/releases/holds.
+/** _NOT FOR USE._ Internal function that checks each created {@link Oversimplified.Control} every {@link Oversimplified.Frame|Frame} for presses, releases, and holds.
  * @function
  */
 Oversimplified.Controls.CheckAll = function () {
@@ -772,7 +725,13 @@ Oversimplified.Controls.CheckAll = function () {
     }
 };
 
-// Convenient alias for Controls
+/** A convenient alias for {@link Oversimplified.Controls}.
+ * 
+ * _Anywhere_ you might type `Oversimplified.Controls`, you can substitute `OS.C` instead to save some typing.
+ * @namespace
+ * @alias OS.C
+ * @see {@link Oversimplified.Controls}
+ */
 Oversimplified.C = Oversimplified.Controls;
 
 // Control Class
@@ -780,8 +739,11 @@ Oversimplified.C = Oversimplified.Controls;
  * @class
  * @param {number} keycode - The keycode value of the key to be tracked
  * @classdesc
- * Stores information about the status of a specified key. Access using {@link Oversimplified.Controls.Add}.
+ * Stores information about the status of a specified key.
+ * 
+ * Access using {@link Oversimplified.Controls.Add}.
  * @example
+ * // This will create a new `Control` and store it in `Oversimplified.Controls` under the name "Jump".
  * var ct_jump = Oversimplified.Controls.Add("Jump", OS.Keycode["z"]);
  * // Pressing and holding the `Z` key will cause both `ct_jump.pressed` and `ct_jump.down` to equal `true` for one frame
  * // and will set `ct_jump.held` to equal `true` until the `Z` key is released.
@@ -802,17 +764,17 @@ Oversimplified.Control = function (keycode) {
      */
     this.keyName = Oversimplified.Key[keycode];
     
-    /** Whether this Control's key was pressed during the current {@link Oversimplified.Frame}.
+    /** Whether this Control's key was pressed during the current {@link Oversimplified.Frame|Frame}.
      * 
-     * Also accessible via `pressed`.
+     * Also accessible via `{@link Oversimplified.Control#pressed}`.
      * @instance
      * @type {boolean}
      */
     this.down = false;
     
-    /** Whether this Control's key was pressed during the current {@link Oversimplified.Frame}.
+    /** Whether this Control's key was pressed during the current {@link Oversimplified.Frame|Frame}.
      * 
-     * Also accessible via `down`.
+     * Also accessible via `{@link Oversimplified.Control#down}`.
      * @instance
      * @type {boolean}
      */
@@ -824,17 +786,17 @@ Oversimplified.Control = function (keycode) {
      */
     this.held = false;
     
-    /** Whether this Control's key was released during the current {@link Oversimplified.Frame}.
+    /** Whether this Control's key was released during the current {@link Oversimplified.Frame|Frame}.
      * 
-     * Also accessible via `released`.
+     * Also accessible via `{@link Oversimplified.Control#released}`.
      * @instance
      * @type {boolean}
      */
     this.up = false;
     
-    /** Whether this Control's key was released during the current {@link Oversimplified.Frame}.
+    /** Whether this Control's key was released during the current {@link Oversimplified.Frame|Frame}.
      * 
-     * Also accessible via `released`.
+     * Also accessible via `{@link Oversimplified.Control#up}`.
      * @instance
      * @type {boolean}
      */
@@ -844,11 +806,13 @@ Oversimplified.Control = function (keycode) {
 /** Identifies that this object is a `Control`
  * @type {string}
  * @readonly
- * @default
+ * @default "Control"
  */
 Oversimplified.Control.prototype.type = "Control";
 
 /** _NOT FOR USE._ Internal function that updates the status of the Control.
+ * 
+ * This is run automatically during each {@link Oversimplified.Frame|Frame} through {@link Oversimplified.Controls.CheckAll};
  * @function
  */
 Oversimplified.Control.prototype.Check = function () {
@@ -870,19 +834,71 @@ Oversimplified.Control.prototype.Check = function () {
 }
 
 //Axis Class
+/** Creates a new two-key control.
+ * @class
+ * @param {number} positiveKeycode - The keycode value of the key that will return a positive direction when held.
+ * @param {number} negativeKeycode - The keycode value of the key that will return a negative direction when held.
+ * @classdesc
+ * Provides a way to tie two keys together such that holding one will return a positive `{@link Oversimplified.Axis#direction|direction}`
+ * while the other returns a negative value. When neither or both of the specified keys are held, the `direction` will return 0.
+ * 
+ * Access using {@link Oversimplified.Controls.Add}.
+ * @example
+ * // This will create a new `Axis` and store it in `Oversimplified.Controls` under the name "Horizontal".
+ * var ax_horizontal = Oversimplified.Controls.Add("Horizontal", OS.Keycode["right arrow"], OS.Keycode["left arrow"]);
+ * // When neither of the specified keys are pressed, `ct_jump.direction` equals `0`.
+ * // Pressing and holding the `right arrow` key will cause `ct_jump.direction` to equal `1` until the key is released.
+ * // Pressing and holding the `left arrow` key will cause `ct_jump.direction` to equal `-1` until the key is released.
+ * // But if both `right arrow` and `left arrow` are pressed and held at the same time, `ct_jump.direction` will equal `0`.
+ */
 Oversimplified.Axis = function (positiveKeycode, negativeKeycode) {
     //Keeps track of a direction, either -1, 0, or 1
     positiveKeycode = positiveKeycode.toLowerCase();
     negativeKeycode = negativeKeycode.toLowerCase();
-    
+
+    /** The keycode value of this Axis that will return `1` when held.
+     * @instance
+     * @type {number}
+     */
     this.positiveKeycode = positiveKeycode;
+
+    /** The key name of the positive key for this Axis.
+     * @instance
+     * @type {string}
+     */
     this.positiveKeyName = Oversimplified.Key[positiveKeycode];
+    
+    /** The keycode value of this Axis that will return `-1` when held.
+     * @instance
+     * @type {number}
+     */
     this.negativeKeycode = negativeKeycode;
+
+    /** The key name of the negative key for this Axis.
+     * @instance
+     * @type {string}
+     */
     this.negativeKeyName = Oversimplified.Key[negativeKeycode];
     
+    /** Returns one of `0`, `-1`, or `1` depending upon which of the Axis keys are pressed.
+     * @instance
+     * @type {number}
+     */
     this.direction = 0;
 }
+
+/** Identifies that this object is an `Axis`
+ * @type {string}
+ * @readonly
+ * @default "Axis"
+ */
 Oversimplified.Axis.prototype.type = "Axis";
+
+/** _NOT FOR USE._ Internal function that updates the status of the Axis.
+ * 
+ * This is run automatically during each {@link Oversimplified.Frame|Frame} through {@link Oversimplified.Controls.CheckAll};
+ * @function
+ */
 Oversimplified.Axis.prototype.Check = function () {
     if (Oversimplified.heldKeys.indexOf(this.positiveKeycode) != -1
         && Oversimplified.heldKeys.indexOf(this.negativeKeycode) == -1)
@@ -902,6 +918,8 @@ Oversimplified.Axis.prototype.Check = function () {
         this.direction = 0;
     }
 }
+
+
 
 //Rooms Namespace
 Oversimplified.Rooms = {
