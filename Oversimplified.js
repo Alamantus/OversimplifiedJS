@@ -1,67 +1,247 @@
-/*OversimplifiedJS
-Author: Robbie Antenesse
-Description: A lightweight, modular 2-D game engine for HTML5 canvas & JavaScript designed to try to make it as simple as possible to get your game made.
-*/
+/** The main namespace that acts as a container for everything that the game engine has to offer.
+ * 
+ * Conveniently aliased with `OS`, for example `OS.SetCamera({ width: 600, height: 400 });` is
+ * the same as `Oversimplified.SetCamera({ width: 600, height: 400 });`
+ * @namespace
+ */
 var Oversimplified = {};
-var OS = Oversimplified;    // Handy-dandy alias for shortening code.
+var OS = Oversimplified;
 
-// Engine variables
+/** Stores the HTML5 canvas element in `index.html` with the id of `game`.
+ * @type {(Canvas|null)}
+ * @readonly
+ */
 Oversimplified.canvas = null;
+
+/** Stores the HTML5 canvas context of {@link Oversimplified.canvas}.
+ * @type {(Context|null)}
+ * @readonly
+ */
 Oversimplified.context = null;
+
+/** Stores the next ID value to use when creating any Oversimplified object.
+ * @type {number}
+ * @readonly
+ */
 Oversimplified.nextID = 0;
+
+/** Stores the paths of scripts that have been added via {@link Oversimplified.AddScript} need to load.
+ * @type {string[]}
+ * @readonly
+ * @see {@link Oversimplified.AddScript}
+ * @see {@link Oversimplified.loadedScripts}
+ * @see {@link Oversimplified.numberOfScriptsToLoad}
+ */
 Oversimplified.loadingScripts = [];
+
+/** Stores the paths of scripts that have been loaded via {@link Oversimplified.AddScript}.
+ * @type {string[]}
+ * @readonly
+ * @see {@link Oversimplified.AddScript}
+ * @see {@link Oversimplified.loadingScripts}
+ * @see {@link Oversimplified.numberOfScriptsToLoad}
+ */
 Oversimplified.loadedScripts = [];
+
+/** Stores the number of scripts that have been referenced via {@link Oversimplified.AddScript}.
+ * @type {number}
+ * @readonly
+ * @see {@link Oversimplified.AddScript}
+ * @see {@link Oversimplified.loadingScripts}
+ * @see {@link Oversimplified.loadedScripts}
+ */
 Oversimplified.numberOfScriptsToLoad = 0;
+
+/** An empty image to use as reference when no images are provided for a {@link Oversimplified.GameObject}
+ * @type {Image}
+ * @readonly
+ */
 Oversimplified.emptyImage = new Image();
 Oversimplified.emptyImage.src = "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
 Oversimplified.emptyImage.width = 1;
 Oversimplified.emptyImage.height = 1;
 
-// Settings Namespace
+
+
+/** Stores various settings. Maybe you can make good use of it for your own game settings, so long as you don't overwrite the existing values.
+ *
+ * Conveniently aliased with `S`, for example `OS.S.loadingBar = false;` is
+ * the same as `Oversimplified.Settings.loadingBar = false;`
+ * @namespace
+ */
 Oversimplified.Settings = {
-    defaultStep: 1/30,
+    /** The default frame speed for {@link Oversimplified.Room|Rooms}. Represents the number of seconds that pass before the next frame plays.
+     * @type {number}
+     * @memberof Oversimplified.Settings
+    */
+    defaultStep: 1 / 30,
+    
+    /** The style values for the loading bar that appears when scripts are being loaded.
+     * 
+     * Can be set to `false` to disable the loading bar completely and just show a blank screen when loading is happening instead.
+     * @type {(Object|false)}
+     * @memberof Oversimplified.Settings
+     * @example
+     * // The following is the structure and parameters  default value
+     * Oversimplified.Settings.loadingBar = {
+     *     fillColor: "#DD5511",   // The color hex (including `#`) of the loading bar that fills in the outlined space.
+     *     outlineColor: "#882200",    // The color hex (including `#`) of the outline that surrounds the loading bar.
+     *     outlineWidth: 5,    // The number of pixels that the loading bar's outline has.
+     * }
+     */
     loadingBar: {
         fillColor: "#DD5511",
         outlineColor: "#882200",
         outlineWidth: 5,
     },
+
+    /** The level of volume between 0 and 1 that {@link Oversimplified.Sound|Sounds} play at.
+     * @type {number}
+     * @default
+    */
     soundVolume: 0.75,
+
+    /** The level of volume between 0 and 1 that {@link Oversimplified.Tune|Tunes} play at.
+     * @type {number}
+     * @default
+    */
     musicVolume: 0.75,
+
+    /** Whether or not to allow people viewing your game to right click the canvas.
+     * Enabling this might allow people to save screenshots and whatnot depending on their browser.
+     * @type {boolean}
+     * @default
+    */
     preventRightClick: true
 }
-// Convenient alias for Settings.
 Oversimplified.S = Oversimplified.Settings;
 
-// Time variables
+
+
+/** Gets the current timestamp for internally tracking steps in the {@link Oversimplified.Frame|Frame}.
+ * @function
+ * @returns {number}
+ */
 Oversimplified.timestamp = function() {
   return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
 }
-Oversimplified.now = null;
-Oversimplified.dateTime = 0;
-Oversimplified.lastFrame = Oversimplified.timestamp();
-Oversimplified.step = Oversimplified.Settings.defaultStep;     //seconds per frame, i.e. one 30th of a second passes each frame.
 
-// Camera Object
+/** Stores the timestamp for the {@link Oversimplified.Frame|Frame} before performing its actions.
+ * @type {number}
+ * @readonly
+ */
+Oversimplified.now = null;
+
+/** Used to track whether to run {@link Oversimplified.Frame|Frame} based on its relation to the step speed.
+ * @type {number}
+ * @readonly
+ */
+Oversimplified.dateTime = 0;
+
+/** Stores the timestamp for the previous {@link Oversimplified.Frame|Frame}.
+ * @type {number}
+ * @readonly
+ */
+Oversimplified.lastFrame = Oversimplified.timestamp();
+
+/** The fraction of a second between each {@link Oversimplified.Frame|Frame}.
+ * For example, if the step is `1/30`, then one 30th of a second passes each frame.
+ * 
+ * This value is updated based on the current {@link Oversimplified.Room|Room}'s step. If it does not match
+ * the current room's step, the room's {@link Oversimplified.Room#Update} method will change it to match.
+ * @type {number}
+ * @readonly
+ * @default Oversimplified.Settings.defaultStep
+ */
+Oversimplified.step = Oversimplified.Settings.defaultStep;
+
+
+
+/** The camera defines the size of the canvas and the viewport of the current {@link Oversimplified.Room|Room}.
+ * If it is smaller than the current room, then it will only display what is visible within the area of the camera.
+ * 
+ * Intended only to be manipulated via the {@link Oversimplified.SetCamera} method.
+ * @static
+ * @namespace
+ * @see {@link Oversimplified.SetCamera}
+ */
 Oversimplified.camera = {
+    /** The x position of the top left corner of the camera within the current {@link Oversimplified.Room|Room}.
+     * @type {number}
+     * @readonly
+     */
     x: 0,
+
+    /** The y position of the top left corner of the camera within the current {@link Oversimplified.Room|Room}.
+     * @type {number}
+     * @readonly
+     */
     y: 0,
+
+    /** The width of the HTML5 canvas and of the visible portion of the current {@link Oversimplified.Room|Room}.
+     * @type {number}
+     * @readonly
+     */
     width: 640,
+
+    /** The height of the HTML5 canvas and of the visible portion of the current {@link Oversimplified.Room|Room}.
+     * @type {number}
+     * @readonly
+     */
     height: 480,
+
+    /** The number of pixels away from the camera's edge horizontally that the {@link Oversimplified.camera.following|GameObject being followed} must be before the camera scrolls.
+     * @type {number}
+     * @readonly
+     */
     hBorder: 64,
+
+    /** The number of pixels away from the camera's edge vertically that the {@link Oversimplified.camera.following|GameObject being followed} must be before the camera scrolls.
+     * @type {number}
+     * @readonly
+     */
     vBorder: 64,
+    
+    /** The `name` of the {@link Oversimplified.GameObject|GameObject} that the camera is following within the current {@link Oversimplified.Room|Room}
+     * @type {string}
+     * @readonly
+     */
     following: "",
-    // Set the object for the camera to follow.
+
+    /** Set the object for the camera to follow.
+     * @function
+     */
     Follow: function (object) {
         this.following = object.name;
     }
 }
 
-/* Set up the camera.
-
-It is important that this is done first at the time the game is loaded because this determines the size of the HTML5 canvas.
-Be sure that the objectToFollow has already been created in the current room. Can be referenced with a variable.
-objectToFollow, hBorder, and vBorder are optional arguments, but if you want to set hBorder and vBorder, there must be an objectToFollow.
-*/
+/** Set up the camera.
+ *
+ * It is important that this is done first at the time the game is loaded because this determines the size of the HTML5 canvas.
+ * Be sure that the objectToFollow has already been created in the current room. Can be referenced with a variable.
+ * objectToFollow, hBorder, and vBorder are optional arguments, but if you want to set hBorder and vBorder, there must be an options.objectToFollow.
+ * @function
+ * @param {Object} options
+ * @param {number} [options.width=Oversimplified.camera.width] - The width specified here will set the width of the HTML5 canvas.
+ * @param {number} [options.height=Oversimplified.camera.width] - The height specified here will set the height of the HTML5 canvas.
+ * @param {number} [options.x=Oversimplified.camera.x] - The x position of the top left corner of the camera within the current room.
+ * @param {number} [options.y=Oversimplified.camera.y] - The y position of the top left corner of the camera within the current room.
+ * @param {Oversimplified.GameObject} [options.objectToFollow] - A reference to an OversimplifiedJS GameObject.
+ * @param {number} [options.hBorder=Oversimplified.camera.hBorder] - The number of pixels away from the camera's edge horizontally that the options.objectToFollow must be before the camera scrolls.
+ * @param {number} [options.vBorder=Oversimplified.camera.vBorder] - The number of pixels away from the camera's edge vertically that the options.objectToFollow must be before the camera scrolls.
+ * @example
+ * var obj_player = rm_.AddObject("Player", { x: 10, y: 10, imageSrc: "path/to/image", });
+ * OS.SetCamera({
+ *     width: 500,
+ *     height: 200,
+ *     x: 0,
+ *     y: 0,
+ *     objectToFollow: obj_player,
+ *     hBorder: 100,
+ *     vBorder: 50,
+ * });
+ */
 Oversimplified.SetCamera = function (options) {
     Oversimplified.camera.width = typeof options.width !== 'undefined' ? options.width : Oversimplified.camera.width;
     Oversimplified.camera.height = typeof options.height !== 'undefined' ? options.height : Oversimplified.camera.height;
@@ -80,44 +260,245 @@ Oversimplified.SetCamera = function (options) {
     
     Oversimplified.camera.hBorder = (typeof options.hBorder !== 'undefined') ? options.hBorder : Oversimplified.camera.hBorder;
     Oversimplified.camera.vBorder = (typeof options.vBorder !== 'undefined') ? options.vBorder : Oversimplified.camera.vBorder;
-    
 }
 
-// Mouse Object
+
+
+/** Stores data about the mouse and touch information.
+ * 
+ * Touches emulate mouse buttons (1 finger = left mouse, 2 fingers = right mouse, 3 fingers = middle mouse)
+ * @static
+ * @namespace
+ */
 Oversimplified.mouse = {
+    /** The x position of the mouse relative to the top left corner of the canvas.
+     * @type {number}
+     * @readonly
+     */
     x: 0,
+
+    /** The y position of the mouse relative to the top left corner of the canvas.
+     * @type {number}
+     * @readonly
+     */
     y: 0,
+
+    /** The event code of the left mouse button for internal use.
+     * 
+     * Set dependent upon whether the browser is Internet Explorer or not.
+     * @type {number}
+     * @readonly
+     */
     leftCode: IsInternetExplorer() ? 1 : 0,
+
+    /** The event code of the middle mouse button for internal use.
+     * 
+     * Set dependent upon whether the browser is Internet Explorer or not.
+     * @type {number}
+     * @readonly
+     */
     middleCode: IsInternetExplorer() ? 4 : 1,
+
+    /** The event code of the right mouse button for internal use.
+     * @type {number}
+     * @readonly
+     */
     rightCode: 2,
+
+    /** Whether the left mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
+     * Only returns true during the frame it was clicked down.
+     * @type {boolean}
+     * @readonly
+     */
     leftDown: false,
+
+    /** Whether the left mouse button is held.
+     * @type {boolean}
+     * @readonly
+     */
     left: false,
+
+    /** Whether the left mouse button has been released this {@link Oversimplified.Frame|Frame}.
+     * Only returns true during the frame it was unclicked.
+     * @type {boolean}
+     * @readonly
+     */
     leftUp: false,
+
+    /** Whether the middle mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
+     * Only returns true during the frame it was clicked down.
+     * @type {boolean}
+     * @readonly
+     */
     middleDown: false,
+
+    /** Whether the middle mouse button is held.
+     * @type {boolean}
+     * @readonly
+     */
     middle: false,
+    
+    /** Whether the middle mouse button has been released this {@link Oversimplified.Frame|Frame}.
+     * Only returns true during the frame it was unclicked.
+     * @type {boolean}
+     * @readonly
+     */
     middleUp: false,
+
+    /** Whether the right mouse button has been clicked this {@link Oversimplified.Frame|Frame}.
+     * Only returns true during the frame it was clicked down.
+     * @type {boolean}
+     * @readonly
+     */
     rightDown: false,
+
+    /** Whether the right mouse button is held.
+     * @type {boolean}
+     * @readonly
+     */
     right: false,
+
+    /** Whether the right mouse button has been released this {@link Oversimplified.Frame|Frame}.
+     * Only returns true during the frame it was unclicked.
+     * @type {boolean}
+     * @readonly
+     */
     rightUp: false,
+
+    /** Returns the direction that the scroll wheel was moved this {@link Oversimplified.Frame|Frame}:
+     * 0 if it has not been moved, 1 if it was moved up, and -1 if it was moved down.
+     * @type {number}
+     * @readonly
+     */
     wheel: 0
 }
 
-// Lists of Detected Keys
+
+
+/** Lists any keycodes for keys that are being held down.
+ * @type {number[]}
+ * @readonly
+ */
 Oversimplified.heldKeys = [];
+/** Lists any keycodes for keys that are being held down.
+ * @type {number[]}
+ * @readonly
+ */
 Oversimplified.pressedKeys = [];
 Oversimplified.releasedKeys = [];
 
-/* Key definitions
-
-Get Key name based on keycode.
-*/
+/**
+ * @namespace
+ * @see {@link Oversimplified.Keycode}
+ * @description
+ * Stores the key name by keycode. The keycode captured by a JavaScript `event` is what will be used to get the name of the key.
+ * Mostly just used internally, but it can be handy to have if you're working with JavaScript `events` involving keystrokes.
+ * 
+ * keycode | key name
+ * --- | ---
+ * `37` | `"left arrow"`
+ * `38` | `"up arrow"`
+ * `39` | `"right arrow"`
+ * `40` | `"down arrow"`
+ * `48` | `"0"`
+ * `49` | `"1"`
+ * `50` | `"2"`
+ * `51` | `"3"`
+ * `52` | `"4"`
+ * `53` | `"5"`
+ * `54` | `"6"`
+ * `55` | `"7"`
+ * `56` | `"8"`
+ * `57` | `"9"`
+ * `65` | `"a"`
+ * `66` | `"b"`
+ * `67` | `"c"`
+ * `68` | `"d"`
+ * `69` | `"e"`
+ * `70` | `"f"`
+ * `71` | `"g"`
+ * `72` | `"h"`
+ * `73` | `"i"`
+ * `74` | `"j"`
+ * `75` | `"k"`
+ * `76` | `"l"`
+ * `77` | `"m"`
+ * `78` | `"n"`
+ * `79` | `"o"`
+ * `80` | `"p"`
+ * `81` | `"q"`
+ * `82` | `"r"`
+ * `83` | `"s"`
+ * `84` | `"t"`
+ * `85` | `"u"`
+ * `86` | `"v"`
+ * `87` | `"w"`
+ * `88` | `"x"`
+ * `89` | `"y"`
+ * `90` | `"z"`
+ * `13` | `"enter"`
+ * `16` | `"shift"`
+ * `17` | `"ctrl"`
+ * `18` | `"alt"`
+ * `8` | `"backspace"`
+ * `9` | `"tab"`
+ * `19` | `"pause"`
+ * `20` | `"caps lock"`
+ * `27` | `"escape"`
+ * `32` | `"space"`
+ * `33` | `"page up"`
+ * `34` | `"page down"`
+ * `35` | `"end"`
+ * `45` | `"insert"`
+ * `46` | `"delete"`
+ * `91` | `"left special key"`
+ * `92` | `"right special key"`
+ * `93` | `"select key"`
+ * `96` | `"numpad 0"`
+ * `97` | `"numpad 1"`
+ * `98` | `"numpad 2"`
+ * `99` | `"numpad 3"`
+ * `100` | `"numpad 4"`
+ * `101` | `"numpad 5"`
+ * `102` | `"numpad 6"`
+ * `103` | `"numpad 7"`
+ * `104` | `"numpad 8"`
+ * `105` | `"numpad 9"`
+ * `106` | `"numpad asterisk"`
+ * `107` | `"numpad plus"`
+ * `109` | `"numpad dash"`
+ * `110` | `"numpad period"`
+ * `111` | `"numpad slash"`
+ * `112` | `"f1"`
+ * `113` | `"f2"`
+ * `114` | `"f3"`
+ * `115` | `"f4"`
+ * `116` | `"f5"`
+ * `117` | `"f6"`
+ * `118` | `"f7"`
+ * `119` | `"f8"`
+ * `120` | `"f9"`
+ * `121` | `"f10"`
+ * `122` | `"f11"`
+ * `123` | `"f12"`
+ * `144` | `"num lock"`
+ * `145` | `"scroll lock"`
+ * `186` | `"semicolon"`
+ * `187` | `"equal"`
+ * `188` | `"comma"`
+ * `189` | `"dash"`
+ * `190` | `"period"`
+ * `191` | `"slash"`
+ * `192` | `"grave accent"`
+ * `219` | `"open bracket"`
+ * `220` | `"backslash"`
+ * `221` | `"close bracket"`
+ * `222` | `"quote`
+ * @example
+ * var leftArrowKeyName = Oversimplified.Keycode[37];
+ * console.log(leftArrowKeyName);   // Returns "left arrow"
+ */
 Oversimplified.Key = {
-    37: "left arrow",
-    38: "up arrow",
-    39: "right arrow",
-    40: "down arrow",
-    45: "insert",
-    46: "delete",
     8: "backspace",
     9: "tab",
     13: "enter",
@@ -131,8 +512,50 @@ Oversimplified.Key = {
     33: "page up",
     34: "page down",
     35: "end",
-    91: "left win/special key",
-    92: "right win/special key",
+    37: "left arrow",
+    38: "up arrow",
+    39: "right arrow",
+    40: "down arrow",
+    45: "insert",
+    46: "delete",
+    48: "0",
+    49: "1",
+    50: "2",
+    51: "3",
+    52: "4",
+    53: "5",
+    54: "6",
+    55: "7",
+    56: "8",
+    57: "9",
+    65: "a",
+    66: "b",
+    67: "c",
+    68: "d",
+    69: "e",
+    70: "f",
+    71: "g",
+    72: "h",
+    73: "i",
+    74: "j",
+    75: "k",
+    76: "l",
+    77: "m",
+    78: "n",
+    79: "o",
+    80: "p",
+    81: "q",
+    82: "r",
+    83: "s",
+    84: "t",
+    85: "u",
+    86: "v",
+    87: "w",
+    88: "x",
+    89: "y",
+    90: "z",
+    91: "left special key",
+    92: "right special key",
     93: "select key",
     96: "numpad 0",
     97: "numpad 1",
@@ -176,112 +599,156 @@ Oversimplified.Key = {
     222: "quote"
 };
 
-// Get Keycode based on key name
-Oversimplified.Keycode = {
-    backspace:    8,
-    tab:    9,
-    enter:    13,
-    shift:    16,
-    ctrl:    17,
-    alt:    18,
-    pausebreak:    19,
-    capslock:    20,
-    escape:    27,
-    space: 32,
-    pageup:    33,
-    pagedown:    34,
-    end:    35,
-    home:    36,
-    left:    37,
-    up:    38,
-    right:    39,
-    down:    40,
-    insert:    45,
-    del:    46,
-    zero:    48,
-    one:    49,
-    two:    50,
-    three:    51,
-    four:    52,
-    five:    53,
-    six:    54,
-    seven:    55,
-    eight:    56,
-    nine:    57,
-    a:    65,
-    b:    66,
-    c:    67,
-    d:    68,
-    e:    69,
-    f:    70,
-    g:    71,
-    h:    72,
-    i:    73,
-    j:    74,
-    k:    75,
-    l:    76,
-    m:    77,
-    n:    78,
-    o:    79,
-    p:    80,
-    q:    81,
-    r:    82,
-    s:    83,
-    t:    84,
-    u:    85,
-    v:    86,
-    w:    87,
-    x:    88,
-    y:    89,
-    z:    90,
-    leftwinkey:    91,
-    rightwinkey:    92,
-    selectkey:    93,
-    numpad_0:    96,
-    numpad_1:    97,
-    numpad_2:    98,
-    numpad_3:    99,
-    numpad_4:    100,
-    numpad_5:    101,
-    numpad_6:    102,
-    numpad_7:    103,
-    numpad_8:    104,
-    numpad_9:    105,
-    numpad_asterisk:    106,
-    numpad_plus:    107,
-    numpad_dash:    109,
-    numpad_period:    110,
-    numpad_slash:    111,
-    f1:    112,
-    f2:    113,
-    f3:    114,
-    f4:    115,
-    f5:    116,
-    f6:    117,
-    f7:    118,
-    f8:    119,
-    f9:    120,
-    f10:    121,
-    f11:    122,
-    f12:    123,
-    numlock:    144,
-    scrolllock:    145,
-    semicolon:    186,
-    equal:    187,
-    comma:    188,
-    dash:    189,
-    period:    190,
-    slash:    191,
-    grave:    192,
-    openbracket:    219,
-    backslash:    220,
-    closebraket:    221,
-    quote:    222
+/**
+ * @namespace
+ * @see {@link Oversimplified.Key}
+ * @description
+ * Stores the keycode name by key name. The keycode captured by a JavaScript `event` is what is returned by the key name.
+ * Used for creating new {@link Oversimplified.Control|Control}s using the {@link Oversimplified.Controls.Add} method.
+ *
+ * key name | keycode
+ * --- | ---
+ * `"left arrow"` | `37`
+ * `"up arrow"` | `38`
+ * `"right arrow"` | `39`
+ * `"down arrow"` | `40`
+ * `"0"` | `48`
+ * `"1"` | `49`
+ * `"2"` | `50`
+ * `"3"` | `51`
+ * `"4"` | `52`
+ * `"5"` | `53`
+ * `"6"` | `54`
+ * `"7"` | `55`
+ * `"8"` | `56`
+ * `"9"` | `57`
+ * `"a"` | `65`
+ * `"b"` | `66`
+ * `"c"` | `67`
+ * `"d"` | `68`
+ * `"e"` | `69`
+ * `"f"` | `70`
+ * `"g"` | `71`
+ * `"h"` | `72`
+ * `"i"` | `73`
+ * `"j"` | `74`
+ * `"k"` | `75`
+ * `"l"` | `76`
+ * `"m"` | `77`
+ * `"n"` | `78`
+ * `"o"` | `79`
+ * `"p"` | `80`
+ * `"q"` | `81`
+ * `"r"` | `82`
+ * `"s"` | `83`
+ * `"t"` | `84`
+ * `"u"` | `85`
+ * `"v"` | `86`
+ * `"w"` | `87`
+ * `"x"` | `88`
+ * `"y"` | `89`
+ * `"z"` | `90`
+ * `"enter"` | `13`
+ * `"shift"` | `16`
+ * `"ctrl"` | `17`
+ * `"alt"` | `18`
+ * `"backspace"` | `8`
+ * `"tab"` | `9`
+ * `"pause"` | `19`
+ * `"caps lock"` | `20`
+ * `"escape"` | `27`
+ * `"space"` | `32`
+ * `"page up"` | `33`
+ * `"page down"` | `34`
+ * `"end"` | `35`
+ * `"insert"` | `45`
+ * `"delete"` | `46`
+ * `"left special key"` | `91`
+ * `"right special key"` | `92`
+ * `"select key"` | `93`
+ * `"numpad 0"` | `96`
+ * `"numpad 1"` | `97`
+ * `"numpad 2"` | `98`
+ * `"numpad 3"` | `99`
+ * `"numpad 4"` | `100`
+ * `"numpad 5"` | `101`
+ * `"numpad 6"` | `102`
+ * `"numpad 7"` | `103`
+ * `"numpad 8"` | `104`
+ * `"numpad 9"` | `105`
+ * `"numpad asterisk"` | `106`
+ * `"numpad plus"` | `107`
+ * `"numpad dash"` | `109`
+ * `"numpad period"` | `110`
+ * `"numpad slash"` | `111`
+ * `"f1"` | `112`
+ * `"f2"` | `113`
+ * `"f3"` | `114`
+ * `"f4"` | `115`
+ * `"f5"` | `116`
+ * `"f6"` | `117`
+ * `"f7"` | `118`
+ * `"f8"` | `119`
+ * `"f9"` | `120`
+ * `"f10"` | `121`
+ * `"f11"` | `122`
+ * `"f12"` | `123`
+ * `"num lock"` | `144`
+ * `"scroll lock"` | `145`
+ * `"semicolon"` | `186`
+ * `"equal"` | `187`
+ * `"comma"` | `188`
+ * `"dash"` | `189`
+ * `"period"` | `190`
+ * `"slash"` | `191`
+ * `"grave accent"` | `192`
+ * `"open bracket"` | `219`
+ * `"backslash"` | `220`
+ * `"close bracket"` | `221`
+ * `"quote` | `222`
+ * @example
+ * var leftArrowKeycode = Oversimplified.Keycode["left arrow"];
+ * console.log(leftArrowKeycode);   // Returns 37
+ * 
+ * // If using the number row numbers, don't forget to wrap the number in quotes!
+ * var threeKeycode = OS.Keycode["3"]   // threeKeycode === 51
+ * // NOT like this: OS.Keycode[3]
+ */
+Oversimplified.Keycode = {}
+for (var keyCode in Oversimplified.Keys) {
+    Oversimplified.Keycode[Oversimplified.Keys[keyCode]] = keyCode;
 }
 
-// Controls Namespace
+
+
+/** Stores all of the keyboard-based controls that you specify for your game.
+ * 
+  * Conveniently aliased with `OS.C`, for example `OS.C.Add("Jump", OS.Keycode["z"]);` is
+ * the same as `Oversimplified.Controls.Add("Jump", Oversimplified.Keycode["z"]);`
+ * @namespace
+ */
 Oversimplified.Controls = {};
-// Add a control to the collection of Controls.
+
+/** Add either an Axis or a Control to the collection of Controls with the name `name`.
+ * 
+ * If both `positiveKeycode` and `negativeKeycode` are specified, an {@link Oversimplified.Axis|Axis} is created,
+ * but if only `positiveKeycode` is specified, then a {@link Oversimplified.Control|Control} is created.
+ * 
+ * This function is also available as `Oversimplified.Controls.New`, so you can use whichever you prefer.
+ * @generator
+ * @param {string} name - The name of the control for accessing it later.
+ * @param {number} positiveKeycode - The keycode value of the key that will trigger the created {@link Oversimplified.Control|Control}.
+ * @param {number} negativeKeycode - The keycode value of the key that will trigger the negative value of the created {@link Oversimplified.Axis|Axis}.
+ * @yields {(Oversimplified.Control|Oversimplified.Axis)}
+ * @example
+ * // Jumping and attacking are actions that you might want to know how the player pressed the button.
+ * var ct_jump = Oversimplified.Controls.Add("Jump", OS.Keycode["z"]);
+ * var ct_attack = OS.C.New("Duck", OS.Keycode["x"]);	// OS.C.New is an alias of OS.C.Add and can be used if you prefer.
+ *
+ * // Horizontal and vertical movement would be useful to have just a positive or negative value for so you can easily move based on speed, for example.
+ * var ax_horizontal = OS.C.Add("Horizontal", OS.Keycode["right arrow"], OS.Keycode["left arrow"]);
+ * var ax_vertical = OS.C.New("Vertical", OS.Keycode["down arrow"], OS.Keycode["up arrow"]);
+ */
 Oversimplified.Controls.Add = function(name, positiveKeycode, negativeKeycode) {
     if (typeof negativeKeycode !== 'undefined') {
         Oversimplified.Controls[name] = new Oversimplified.Axis(positiveKeycode, negativeKeycode);
@@ -294,7 +761,9 @@ Oversimplified.Controls.Add = function(name, positiveKeycode, negativeKeycode) {
 // Alias for Oversimplified.Controls.Add()
 Oversimplified.Controls.New = Oversimplified.Controls.Add;
 
-// Checks each control every frame for presses/releases/holds
+/** _NOT FOR USE._ Internal function that checks each control every frame for presses/releases/holds.
+ * @function
+ */
 Oversimplified.Controls.CheckAll = function () {
     for (var control in Oversimplified.Controls) {
         if (typeof Oversimplified.Controls[control].Check !== 'undefined') {
@@ -307,17 +776,81 @@ Oversimplified.Controls.CheckAll = function () {
 Oversimplified.C = Oversimplified.Controls;
 
 // Control Class
+/** Creates a new single-key control.
+ * @class
+ * @param {number} keycode - The keycode value of the key to be tracked
+ * @classdesc
+ * Stores information about the status of a specified key. Access using {@link Oversimplified.Controls.Add}.
+ * @example
+ * var ct_jump = Oversimplified.Controls.Add("Jump", OS.Keycode["z"]);
+ * // Pressing and holding the `Z` key will cause both `ct_jump.pressed` and `ct_jump.down` to equal `true` for one frame
+ * // and will set `ct_jump.held` to equal `true` until the `Z` key is released.
+ * // When it is released, `ct_jump.released` and ct_jump.up` will both equal `true` for one frame.
+ */
 Oversimplified.Control = function (keycode) {
-    var self = this;
+    keycode = keycode.toLowerCase();
     
+    /** The keycode value of this Control.
+     * @instance
+     * @type {number}
+     */
     this.keyCode = keycode;
+
+    /** The key name of this Control.
+     * @instance
+     * @type {string}
+     */
     this.keyName = Oversimplified.Key[keycode];
     
-    this.down = this.pressed = false;
+    /** Whether this Control's key was pressed during the current {@link Oversimplified.Frame}.
+     * 
+     * Also accessible via `pressed`.
+     * @instance
+     * @type {boolean}
+     */
+    this.down = false;
+    
+    /** Whether this Control's key was pressed during the current {@link Oversimplified.Frame}.
+     * 
+     * Also accessible via `down`.
+     * @instance
+     * @type {boolean}
+     */
+    this.pressed = false;
+    
+    /** Whether this Control's key is currently being held down.
+     * @instance
+     * @type {boolean}
+     */
     this.held = false;
-    this.up = this.released = false;
+    
+    /** Whether this Control's key was released during the current {@link Oversimplified.Frame}.
+     * 
+     * Also accessible via `released`.
+     * @instance
+     * @type {boolean}
+     */
+    this.up = false;
+    
+    /** Whether this Control's key was released during the current {@link Oversimplified.Frame}.
+     * 
+     * Also accessible via `released`.
+     * @instance
+     * @type {boolean}
+     */
+    this.released = false;
 }
+
+/** Identifies that this object is a `Control`
+ * @type {string}
+ * @readonly
+ * @default
+ */
 Oversimplified.Control.prototype.type = "Control";
+
+/** _NOT FOR USE._ Internal function that updates the status of the Control.
+ * @function
+ */
 Oversimplified.Control.prototype.Check = function () {
     if (Oversimplified.heldKeys.indexOf(this.keyCode) != -1) {
         this.held = true;
@@ -339,7 +872,8 @@ Oversimplified.Control.prototype.Check = function () {
 //Axis Class
 Oversimplified.Axis = function (positiveKeycode, negativeKeycode) {
     //Keeps track of a direction, either -1, 0, or 1
-    var self = this;
+    positiveKeycode = positiveKeycode.toLowerCase();
+    negativeKeycode = negativeKeycode.toLowerCase();
     
     this.positiveKeycode = positiveKeycode;
     this.positiveKeyName = Oversimplified.Key[positiveKeycode];
@@ -1569,7 +2103,14 @@ Oversimplified.SetupKeyboardListeners = function () {
     //Prevent scrolling with keys
     window.addEventListener("keydown", function(e) {
         // space and arrow keys
-        if([Oversimplified.Keycode.left, Oversimplified.Keycode.right, Oversimplified.Keycode.up, Oversimplified.Keycode.down, Oversimplified.Keycode.space, Oversimplified.Keycode.tab].indexOf(e.keyCode) > -1) {
+        if([
+            Oversimplified.Keycode['left arrow'],
+            Oversimplified.Keycode['right arrow'],
+            Oversimplified.Keycode['up arrow'],
+            Oversimplified.Keycode['down arrow'],
+            Oversimplified.Keycode['space'],
+            Oversimplified.Keycode['tab']
+        ].indexOf(e.keyCode) > -1) {
             e.preventDefault();
         }
     }, false);
@@ -1612,6 +2153,7 @@ Oversimplified.Frame = function () {
     {
         // console.log(Oversimplified.loadedScripts);
         Oversimplified.now = Oversimplified.timestamp();
+        Oversimplified.dateTime = Oversimplified.dateTime + Math.min(1, (Oversimplified.now - Oversimplified.lastFrame) / 1000);
         Oversimplified.dateTime = Oversimplified.dateTime + Math.min(1, (Oversimplified.now - Oversimplified.lastFrame) / 1000);
         while (Oversimplified.dateTime > Oversimplified.step) {
             Oversimplified.dateTime = Oversimplified.dateTime - Oversimplified.step;

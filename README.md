@@ -212,3 +212,9 @@ I don't know. Probably a CC Share-Alike, NonCommercial license or something. If 
 
 Thanks!  
 -Robbie Antenesse
+
+Note to Self
+-------------
+Build generated documentation with `[jsdoc](https://jsdoc.app) Oversimplified.js README.md`.
+
+Eventually, you'll want to move most of this README file to tutorial docs.
