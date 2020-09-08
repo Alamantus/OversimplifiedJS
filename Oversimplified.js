@@ -1190,8 +1190,8 @@ Oversimplified.Room.prototype.Start = function () {
     this.DoFirst();
     
     if (this.name === Oversimplified.Rooms.currentRoomName) {
-        for (var object in this.objects) {
-            this.objects[object].Start();
+        for (var objectName in this.objects) {
+            this.objects[objectName].Start();
         }
     }
     this.hasRunStart = true;
@@ -1201,26 +1201,12 @@ Oversimplified.Room.prototype.Update = function () {
         Oversimplified.step = this.stepSpeed;
     }
     
-    /** @todo Make this drawOrder not totally unreasonably inefficient. There's absolutely no reason to update this every frame! */
-    this.drawOrder = [];        //Determine draw order every frame
-    for (var object in this.objects) {
-        if (this.objects[object].type == 'GameObject') {
-            if (this.drawOrder.length <= 0) {    //If this is the first object checked,
-                this.drawOrder = [object];        //Add it to the array
-                continue;        //And move to the next object without sorting
-            }
-            var depth = this.objects[object].depth;
-            for (var i = 0; i < this.drawOrder.length; i++) {        //Loop through the objects already in array
-                if (depth < this.objects[this.drawOrder[i]].depth) {    //if the object's depth is less than the object being checked,
-                    this.drawOrder.splice(i, 0, object);    //insert the object before it in the array
-                    break;                                    //and stop looking in the array
-                }
-            }
-            if (this.drawOrder.indexOf(object) < 0) {        //if it gets through the loop and the depth is not less than any object,
-                this.drawOrder.push(object);        //put it at the end
-            }
-        }
-    }
+    this.drawOrder = Object.keys(this.objects);    // Determine draw order every frame to account for any new or removed objects. Object.keys support is IE9+
+    this.drawOrder.sort(function (a, b) {
+        var objA = this.objects[a], objB = this.objects[b];
+        if (objA.depth == objB.depth) return 0; // Do not sort/use created order.
+        return objA.depth < objB.depth ? 1 : -1;    // Put objA after objB so it is drawn above.
+    });
 
     if (!this.hasRunStart) {
         this.Start();
