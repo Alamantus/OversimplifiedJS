@@ -1,0 +1,34 @@
+{
+  "name": "oversimplifiedjs",
+  "version": "1.0.0",
+  "description": "A lightweight, modular 2-D game engine for HTML5 canvas & JavaScript",
+  "main": "Oversimplified.js",
+  "scripts": {
+    "docs": "jsdoc -c ./jsdoc-conf.json ./Oversimplified.js ./README.md",
+    "clear-docs": "rimraf ./out",
+    "minify": "terser --compress --output Oversimplified.min.js -- Oversimplified.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Alamantus/OversimplifiedJS.git"
+  },
+  "keywords": [
+    "game-engine",
+    "HTML5",
+    "canvas",
+    "ES5",
+    "JavaScript",
+    "2D"
+  ],
+  "author": "Robbie Antenesse <dev@alamantus.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Alamantus/OversimplifiedJS/issues"
+  },
+  "homepage": "https://Alamantus.github.io/OversimplifiedJS",
+  "devDependencies": {
+    "docdash": "^1.2.0",
+    "jsdoc": "^3.6.5",
+    "terser": "^5.3.0"
+  }
+}
