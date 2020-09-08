@@ -922,19 +922,70 @@ Oversimplified.Axis.prototype.Check = function () {
 
 
 //Rooms Namespace
+/** Where {@link Oversimplified.Room|Rooms} are created and stored.
+ * 
+ * Conveniently aliased with `{@link OS.R}`, for example
+ * 
+ * ```
+ * OS.R.Add("Default");
+ * ```
+ * 
+ * is the same as 
+ * 
+ * ```
+ * Oversimplified.Rooms.Add("Default");
+ * ```
+ * @namespace
+ * @property {string} currentRoomName="Default" - The name of the currently displayed {@link Oversimplified.Room|Room}
+ */
 Oversimplified.Rooms = {
     currentRoomName: "Default",
+
+    /** A function that you can use to do something before anything else happens during a {@link Oversimplified.Room|Room}'s
+     * {@link Oversimplified.Frame|Frame} loop. This function will always run first during the frame, before any other
+     * specified `BeforeDo()` in the current room, and even before this namespace's `AllDo()` method, if one exists.
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     AllBeforeDo: function () {},
+
+    /** A function that you can use to do something before anything else happens during a {@link Oversimplified.Room|Room}'s
+     * {@link Oversimplified.Frame|Frame} loop. This function will always run before any other specified `BeforeDo()` in
+     * the current room, but _after_ this namespace's `AllBeforeDo()` method, if one exists.
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     AllDo: function () {},
+
+    /** A function that you can use to do something after anything else happens during a {@link Oversimplified.Room|Room}'s
+     * {@link Oversimplified.Frame|Frame} loop. This function will _always run last_, after any other specified `AfterDo()`
+     * in the current room.
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     AllAfterDo: function () {}
 }
 
-// Get the current room
+/** Returns the current {@link Oversimplified.Room|Room}.
+ * @function
+ */
 Oversimplified.Rooms.Current = function () {
     return Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName];
 }
 
-// Add a Room to the collection of Rooms
+/** Add a {@link Oversimplified.Room|Room} to the collection of Rooms.
+ * @function
+ * @param {string} name - The name of the room that will be used to store and access the created room.
+ * @param {Object} options
+ * @param {number} [options.width={@link Oversimplified.camera}.width] - Sets the width of the room. The camera will not travel beyond this when moving right. If it is larger than the camera's width and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's width, it will be set to the camera's width.
+ * @param {number} [options.height={@link Oversimplified.camera}.height] - Sets the height of the room. The camera will not travel beyond this when moving down. If it is larger than the camera's height and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's height, it will be set to the camera's height.
+ * @param {string} [options.backgroundSrc=""] - The path to the image that will be displayed as the room's background. If excluded or set to empty string (""), no background will show.
+ * @param {string} [options.stepSpeed={@link Oversimplified.Settings}.defaultStep] - The step speed for the Room. If excluded or set to 0, the default is used.
+ * @todo Finish this
+ */
 Oversimplified.Rooms.Add = function (name, options) {
     if (typeof Oversimplified.Rooms[name] === 'undefined') {
         Oversimplified.Rooms[name] = new Oversimplified.Room(name, options);
@@ -967,6 +1018,7 @@ options (optional) : An object with extra parameters for the Room. Options inclu
     backgroundColor : Any hex color value. Sets the far background color (behind the background image, visible only if transparent or excluded). A JavaScript alternative to setting the HTML5 canvas's background color CSS.
     foreground : Path to any image file, though .png or .gif file with transparency is ideal. Sets the foreground image that displays over the background and all objects in the room. Appears below the Room's DrawAbove() function but above any GameObject's DrawAbove() function.
 */
+/** @class */
 Oversimplified.Room = function (name, options) {
     this.id = Oversimplified.nextID++;
     var self = this;
@@ -1060,6 +1112,7 @@ Oversimplified.Room.prototype.Update = function () {
         Oversimplified.step = this.stepSpeed;
     }
     
+    /** @todo Make this drawOrder not totally unreasonably inefficient. There's absolutely no reason to update this every frame! */
     this.drawOrder = [];        //Determine draw order every frame
     for (var object in this.objects) {
         if (this.objects[object].type == 'GameObject') {
