@@ -682,6 +682,15 @@ for (var keyCode in Oversimplified.Keys) {
  */
 Oversimplified.Controls = {};
 
+/** A convenient alias for {@link Oversimplified.Controls}.
+ * 
+ * _Anywhere_ you might type `Oversimplified.Controls`, you can substitute `OS.C` instead to save some typing.
+ * @namespace
+ * @alias OS.C
+ * @see {@link Oversimplified.Controls}
+ */
+Oversimplified.C = Oversimplified.Controls;
+
 /** Add either an Axis or a Control to the collection of Controls with the name `name`.
  * 
  * If both `positiveKeycode` and `negativeKeycode` are specified, an {@link Oversimplified.Axis|Axis} is created,
@@ -724,15 +733,6 @@ Oversimplified.Controls.CheckAll = function () {
         }
     }
 };
-
-/** A convenient alias for {@link Oversimplified.Controls}.
- * 
- * _Anywhere_ you might type `Oversimplified.Controls`, you can substitute `OS.C` instead to save some typing.
- * @namespace
- * @alias OS.C
- * @see {@link Oversimplified.Controls}
- */
-Oversimplified.C = Oversimplified.Controls;
 
 // Control Class
 /** Creates a new single-key control.
@@ -969,6 +969,12 @@ Oversimplified.Rooms = {
     AllAfterDo: function () {}
 }
 
+// Convenient alias for Rooms
+Oversimplified.R = Oversimplified.Rooms;
+
+// Convenient way to access the objects within the current room.
+Oversimplified.O = null;
+
 /** Returns the current {@link Oversimplified.Room|Room}.
  * @function
  */
@@ -999,12 +1005,6 @@ Oversimplified.Rooms.Add = function (name, options) {
 
 // Alias for Rooms.Add
 Oversimplified.Rooms.New = Oversimplified.Rooms.Add;
-
-// Convenient alias for Rooms
-Oversimplified.R = Oversimplified.Rooms;
-
-// Convenient way to access the objects within the current room.
-Oversimplified.O = null;
 
 /* Room Class
 
@@ -1237,6 +1237,10 @@ Oversimplified.SetRoom = function (room) {
 // PremadeObjects (Prefab) Namespace
 Oversimplified.PremadeObjects = {};
 
+// Convenient aliases for PremadeObjects.
+Oversimplified.Prefabs = Oversimplified.PremadeObjects;    // In case someone likes the technical "prefab" term better.
+Oversimplified.P = Oversimplified.PremadeObjects;
+
 // Add a GameObject to the list of PremadeObjects.
 Oversimplified.PremadeObjects.Add = function (name, objectOptions) {// x, y, imageSrc, maskImageSrc, animationsArray) {
     if (typeof Oversimplified.PremadeObjects[name] === 'undefined') {
@@ -1250,10 +1254,6 @@ Oversimplified.PremadeObjects.Add = function (name, objectOptions) {// x, y, ima
 
 // Alias for PremadeObjects.Add().
 Oversimplified.PremadeObjects.New = Oversimplified.PremadeObjects.Add;
-
-// Convenient aliases for PremadeObjects.
-Oversimplified.Prefabs = Oversimplified.PremadeObjects;    // In case someone likes the technical "prefab" term better.
-Oversimplified.P = Oversimplified.PremadeObjects;
 
 // GameObject class
 Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskImageSrc, animationsArray) {
@@ -1682,6 +1682,7 @@ Oversimplified.CollisionAtPoint = function (x, y) {
 
 // Animations Namespace
 Oversimplified.Animations = {};
+Oversimplified.A = Oversimplified.Animations;
 Oversimplified.Animations.Add = function (animationName, animationWidth, animationHeight, animationOptions) {
     if (typeof Oversimplified.Animations[animationName] === 'undefined') {
         Oversimplified.Animations[animationName] = new Oversimplified.Animation(animationName, animationWidth, animationHeight, animationOptions);
@@ -1692,7 +1693,6 @@ Oversimplified.Animations.Add = function (animationName, animationWidth, animati
     }
 };
 Oversimplified.Animations.New = Oversimplified.Animations.Add;
-Oversimplified.A = Oversimplified.Animations;
 
 // Animation class (for use with sprite sheets)
 //
@@ -1723,12 +1723,12 @@ Oversimplified.Effects = {
     Tunes: {}
 }
 
+// Alias for Effects
+Oversimplified.E = Oversimplified.Effects;
+
 // Aliases for Sounds and Tunes
 Oversimplified.Effects.S = Oversimplified.Effects.Sounds;
 Oversimplified.Effects.T = Oversimplified.Effects.Music = Oversimplified.Effects.M = Oversimplified.Effects.Tunes;
-
-// Alias for Effects
-Oversimplified.E = Oversimplified.Effects;
 
 Oversimplified.Effects.AddSound = function (soundName, soundSources) {
     if (typeof Oversimplified.Effects.Sounds[soundName] === 'undefined') {

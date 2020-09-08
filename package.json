@@ -6,7 +6,7 @@
   "scripts": {
     "docs": "jsdoc -c ./jsdoc-conf.json ./Oversimplified.js ./README.md",
     "clear-docs": "rimraf ./out",
-    "minify": "terser --compress --output Oversimplified.min.js -- Oversimplified.js"
+    "minify": "node ./minify.js"
   },
   "repository": {
     "type": "git",
