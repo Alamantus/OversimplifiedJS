@@ -5,8 +5,9 @@
   "main": "Oversimplified.js",
   "scripts": {
     "docs": "jsdoc -c ./dev/jsdoc-conf.json ./Oversimplified.js ./README.md",
-    "clear-docs": "rimraf ./out",
-    "minify": "node ./dev/minify.js"
+    "clear-docs": "rimraf ./out ./docs",
+    "clear-dist": "rimraf ./dist",
+    "build": "node ./dev/build.js && npm run docs -- -d ./docs"
   },
   "repository": {
     "type": "git",
