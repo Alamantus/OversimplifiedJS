@@ -25,7 +25,7 @@ var OS = Oversimplified;
 
 /** _NOT FOR REGULAR USE._ Stores the HTML5 canvas element in `index.html` with the id of `game`.
  * @type {(HTMLCanvasElement|null)}
- * @readonly
+ * @restricted
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement|HTMLCanvasElement}
  */
 Oversimplified.canvas = null;
@@ -39,7 +39,7 @@ Oversimplified.context = null;
 
 /** Stores the next ID value to use when creating any Oversimplified object.
  * @type {number}
- * @readonly
+ * @restricted
  */
 Oversimplified.nextID = 0;
 
@@ -94,7 +94,7 @@ Oversimplified.emptyImage.height = 1;
  * is the same as
  * 
  * ```
- * {@link Oversimplified.Settings|Oversimplified.Settings}.loadingBar = false;
+ * {@link Oversimplified.Settings}.loadingBar = false;
  * ```
  * @namespace
  * @property {number} defaultStep=1/3 - The default frame speed for {@link Oversimplified.Room|Rooms}. Represents the number of seconds that pass before the next frame plays.
@@ -141,19 +141,19 @@ Oversimplified.timestamp = function() {
 
 /** Stores the timestamp for the {@link Oversimplified.Frame|Frame} before performing its actions.
  * @type {number}
- * @readonly
+ * @restricted
  */
 Oversimplified.now = null;
 
 /** Used to track whether to run {@link Oversimplified.Frame|Frame} based on its relation to the step speed.
  * @type {number}
- * @readonly
+ * @restricted
  */
 Oversimplified.dateTime = 0;
 
 /** Stores the timestamp for the previous {@link Oversimplified.Frame|Frame}.
  * @type {number}
- * @readonly
+ * @restricted
  */
 Oversimplified.lastFrame = Oversimplified.timestamp();
 
@@ -164,7 +164,7 @@ Oversimplified.lastFrame = Oversimplified.timestamp();
  * the current room's step, the room's {@link Oversimplified.Room#Update} method will change it to match.
  * @type {number}
  * @readonly
- * @default Oversimplified.Settings.defaultStep
+ * @default {@link Oversimplified.Settings}.defaultStep
  */
 Oversimplified.step = Oversimplified.Settings.defaultStep;
 
@@ -221,7 +221,7 @@ Oversimplified.camera = {
  * @param {number} [options.hBorder=Oversimplified.camera.hBorder] - The number of pixels away from the camera's edge horizontally that the options.objectToFollow must be before the camera scrolls.
  * @param {number} [options.vBorder=Oversimplified.camera.vBorder] - The number of pixels away from the camera's edge vertically that the options.objectToFollow must be before the camera scrolls.
  * @example
- * var obj_player = rm_.AddObject("Player", { x: 10, y: 10, imageSrc: "path/to/image", });
+ * var obj_player = rm_Default.AddObject("Player", { x: 10, y: 10, imageSrc: "path/to/image", });
  * OS.SetCamera({
  *     width: 500,
  *     height: 200,
@@ -261,8 +261,8 @@ Oversimplified.SetCamera = function (options) {
  * * 1 finger = left mouse
  * * 2 fingers = right mouse
  * * 3 fingers = middle mouse)
- * @static
  * @namespace
+ * @readonly
  * @property {number} x - The x position of the mouse relative to the top left corner of the canvas.
  * @property {number} y - The y position of the mouse relative to the top left corner of the canvas.
  * @property {number} leftCode - The event code of the left mouse button for internal use.
@@ -342,6 +342,7 @@ Oversimplified.releasedKeys = [];
 
 /**
  * @namespace
+ * @readonly
  * @see {@link Oversimplified.Keycode}
  * @description
  * Stores the key name by keycode. The keycode captured by a JavaScript `event` is what will be used to get the name of the key.
@@ -554,6 +555,7 @@ Oversimplified.Key = {
 
 /**
  * @namespace
+ * @readonly
  * @see {@link Oversimplified.Key}
  * @description
  * Stores the keycode name by key name. The keycode captured by a JavaScript `event` is what is returned by the key name.
@@ -723,8 +725,9 @@ Oversimplified.Controls.Add = function(name, positiveKeycode, negativeKeycode) {
 // Alias for Oversimplified.Controls.Add()
 Oversimplified.Controls.New = Oversimplified.Controls.Add;
 
-/** _NOT FOR USE._ Internal function that checks each created {@link Oversimplified.Control} every {@link Oversimplified.Frame|Frame} for presses, releases, and holds.
+/** Internal function that checks each created {@link Oversimplified.Control} every {@link Oversimplified.Frame|Frame} for presses, releases, and holds.
  * @function
+ * @restricted
  */
 Oversimplified.Controls.CheckAll = function () {
     for (var control in Oversimplified.Controls) {
@@ -755,12 +758,14 @@ Oversimplified.Control = function (keycode) {
     /** The keycode value of this Control.
      * @instance
      * @type {number}
+     * @readonly
      */
     this.keyCode = keycode;
 
     /** The key name of this Control.
      * @instance
      * @type {string}
+     * @readonly
      */
     this.keyName = Oversimplified.Key[keycode];
     
@@ -769,6 +774,7 @@ Oversimplified.Control = function (keycode) {
      * Also accessible via `{@link Oversimplified.Control#pressed}`.
      * @instance
      * @type {boolean}
+     * @readonly
      */
     this.down = false;
     
@@ -777,12 +783,14 @@ Oversimplified.Control = function (keycode) {
      * Also accessible via `{@link Oversimplified.Control#down}`.
      * @instance
      * @type {boolean}
+     * @readonly
      */
     this.pressed = false;
     
     /** Whether this Control's key is currently being held down.
      * @instance
      * @type {boolean}
+     * @readonly
      */
     this.held = false;
     
@@ -791,6 +799,7 @@ Oversimplified.Control = function (keycode) {
      * Also accessible via `{@link Oversimplified.Control#released}`.
      * @instance
      * @type {boolean}
+     * @readonly
      */
     this.up = false;
     
@@ -799,6 +808,7 @@ Oversimplified.Control = function (keycode) {
      * Also accessible via `{@link Oversimplified.Control#up}`.
      * @instance
      * @type {boolean}
+     * @readonly
      */
     this.released = false;
 }
@@ -810,10 +820,11 @@ Oversimplified.Control = function (keycode) {
  */
 Oversimplified.Control.prototype.type = "Control";
 
-/** _NOT FOR USE._ Internal function that updates the status of the Control.
+/** Internal function that updates the status of the Control.
  * 
  * This is run automatically during each {@link Oversimplified.Frame|Frame} through {@link Oversimplified.Controls.CheckAll};
  * @function
+ * @restricted
  */
 Oversimplified.Control.prototype.Check = function () {
     if (Oversimplified.heldKeys.indexOf(this.keyCode) != -1) {
@@ -859,30 +870,35 @@ Oversimplified.Axis = function (positiveKeycode, negativeKeycode) {
     /** The keycode value of this Axis that will return `1` when held.
      * @instance
      * @type {number}
+     * @readonly
      */
     this.positiveKeycode = positiveKeycode;
 
     /** The key name of the positive key for this Axis.
      * @instance
      * @type {string}
+     * @readonly
      */
     this.positiveKeyName = Oversimplified.Key[positiveKeycode];
     
     /** The keycode value of this Axis that will return `-1` when held.
      * @instance
      * @type {number}
+     * @readonly
      */
     this.negativeKeycode = negativeKeycode;
 
     /** The key name of the negative key for this Axis.
      * @instance
      * @type {string}
+     * @readonly
      */
     this.negativeKeyName = Oversimplified.Key[negativeKeycode];
     
     /** Returns one of `0`, `-1`, or `1` depending upon which of the Axis keys are pressed.
      * @instance
      * @type {number}
+     * @readonly
      */
     this.direction = 0;
 }
@@ -894,10 +910,11 @@ Oversimplified.Axis = function (positiveKeycode, negativeKeycode) {
  */
 Oversimplified.Axis.prototype.type = "Axis";
 
-/** _NOT FOR USE._ Internal function that updates the status of the Axis.
+/** Internal function that updates the status of the Axis.
  * 
  * This is run automatically during each {@link Oversimplified.Frame|Frame} through {@link Oversimplified.Controls.CheckAll};
  * @function
+ * @restricted
  */
 Oversimplified.Axis.prototype.Check = function () {
     if (Oversimplified.heldKeys.indexOf(this.positiveKeycode) != -1
@@ -936,9 +953,13 @@ Oversimplified.Axis.prototype.Check = function () {
  * Oversimplified.Rooms.Add("Default");
  * ```
  * @namespace
- * @property {string} currentRoomName="Default" - The name of the currently displayed {@link Oversimplified.Room|Room}
  */
 Oversimplified.Rooms = {
+    /** The name of the currently displayed {@link Oversimplified.Room|Room}
+     * @type {string}
+     * @readonly
+     * @default "Default"
+     */
     currentRoomName: "Default",
 
     /** A function that you can use to do something before anything else happens during a {@link Oversimplified.Room|Room}'s
@@ -1025,18 +1046,6 @@ Oversimplified.Rooms.Add = function (name, options) {
 // Alias for Rooms.Add
 Oversimplified.Rooms.New = Oversimplified.Rooms.Add;
 
-/* Room Class
-
-name (required) : The unique identifier of the room. Used to locate the room within the Rooms namespace.
-options (optional) : An object with extra parameters for the Room. Options include:
-    width : The width of the room. The camera will not travel beyond this to the right. If it is larger than the camera's width and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's width, it will be set to the camera's width. -- default = Oversimplified.camera.width
-    height : The height of the room. The camera will not travel beyond this to the bottom. If it is larger than the camera's height and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's height, it will be set to the camera's height. -- default = Oversimplified.camera.height
-    backgroundSrc : The image that will be displayed as the room's background. If excluded or set to empty string (""), no background will show.
-    stepSpeed : The step speed for the Room. If excluded or set to 0, the default is used. -- default = Oversimplified.Settings.defaultStep
-    backgroundSize : Sets the room size to whatever the backgroundSrc image size is, regardless of what is entered as width and height!
-    backgroundColor : Any hex color value. Sets the far background color (behind the background image, visible only if transparent or excluded). A JavaScript alternative to setting the HTML5 canvas's background color CSS.
-    foreground : Path to any image file, though .png or .gif file with transparency is ideal. Sets the foreground image that displays over the background and all objects in the room. Appears below the Room's DrawAbove() function but above any GameObject's DrawAbove() function.
-*/
 /** Creates a new Room with the name `name`.
  *
  * This function is also available as `Oversimplified.Rooms.New`, so you can use whichever you prefer.
@@ -1059,6 +1068,7 @@ options (optional) : An object with extra parameters for the Room. Options inclu
  */
 Oversimplified.Room = function (name, options) {
     /** The internal ID of this Room.
+     * @instance
      * @type {number}
      * @readonly
      */
@@ -1067,14 +1077,17 @@ Oversimplified.Room = function (name, options) {
     var self = this;
     
     /** The name given to the room on creation.
+     * @instance
      * @type {string}
+     * @readonly
      */
     this.name = name;
 
     /** The internal flag that identifies whether the room has run all of its `DoFirst()` processes since it was set as
      * the current room.
+     * @instance
      * @type {boolean}
-     * @readonly
+     * @restricted
      */
     this.hasRunStart = false;
 
@@ -1085,20 +1098,25 @@ Oversimplified.Room = function (name, options) {
     options.stepSpeed = (typeof options.stepSpeed !== 'undefined' && options.stepSpeed > 0) ? options.stepSpeed : Oversimplified.Settings.defaultStep;
     
     /** The width of the room. The camera will not travel beyond this when moving right. If it is larger than the camera's width and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's width, it will be set to the camera's width.
+     * @instance
      * @type {number}
+     * @readonly
      */
     this.width = options.width;
 
      /** The height of the room. The camera will not travel beyond this when moving down. If it is larger than the camera's height and there is an object being followed by the camera, the camera can scroll to the farther portions of the room. If it is smaller than the camera's height, it will be set to the camera's height.
+      * @instance
       * @type {number}
+      * @readonly
       */
     this.height = options.height;
 
-    /** Where the actual Image is held so the information _about_ the background can be held in the `background` variable.
-     * @type {Image}
-     * @private
-     */
     if (typeof options.backgroundSrc !== 'undefined' && options.backgroundSrc != "") {
+     /** Where the actual Image is held so the information _about_ the background can be held in the `background` variable.
+      * @instance
+      * @type {Image}
+      * @readonly
+      */
         this.bg = new Image();
         this.bg.src = options.backgroundSrc;
     } else {
@@ -1106,7 +1124,9 @@ Oversimplified.Room = function (name, options) {
         this.bg = Oversimplified.emptyImage;
     }
     /** Where data about the background `Image` is stored.
+     * @instance
      * @type {Object}
+     * @readonly
      * @property {boolean} loaded - If {@link Oversimplified.Room#bg} was not set to the empty image, this will update to `true` when the `Image.src` file has been loaded.
      * @property {number} [width] - The width of the loaded Image file.
      * @property {number} [height] - The height of the loaded Image file.
@@ -1130,11 +1150,13 @@ Oversimplified.Room = function (name, options) {
     
     
     /** The fraction of a second that passes each time a {@link Oversimplified.Frame|Frame} is run.
+     * @instance
      * @type {number}
      */
     this.stepSpeed = options.stepSpeed;
     
     /** This Room's collection of {@link Oversimplified.GameObject|GameObjects} organized by name.
+     * @instance
      * @type {Object.<string, Oversimplified.GameObject>}
      */
     this.objects = {};
@@ -1150,8 +1172,11 @@ Oversimplified.Room = function (name, options) {
     }
     if (typeof options.foreground !== 'undefined') {
         /** Where the foreground `Image` is stored, if specified.
+         * @instance
          * @type {Image}
+         * @readonly
          * @property {boolean} loaded - This will update to `true` when the `Image.src` file has been loaded.
+         * @property {string} src - The path to the foreground image file.
          */
         this.foreground = new Image();
         this.foreground.loaded = false;
@@ -1169,23 +1194,89 @@ Oversimplified.Room = function (name, options) {
     /** Stores the order in which the {@link Oversimplified.Room#objects|Room's GameObjects} are drawn based on either their `depth`
      * or the order in which they were created, with most recently created {@link Oversimplified.GameObject|GameObjects} appearing
      * above less recently-created ones.
+     * @instance
      * @type {Array.<string>}
      * @readonly
      */
     this.drawOrder = [];
-    
+
+    /** A function that you can use to do something every time the Room loads before the {@link Oversimplified.Frame|Frame} loop begins.
+     * This function will run first, before any other specified `DoFirst()` in its `objects` list.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.DoFirst = function () {};
-    
+
+    /** A function that you can use to do something first each {@link Oversimplified.Frame|Frame}, before the Room's `Do()` method.
+     * This function will run first, before any other specified `BeforeDo()` or `Do()` in its `objects` list.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.BeforeDo = function () {};
+
+    /** A function that you can use to do something each {@link Oversimplified.Frame|Frame} before any other specified `BeforeDo()`
+     * or `Do()` in its `objects` list.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.Do = function () {};
+
+    /** A function that you can use to do something last each {@link Oversimplified.Frame|Frame}, after any other specified
+     * `Do()` or `AfterDo()` in its `objects` list.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.AfterDo = function () {};
-    
+
+    /** A function that you can use to do something every time the current Room changes to a different Room. This function
+     * will be run when the Room "ends".
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.DoLast = function () {};
-    
+
+    /** A function that you can use to draw something first each {@link Oversimplified.Frame|Frame}, after the Room's `Update()` method.
+     * This function will run first, allowing you to draw something at the bottom of the canvas each Frame.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.DrawBelow = function () {};
+
+    /** A function that you can use to draw something last each {@link Oversimplified.Frame|Frame}, after the Room's has drawn everything else.
+     * This function will run last, allowing you to draw something at the top of the canvas each Frame, even on top of the Room's foreground.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.DrawAbove = function () {};
 }
+
+/** Identifies this object as a Room
+ * @instance
+ * @type {string}
+ * @readonly
+ */
 Oversimplified.Room.prototype.type = "Room";
+
+/** Internal function that runs when the Room is set as the current room via {@link Oversimplified.SetRoom}
+ * or {@link Oversimplified.Room#SetAsCurrentRoom}.
+ * @instance
+ * @function
+ * @restricted
+ */
 Oversimplified.Room.prototype.Start = function () {
     this.DoFirst();
     
@@ -1196,17 +1287,17 @@ Oversimplified.Room.prototype.Start = function () {
     }
     this.hasRunStart = true;
 }
+
+/** Internal function that runs every {@link Oversimplified.Frame|Frame} and handles the {@link Oversiplified.GameObject#Update|Update()}
+ * function of every {@link Oversimplified.GameObject} in its {@link Oversimplified.Room#objects|objects container}.
+ * @instance
+ * @function
+ * @restricted
+ */
 Oversimplified.Room.prototype.Update = function () {
     if (Oversimplified.step != this.stepSpeed) {
         Oversimplified.step = this.stepSpeed;
     }
-    
-    this.drawOrder = Object.keys(this.objects);    // Determine draw order every frame to account for any new or removed objects. Object.keys support is IE9+
-    this.drawOrder.sort(function (a, b) {
-        var objA = this.objects[a], objB = this.objects[b];
-        if (objA.depth == objB.depth) return 0; // Do not sort/use created order.
-        return objA.depth < objB.depth ? 1 : -1;    // Put objA after objB so it is drawn above.
-    });
 
     if (!this.hasRunStart) {
         this.Start();
@@ -1224,10 +1315,25 @@ Oversimplified.Room.prototype.Update = function () {
     
     this.AfterDo();
 }
+
+/** Internal function that runs when a different Room is set as the current room via {@link Oversimplified.SetRoom}
+ * or {@link Oversimplified.Room#SetAsCurrentRoom}.
+ * @instance
+ * @function
+ * @restricted
+ */
 Oversimplified.Room.prototype.End = function () {
     this.DoLast();
     if (this) this.hasRunStart = false;
 }
+
+/** Internal function that runs every {@link Oversimplified.Frame|Frame} after {@link Oversimplified.Room#Update} and
+ * handles the {@link Oversiplified.GameObject#Draw|Draw()} function of every {@link Oversimplified.GameObject} in
+ * its {@link Oversimplified.Room#objects|objects container}.
+ * @instance
+ * @function
+ * @restricted
+ */
 Oversimplified.Room.prototype.Draw = function () {
     var self = this;
     //Always draw background first if there is one
@@ -1242,7 +1348,13 @@ Oversimplified.Room.prototype.Draw = function () {
     }
     
     this.DrawBelow();    //Draw this before any objects are drawn
-    
+
+    this.drawOrder = Object.keys(this.objects);    // Determine draw order every frame to account for any new or removed objects. Object.keys support is IE9+
+    this.drawOrder.sort(function (a, b) {
+        var objA = this.objects[a], objB = this.objects[b];
+        if (objA.depth == objB.depth) return 0; // Do not sort/use created order.
+        return objA.depth < objB.depth ? 1 : -1;    // Put objA after objB so it is drawn above.
+    });
     for (var i = 0; i < this.drawOrder.length; i++) {
         if (typeof this.objects[this.drawOrder[i]] !== 'undefined') {
             this.objects[this.drawOrder[i]].Draw();
@@ -1259,7 +1371,21 @@ Oversimplified.Room.prototype.Draw = function () {
     this.DrawAbove();    //Draw this after all other drawing is done
 }
 
-// Add a GameObject or PremadeObject to the room.
+/** Create a new {@link Oversimplified.GameObject|GameObject} or add an existing {@link Oversimplified.PremadeObject} to the Room.
+ * @instance
+ * @function
+ * @param {(string|Oversimplified.PremadeObject)} objectOrNewName - If creating a new {@link Oversimplified.GameObject}, use a unique
+ * string as its name and include `objectOptions` to create the new object. If the specified name already exists in the Room, this
+ * function will return `false`.
+ * 
+ * If using a {@link Oversimplified.PremadeObject|PremadeObject}, simply use a reference to that object. The resulting GameObject will
+ * be a copy of the PremadeObject with a new internal `id` and a name that takes the PremadeObject's name and adds the new id as a suffix.
+ * @param {Object} objectOptions
+ * @todo Specify the objectOptions params after you set it up on {@link Oversimplified.GameObject}!
+ * @returns {(Oversimplified.GameObject|false)} Returns either the created GameObject or `false` if the specified name already exists in the Room.
+ * 
+ * Use `{@link Oversimplified.DEBUG.showMessages} = true` to show a message in the console that alerts you when name collisions occur.
+ */
 Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptions) {
     objectOptions = (typeof objectOptions !== 'undefined') ? objectOptions : {};
     var self = this;
@@ -1284,18 +1410,33 @@ Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptio
     }
 }
 
-// Set the specified room as the current room.
+/** Set this Room as the current room.
+ * @instance
+ * @function
+ */
 Oversimplified.Room.prototype.SetAsCurrentRoom = function () {
     Oversimplified.SetRoom(this);
 }
 
-// Create an object in the current room.
+/** Create an object in the current room.
+ * 
+ * Internally calls {@link Oversimplified.Room#AddObject} on the current room.
+ * @function
+ * @param {(string|Oversimplified.PremadeObject)} objectOrNewName
+ * @param {Object} objectOptions
+ * @todo Specify the objectOptions params after you set it up on {@link Oversimplified.Room#AddObject}!
+ * @see {@link Oversimplified.Room#AddObject}
+ */
 Oversimplified.Create = function (objectOrNewName, objectOptions) {
     return Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].AddObject(objectOrNewName, objectOptions);
 }
 
-// Change to the specified room.
-// Runs the current Room's End() function, changes the room, and runs the specified Room's Start() function.
+/** Change to the specified room.
+ * 
+ * Runs the current Room's End() function, changes the room, and runs the specified Room's Start() function.
+ * @function
+ * @param {Oversimplified.Room} room - The Room you want to set as the current Room.
+ */
 Oversimplified.SetRoom = function (room) {
     if (typeof Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName] !== 'undefined') {
         Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].End();
