@@ -23,7 +23,7 @@ var Oversimplified = {};
  */
 var OS = Oversimplified;
 
-/** _NOT FOR REGULAR USE._ Stores the HTML5 canvas element in `index.html` with the id of `game`.
+/** Stores the HTML5 canvas element in `index.html` with the id of `game`.
  * @type {(HTMLCanvasElement|null)}
  * @restricted
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement|HTMLCanvasElement}
@@ -76,6 +76,7 @@ Oversimplified.numberOfScriptsToLoad = 0;
  * @property {number} width=1
  * @property {number} height=1
  * @readonly
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image|Image}
  */
 Oversimplified.emptyImage = new Image();
 Oversimplified.emptyImage.src = "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
@@ -1038,7 +1039,7 @@ Oversimplified.Rooms.Add = function (name, options) {
         
         return Oversimplified.Rooms[name];
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("A Room with the name \"" + name + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.error("A Room with the name \"" + name + "\" already exists!");
         return false;
     }
 }
@@ -1116,6 +1117,7 @@ Oversimplified.Room = function (name, options) {
       * @instance
       * @type {Image}
       * @readonly
+      * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image|Image}
       */
         this.bg = new Image();
         this.bg.src = options.backgroundSrc;
@@ -1177,6 +1179,7 @@ Oversimplified.Room = function (name, options) {
          * @readonly
          * @property {boolean} loaded - This will update to `true` when the `Image.src` file has been loaded.
          * @property {string} src - The path to the foreground image file.
+         * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image|Image}
          */
         this.foreground = new Image();
         this.foreground.loaded = false;
@@ -1380,8 +1383,18 @@ Oversimplified.Room.prototype.Draw = function () {
  * 
  * If using a {@link Oversimplified.PremadeObject|PremadeObject}, simply use a reference to that object. The resulting GameObject will
  * be a copy of the PremadeObject with a new internal `id` and a name that takes the PremadeObject's name and adds the new id as a suffix.
- * @param {Object} objectOptions
- * @todo Specify the objectOptions params after you set it up on {@link Oversimplified.GameObject}!
+ * @param {Object} objectOptions - The options that are applied to the creation of the GameObject.
+ * @param {number} objectOptions.x=-1 - The `x` position of the GameObject within its containing Room, measured from the top left corner.
+ * @param {number} objectOptions.y=-1 - The `y` position of the GameObject within its containing Room, measured from the top left corner.
+ * @param {string} objectOptions.imageSrc - The path to the image file the GameObject will use to display itself. If using `animations`, this is the sprite sheet the animations will use.
+ * @param {string} [objectOptions.maskImageSrc] - The path to the image file the GameObject will use the measurements of to identify its boundaries in place of the imageSrc. Useful for making the GameObject functionally smaller or larger than it appears.
+ * @param {Oversimplified.Animation[]} [objectOptions.animations] - An array of Animations that identify the size and frames of a GameObject's animations when using a sprite sheet.
+ * @param {number} [objectOptions.depth=0] - A number that identifies what order this GameObject should be drawn in. Lower numbers will be drawn first, which means that higher numbers will be drawn _on top of_ lower numbers.
+ * @param {boolean} [objectOptions.solid=false] - A flag that is used to identify whether the GameObject should be considered something that cannot be moved through when using built-in simple movement functions.
+ * @param {number} [objectOptions.xScale=1] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the horizontal direction. This number affects the boundaries of the GameObject and will distort its image.
+ * @param {number} [objectOptions.yScale=1] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the vertical direction. This number affects the boundaries of the GameObject and will distort its image. If excluded, the specified xScale will be used instead.
+ * @param {number} [objectOptions.rotation=0] - A number between 0 and 359 that represents the angle that the GameObject's image should display at. This _does not_ affect the image's boundaries.
+ * @param {any} [objectOptions....] - Any other properties you include here will be added to the GameObject if another built-in property by the same name does not already exist.
  * @returns {(Oversimplified.GameObject|false)} Returns either the created GameObject or `false` if the specified name already exists in the Room.
  * 
  * Use `{@link Oversimplified.DEBUG.showMessages} = true` to show a message in the console that alerts you when name collisions occur.
@@ -1401,7 +1414,7 @@ Oversimplified.Room.prototype.AddObject = function (objectOrNewName, objectOptio
     }
     else {
         if (self.objects[objectOrNewName]) {
-            if (Oversimplified.DEBUG.showMessages) console.log("Object with name \"" + objectOrNewName + "\" already exists in current room!");
+            if (Oversimplified.DEBUG.showMessages) console.error("GameObject with name \"" + objectOrNewName + "\" already exists in current room!");
             return false;
         }
         self.objects[objectOrNewName] = new Oversimplified.GameObject(objectOrNewName, objectOptions);
@@ -1423,8 +1436,21 @@ Oversimplified.Room.prototype.SetAsCurrentRoom = function () {
  * Internally calls {@link Oversimplified.Room#AddObject} on the current room.
  * @function
  * @param {(string|Oversimplified.PremadeObject)} objectOrNewName
- * @param {Object} objectOptions
- * @todo Specify the objectOptions params after you set it up on {@link Oversimplified.Room#AddObject}!
+ * @param {Object} objectOptions - The options that are applied to the creation of the GameObject.
+ * @param {number} objectOptions.x=-1 - The `x` position of the GameObject within its containing Room, measured from the top left corner.
+ * @param {number} objectOptions.y=-1 - The `y` position of the GameObject within its containing Room, measured from the top left corner.
+ * @param {string} objectOptions.imageSrc - The path to the image file the GameObject will use to display itself. If using `animations`, this is the sprite sheet the animations will use.
+ * @param {string} [objectOptions.maskImageSrc] - The path to the image file the GameObject will use the measurements of to identify its boundaries in place of the imageSrc. Useful for making the GameObject functionally smaller or larger than it appears.
+ * @param {Oversimplified.Animation[]} [objectOptions.animations] - An array of Animations that identify the size and frames of a GameObject's animations when using a sprite sheet.
+ * @param {number} [objectOptions.depth=0] - A number that identifies what order this GameObject should be drawn in. Lower numbers will be drawn first, which means that higher numbers will be drawn _on top of_ lower numbers.
+ * @param {boolean} [objectOptions.solid=false] - A flag that is used to identify whether the GameObject should be considered something that cannot be moved through when using built-in simple movement functions.
+ * @param {number} [objectOptions.xScale=1] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the horizontal direction. This number affects the boundaries of the GameObject and will distort its image.
+ * @param {number} [objectOptions.yScale=1] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the vertical direction. This number affects the boundaries of the GameObject and will distort its image. If excluded, the specified xScale will be used instead.
+ * @param {number} [objectOptions.rotation=0] - A number between 0 and 359 that represents the angle that the GameObject's image should display at. This _does not_ affect the image's boundaries.
+ * @param {any} [objectOptions....] - Any other properties you include here will be added to the GameObject if another built-in property by the same name does not already exist.
+ * @returns {(Oversimplified.GameObject|false)} Returns either the created GameObject or `false` if the specified name already exists in the Room.
+ *
+ * Use `{@link Oversimplified.DEBUG.showMessages} = true` to show a message in the console that alerts you when name collisions occur.
  * @see {@link Oversimplified.Room#AddObject}
  */
 Oversimplified.Create = function (objectOrNewName, objectOptions) {
@@ -1433,7 +1459,8 @@ Oversimplified.Create = function (objectOrNewName, objectOptions) {
 
 /** Change to the specified room.
  * 
- * Runs the current Room's End() function, changes the room, and runs the specified Room's Start() function.
+ * Runs the current Room's {@link Oversimplified.Room#End|End()} function, changes the room, and runs the specified
+ * Room's {@link Oversimplified.Room#Start|Start()} function.
  * @function
  * @param {Oversimplified.Room} room - The Room you want to set as the current Room.
  */
@@ -1450,20 +1477,67 @@ Oversimplified.SetRoom = function (room) {
     if (Oversimplified.DEBUG.showMessages) console.log("The current room is \"" + Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].name + "\".");
 }
 
-// PremadeObjects (Prefab) Namespace
-Oversimplified.PremadeObjects = {};
 
-// Convenient aliases for PremadeObjects.
+
+// PremadeObjects (Prefab) Namespace
+/** Creates and stores {@link Oversimplified.GameObject}s that can be generated on the fly.
+ * 
+ * Alternatively accessible via `Oversimplified.Prefabs` if you prefer that terminology.
+ * 
+ * Conveniently aliased with `{@link OS.P}`, for example
+ *
+ * ```
+ * OS.P.Add("Player", { x: 20, y: 20, imageSrc: 'path/to/image' });
+ * ```
+ *
+ * is the same as
+ *
+ * ```
+ * Oversimplified.PremadeObjects.Add("Player", { x: 20, y: 20, imageSrc: 'path/to/image' });
+ * // OR
+ * Oversimplified.Prefabs.Add("Player", { x: 20, y: 20, imageSrc: 'path/to/image' });
+ * ```
+ * @namespace
+ */
+Oversimplified.PremadeObjects = {};
 Oversimplified.Prefabs = Oversimplified.PremadeObjects;    // In case someone likes the technical "prefab" term better.
+
+/** A convenient alias for {@link Oversimplified.PremadeObjects}.
+ *
+ * _Anywhere_ you might type `Oversimplified.PremadeObjects` or `Oversimplified.Prefabs`, you can substitute `OS.P` instead to save some typing.
+ * @namespace
+ * @alias OS.P
+ * @see {@link Oversimplified.Rooms}
+ */
 Oversimplified.P = Oversimplified.PremadeObjects;
 
-// Add a GameObject to the list of PremadeObjects.
+/** Add a {@link Oversimplified.GameObject|GameObject} to the list of PremadeObjects with the name `name`.
+ * 
+ * This function is also available as `Oversimplified.PremadeObjects.New`, so you can use whichever you prefer.
+ * @function
+ * @param {string} name - The name that the GameObject will be identified by. Must be unique to PremadeObjects.
+ * @param {Object} objectOptions - The options that are applied to the creation of the GameObject.
+ * @param {number} objectOptions.x=-1 - The `x` position of the GameObject within its containing Room, measured from the top left corner.
+ * @param {number} objectOptions.y=-1 - The `y` position of the GameObject within its containing Room, measured from the top left corner.
+ * @param {string} objectOptions.imageSrc - The path to the image file the GameObject will use to display itself. If using `animations`, this is the sprite sheet the animations will use.
+ * @param {string} [objectOptions.maskImageSrc] - The path to the image file the GameObject will use the measurements of to identify its boundaries in place of the imageSrc. Useful for making the GameObject functionally smaller or larger than it appears.
+ * @param {Oversimplified.Animation[]} [objectOptions.animations] - An array of Animations that identify the size and frames of a GameObject's animations when using a sprite sheet.
+ * @param {number} [objectOptions.depth=0] - A number that identifies what order this GameObject should be drawn in. Lower numbers will be drawn first, which means that higher numbers will be drawn _on top of_ lower numbers.
+ * @param {boolean} [objectOptions.solid=false] - A flag that is used to identify whether the GameObject should be considered something that cannot be moved through when using built-in simple movement functions.
+ * @param {number} [objectOptions.xScale=1] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the horizontal direction. This number affects the boundaries of the GameObject and will distort its image.
+ * @param {number} [objectOptions.yScale=1] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the vertical direction. This number affects the boundaries of the GameObject and will distort its image. If excluded, the specified xScale will be used instead.
+ * @param {number} [objectOptions.rotation=0] - A number between 0 and 359 that represents the angle that the GameObject's image should display at. This _does not_ affect the image's boundaries.
+ * @param {any} [objectOptions....] - Any other properties you include here will be added to the GameObject if another built-in property by the same name does not already exist.
+ * @returns {(Oversimplified.GameObject|false)} The resulting GameObject stored within `OS.PremadeObjects` that can be used via {@link Oversimplified.Room#AddObject} or {@link Oversimplified.Create} or `false` if the specified name already exists in the PremadeObjects container.
+ *
+ * Use `{@link Oversimplified.DEBUG.showMessages} = true` to show a message in the console that alerts you when name collisions occur.
+ */
 Oversimplified.PremadeObjects.Add = function (name, objectOptions) {// x, y, imageSrc, maskImageSrc, animationsArray) {
     if (typeof Oversimplified.PremadeObjects[name] === 'undefined') {
         Oversimplified.PremadeObjects[name] = new Oversimplified.GameObject(name, objectOptions);// x, y, imageSrc, maskImageSrc, animationsArray);
         return Oversimplified.PremadeObjects[name];
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("A Premade Object with the name \"" + name + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.error("A Premade Object with the name \"" + name + "\" already exists!");
         return false;
     }
 }
@@ -1471,32 +1545,142 @@ Oversimplified.PremadeObjects.Add = function (name, objectOptions) {// x, y, ima
 // Alias for PremadeObjects.Add().
 Oversimplified.PremadeObjects.New = Oversimplified.PremadeObjects.Add;
 
+
+
 // GameObject class
-Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskImageSrc, animationsArray) {
+/** Creates a new GameObject with the name `name` and the specified options.
+ * 
+ * Accesed via {@link Oversimplified.Room#Addobject} or {@link Oversimplified.Create}.
+ * @class
+ * @classdesc The objects that actually do things in your game. GameObjects are stored within a {@link Oversimplified.Room|Room}'s
+ * {@link Oversimplified.Room#objects|objects} container, and are processed and displayed automatically by the Room.
+ * @param {string} name - The name this GameObject identifies itself as.
+ * @param {Object} options
+ * @param {number} options.x=-1 - The `x` position of the GameObject within its containing Room, measured from the top left corner.
+ * @param {number} options.y=-1 - The `y` position of the GameObject within its containing Room, measured from the top left corner.
+ * @param {string} options.imageSrc - The path to the image file the GameObject will use to display itself. If using `animations`, this is the sprite sheet the animations will use.
+ * @param {string} [options.maskImageSrc] - The path to the image file the GameObject will use the measurements of to identify its boundaries in place of the imageSrc. Useful for making the GameObject functionally smaller or larger than it appears.
+ * @param {Oversimplified.Animation[]} [options.animations] - An array of Animations that identify the size and frames of a GameObject's animations when using a sprite sheet.
+ * @param {number} [options.depth=0] - A number that identifies what order this GameObject should be drawn in. Lower numbers will be drawn first, which means that higher numbers will be drawn _on top of_ lower numbers.
+ * @param {boolean} [options.solid=false] - A flag that is used to identify whether the GameObject should be considered something that cannot be moved through when using built-in simple movement functions.
+ * @param {number} [options.xScale=1] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the horizontal direction. This number affects the boundaries of the GameObject and will distort its image.
+ * @param {number} [options.yScale=1] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the vertical direction. This number affects the boundaries of the GameObject and will distort its image. If excluded, the specified xScale will be used instead.
+ * @param {number} [options.rotation=0] - A number between 0 and 359 that represents the angle that the GameObject's image should display at. This _does not_ affect the image's boundaries.
+ * @param {any} [options....] - Any other properties you include here will be added to the GameObject if another built-in property by the same name does not already exist.
+ */
+Oversimplified.GameObject = function (name, options) {
+    /** The internal ID of this GameObject.
+     * @instance
+     * @type {number}
+     * @readonly
+     */
     this.id = Oversimplified.nextID++;
     
     var self = this;
-    this.self = self;
+
+    /** The internal flag that identifies whether the GameObject has run its `DoFirst()` process since its Room was set as
+     * the current Room.
+     * @instance
+     * @type {boolean}
+     * @restricted
+     */
     this.hasRunStart = false;
     
-    //Required Options
+    /** The name given to the GameObject on creation.
+     * @instance
+     * @type {string}
+     * @readonly
+     */
     this.name = name;
 
-    //Optional Options
-    this.depth = typeof options.depth !== 'undefined' ? options.depth : 0; // Objects with higher depth are drawn *later* than (above) objects with lower depths. Objects with the same depth are drawn in the order they are created.
+    /** GameObjects with higher depth are drawn _after_ GameObjects with lower depths and will therefore appear _on top of_
+     * those lower-depth GameObjects. GameObjects with the same depth are drawn in the order they are created.
+     * @instance
+     * @type {number}
+     * @default 0
+     */
+    this.depth = typeof options.depth !== 'undefined' ? options.depth : 0;
+
+    /** Used to flag whether {@link Oversimplified.GameObject#SimpleMove} should evaluate the GameObject as something that
+     * cannot be passed through.
+     * @instance
+     * @type {boolean}
+     * @default false
+     */
     this.solid = typeof options.solid !== 'undefined' ? options.solid : false;
-    this.persistent = typeof options.persistent !== 'undefined' ? options.persistent : false;
-    this.x = typeof options.x !== 'undefined' ? options.x : -1;
-    this.y = typeof options.y !== 'undefined' ? options.y : -1;
+
+    /** The number of pixels from the left side of the room that the GameObject should display. This value represents the _center_ of the GameObject's sprite boundaries _within its room_.
+     * @instance
+     * @type {number}
+     * @default 0
+     */
+    this.x = typeof options.x !== 'undefined' ? options.x : 0;
+
+    /** The number of pixels from the top of the room that the GameObject should display. This value represents the _center_ of the GameObject's sprite boundaries _within its room_.
+     * @instance
+     * @type {number}
+     * @default 0
+     */
+    this.y = typeof options.y !== 'undefined' ? options.y : 0;
+
+    /** Stores the value of {@link Oversimplified.GameObject#x} from the previous {@link Oversimplified.Frame} before updating `x`.
+     * @instance
+     * @type {number}
+     * @readonly
+     */
     this.xPrevious = this.x;
+
+    /** Stores the value of {@link Oversimplified.GameObject#y} from the previous {@link Oversimplified.Frame} before updating `y`.
+     * @instance
+     * @type {number}
+     * @readonly
+     */
     this.yPrevious = this.y;
+
+    /** Stores the GameObject's `x` position relative to the {@link Oversimplified.camera}.
+     * @instance
+     * @type {number}
+     * @readonly
+     */
     this.screenX = this.x - Oversimplified.camera.x;
+
+    /** Stores the GameObject's `y` position relative to the {@link Oversimplified.camera}.
+     * @instance
+     * @type {number}
+     * @readonly
+     */
     this.screenY = this.y - Oversimplified.camera.y;
 
     // If provided options.imageSrc is an image, use it. If there's no options.imageSrc, use Oversimplified.emptyImage's src in a new image.
+    /** Stores the Image loaded from `imageSrc` on creation. It is recommended that you don't modify this directly
+     * after creating the GameObject or else its sizing will get messed up.
+     * @instance
+     * @type {Image}
+     * @restricted
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/Image|Image}
+     */
     this.image = (options.imageSrc && options.imageSrc.src) ? options.imageSrc : new Image();
     this.image.src = (this.image.src) ? this.image.src : (options.imageSrc ? options.imageSrc : Oversimplified.emptyImage.src);
 
+    /** Stores information about the sprite received from the GameObject's `image` and `mask`
+     * @instance
+     * @type {Object}
+     * @property {number} xScale=1 - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the horizontal direction. This number affects the boundaries of the GameObject and will distort its image.
+     * 
+     * A negative value _will not_ cause the image to mirror horizontally because doing so takes too much processing power each frame.
+     * @property {number} yScale=1 - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the vertical direction. This number affects the boundaries of the GameObject and will distort its image.
+     *
+     * A negative value _will not_ cause the image to mirror vertically because doing so takes too much processing power each frame.
+     * @property {number} rotation=0 - A number between 0 and 359 that represents the angle that the GameObject's image should display at.
+     * 
+     * This _does not_ affect the image's boundaries—OversimplifiedJS will always process the boundary as a rectangle with no rotation.
+     * @property {Object.<string, Oversimplified.Animation>} animations - Stores references to Animations that the GameObject uses. The Animation names used are the same as the names they were created with.
+     * 
+     * The first Animation in the `options.animations` array is also duplicated as "Default" for the GameObject. If there are no animations, then "Default" will instead be the static `image` size.
+     * @property {number} frameColumn=0 - (readonly) Used internally to track what frame of the current Animation to display during the {@link Oversimplified.Frame}.
+     * @property {number} frameRow=0 - (readonly) Used internally to track what frame of the current Animation to display during the {@link Oversimplified.Frame}.
+     * @property {string} currentAnimation="Default" - The name of the current Animation that the GameObject will display.
+     */
     this.sprite = {};
     this.sprite.xScale = typeof options.xScale !== 'undefined' ? options.xScale : 1;
     this.sprite.yScale = typeof options.yScale !== 'undefined' ? options.yScale : this.sprite.xScale;
@@ -1538,21 +1722,47 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
     }
     
     function setupMask() {
+        /** The Image the GameObject will use the measurements of to identify its boundaries in place of the {@link Oversimplified.GameObject#image}.
+         * Useful for making the GameObject functionally smaller or larger than it appears.
+         * 
+         * If no mask is specified, then the frame size of the "Default" Animation is used instead.
+         * @instance
+         * @memberOf Oversimplified.GameObject
+         * @type {(Image|Object)}
+         * @restricted
+         */
         self.mask = (options.maskImageSrc) ? new Image() : {};
         self.mask.src = (options.maskImageSrc) ? options.maskImageSrc : "";
         if (self.mask.src == "") {
             self.mask.width = self.sprite.animations["Default"].width;
             self.mask.height = self.sprite.animations["Default"].height;
-        }
-        
-        if (self.mask.src != "") {
-            self.mask.onload = function(){
-                self.xBound = self.width / 2 * self.sprite.xScale;
-                self.yBound = self.height / 2 * self.sprite.yScale;
-            };
-        } else {
+
+            /** The distance in pixels from the center of the GameObject to its horizontal boundary, equalling half of the GameObject's width.
+             * 
+             * If using a {@link Oversimplified.GameObject#mask|mask}, this size will reflect the boundary imposed by the mask,
+             * otherwise, the image size will be used.
+             * @instance
+             * @memberOf Oversimplified.GameObject
+             * @type {number}
+             * @readonly
+             */
             self.xBound = self.mask.width / 2 * self.sprite.xScale;
+
+            /** The distance in pixels from the center of the GameObject to its vertical boundary, equalling half of the GameObject's height.
+             * 
+             * If using a {@link Oversimplified.GameObject#mask|mask}, this size will reflect the boundary imposed by the mask,
+             * otherwise, the image size will be used.
+             * @instance
+             * @memberOf Oversimplified.GameObject
+             * @type {number}
+             * @readonly
+             */
             self.yBound = self.mask.height / 2 * self.sprite.yScale;
+        } else {
+            self.mask.onload = function(){
+                self.xBound = this.width / 2 * self.sprite.xScale;
+                self.yBound = this.height / 2 * self.sprite.yScale;
+            };
         }
     }
 
@@ -1562,20 +1772,101 @@ Oversimplified.GameObject = function (name, options) {// x, y, imageSrc, maskIma
             this[property] = options[property];
         }
     }
-    
+
+    /** A function that you can use to do something every time the {@link Oversimplified.Room} loads before the
+     * {@link Oversimplified.Frame|Frame} loop begins.
+     * 
+     * This function will run at the start of the Room in the order that the GameObjects for the Room were created.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.DoFirst = function () {};
-    
+
+    /** A function that you can use to do something first each {@link Oversimplified.Frame|Frame}, before the GameObject's `Do()` method.
+     *
+     * This function will run each Frame in the order that the GameObjects for the Room were created.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.BeforeDo = function () {};
+
+    /** A function that you can use to do something each {@link Oversimplified.Frame|Frame}.
+     *
+     * This function will run each Frame in the order that the GameObjects for the Room were created.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.Do = function () {};
+
+    /** A function that you can use to do something last each {@link Oversimplified.Frame|Frame}, after the GameObject's `Do()` method.
+     *
+     * This function will run each Frame in the order that the GameObjects for the Room were created.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.AfterDo = function () {};
-    
+
+    /** A function that you can use to do something when the GameObject is deleted _or_ every time the current Room changes to
+     * a different Room.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.DoLast = function () {};
-    
+
+    /** A function that you can use to draw something first each {@link Oversimplified.Frame|Frame}, after the GameObject's `Update()` method.
+     * 
+     * This function will run in the {@link Oversimplified.Room#drawOrder|Room's draw order}, allowing you to draw something
+     * below the GameObject each Frame.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.DrawBelow = function () {};
+
+    /** A function that you can use to draw something last each {@link Oversimplified.Frame|Frame}, after the GameObject has drawn everything else.
+     *
+     * This function will run in the {@link Oversimplified.Room#drawOrder|Room's draw order}, allowing you to draw something
+     * on top of the GameObject each Frame.
+     * @instance
+     * @function
+     * @abstract
+     * @default an empty Function
+     */
     this.DrawAbove = function () {};
 }
+
+/** Identifies this object as a GameObject
+ * @instance
+ * @type {string}
+ * @readonly
+ */
 Oversimplified.GameObject.prototype.type = "GameObject";
-Oversimplified.GameObject.prototype.AddAnimation = function (animation, animationWidth, animationHeight, animationOptions) {//columns, rows, speed, xOffset, yOffset) {
+
+/** Either adds an existing {@link Oversimplified.Animation} or creates a new one and adds it to the {@link Oversimplified.GameObject#sprite|GameObject's sprite}.
+ * @instance
+ * @function
+ * @param {(Oversimplified.Animation|string)} animation - If given a pre-created `Animation`, then it will add that Animation to the `{@link Oversimplified.GameObject#sprite}.animations`
+ * container with the Animation's name.
+ * 
+ * If given a `string`, then that value will be used as the name of the Animation that will be created.
+ * @param {number} animationWidth - The width of a single frame on the sprite sheet the Animation will cycle through. Ignored if using a pre-created Animation.
+ * @param {number} animationHeight - The height of a single frame on the sprite sheet the Animation will cycle through. Ignored if using a pre-created Animation.
+ * @param {Object} animationOptions - The setup options for creating a new {@link Oversimplified.Animation}. Ignored if using a pre-created Animation.
+ * @todo Add option properties when they're set up on Animation class!
+ * @returns {(Oversimplified.Animation|false)}
+ */
+Oversimplified.GameObject.prototype.AddAnimation = function (animation, animationWidth, animationHeight, animationOptions) {
     //Takes either an animation or the name of an animation in the Animations namespace and adds it to the object.
     if (typeof animation.name !== 'undefined') {
         this.sprite.animations[animationOptions.name] = animation;
@@ -1586,52 +1877,17 @@ Oversimplified.GameObject.prototype.AddAnimation = function (animation, animatio
         this.sprite.animations[Oversimplified.Animations[animation].name] = Oversimplified.Animations[animation];
     }
 }
-Oversimplified.GameObject.prototype.Draw = function () {
-    this.DrawBelow();
-    
-    var self = this;
-    var animation = self.sprite.currentAnimation;
-    if (self.sprite.animations[animation]) {
-        var animationWidth = self.sprite.animations[animation].width;
-        var animationHeight = self.sprite.animations[animation].height;
-        var width = self.sprite.animations[animation].width * self.sprite.xScale;
-        var height = self.sprite.animations[animation].height * self.sprite.yScale;
-        var columns = self.sprite.animations[animation].columns;
-        var rows = self.sprite.animations[animation].rows;
-        var xOffset = self.sprite.animations[animation].xOffset;
-        var yOffset = self.sprite.animations[animation].yOffset;
-        var animationSpeed = self.sprite.animations[animation].speed;
-        
-        if (self.sprite.frameColumn < columns) {
-            self.sprite.frameColumn += animationSpeed;
-        }
-        if (self.sprite.frameColumn >= columns) {
-            self.sprite.frameColumn = 0;
-            self.sprite.frameRow++;
-        }
-        if (self.sprite.frameRow > rows - 1) {
-            self.sprite.frameRow = 0;
-        }
-        
-        if (Oversimplified.IsOnCamera(self)) {
-            var adjustedColumn = Math.floor(self.sprite.frameColumn);
-            var adjustedRow = Math.floor(self.sprite.frameRow);
-            
-            Oversimplified.context.translate(self.x - Oversimplified.camera.x, self.y - Oversimplified.camera.y);
-            var angleInRadians = self.sprite.rotation * (Math.PI/180);
-            Oversimplified.context.rotate(angleInRadians);
-            Oversimplified.context.drawImage(self.image, (animationWidth * adjustedColumn) + xOffset, (animationHeight * adjustedRow) + yOffset, animationWidth, animationHeight, -(width / 2), -(height / 2), width, height);
-            Oversimplified.context.rotate(-angleInRadians);
-            Oversimplified.context.translate(-(self.x - Oversimplified.camera.x), -(self.y - Oversimplified.camera.y));
-            
-            Oversimplified.DEBUG.objectsOnScreen++;
-        }
-    } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("No animation at " + animation);
-    }
-    
-    this.DrawAbove();
-}
+
+/** Sets the sprite's scale and updates its bounds.
+ * @instance
+ * @function
+ * @param {number} xScale - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the horizontal direction. This number affects the boundaries of the GameObject and will distort its image.
+ * A negative value _will not_ cause the image to mirror horizontally.
+ * @param {number} [yScale] - A positive number that is greater than zero that indicates the percentage that the GameObject's size should be stretched in the vertical direction. This number affects the boundaries of the GameObject and will distort its image.
+ * A negative value _will not_ cause the image to mirror vertically.
+ * 
+ * If excluded, the `yScale` will be set to the same value as `xScale`
+ */
 Oversimplified.GameObject.prototype.SetScale = function (xScale, yScale) {
     //Negative scale does not flip image.
     this.sprite.xScale = xScale;
@@ -1639,12 +1895,33 @@ Oversimplified.GameObject.prototype.SetScale = function (xScale, yScale) {
     this.xBound = (this.mask.width / 2) * this.sprite.xScale;
     this.yBound = (this.mask.height / 2) * this.sprite.yScale;
 }
-Oversimplified.GameObject.prototype.SetImageRotation = function (rotation) {
-    this.sprite.rotation = Oversimplified.Math.clampAngle(rotation);
+
+/** Sets the sprite's rotation to the angle specified, clamped between 0 and 359 degrees.
+ * @instance
+ * @function
+ * @param {number} angle - The angle to rotate the object to, clockwise in degrees.
+ */
+Oversimplified.GameObject.prototype.SetImageRotation = function (angle) {
+    this.sprite.rotation = Oversimplified.Math.clampAngle(angle);
 }
+
+/** Adds the amount specified (positive or negative) to the sprite's rotation, clamped between 0 and 359 degrees.
+ * @instance
+ * @function
+ * @param {number} amount - The number of degrees to add to your sprite's rotation, positive to turn clockwise or negative to turn counter-clockwise.
+ */
 Oversimplified.GameObject.prototype.RotateImage = function (amount) {
-    this.sprite.rotation += Oversimplified.Math.clampAngle(amount);
+    this.SetImageRotation(this.sprite.rotation + amount);
 }
+
+/** Changes the GameObject's current Animation to the one specified.
+ * @instance
+ * @function
+ * @param {(string|Oversimplified.Animation)} which - Either the name of the animation as set in the `{@link Oversimplified.GameObject#sprite}.animations` container
+ * or a direct reference to the Animation contained there.
+ * 
+ * **Note:** If using a direct reference, the Animation's name must be the same as what was used when it was added to the `animations` container!
+ */
 Oversimplified.GameObject.prototype.SetAnimation = function (which) {
     if (which.name) {    //If you enter an actual animation instead of just its name,
         which = which.name;    //only use its name
@@ -1653,10 +1930,27 @@ Oversimplified.GameObject.prototype.SetAnimation = function (which) {
     this.sprite.frameColumn = 0;
     this.sprite.frameRow = 0;
 }
+
+/** Internal function that runs when the GameObject first appears in the current {@link Oversimplified.Room}.
+ * 
+ * Runs the {@link Oversimplified.GameObject#DoFirst} method if one has been specified.
+ * @instance
+ * @function
+ * @restricted
+ */
 Oversimplified.GameObject.prototype.Start = function () {
     this.DoFirst();
     this.hasRunStart = true;
 }
+
+/** Internal function that runs every {@link Oversimplified.Frame|Frame}.
+ * 
+ * Runs the {@link Oversimplified.GameObject#BeforeDo}, {@link Oversimplified.GameObject#Do}, and
+ * {@link Oversimplified.GameObject#AfterDo} methods in order if any have been specified.
+ * @instance
+ * @function
+ * @restricted
+ */
 Oversimplified.GameObject.prototype.Update = function () {
     this.screenX = this.x - Oversimplified.camera.x;
     this.screenY = this.y - Oversimplified.camera.y;
@@ -1674,64 +1968,123 @@ Oversimplified.GameObject.prototype.Update = function () {
     //Make sure rotation is a valid angle before drawing
     this.sprite.rotation = Oversimplified.Math.clampAngle(this.sprite.rotation);
 }
+
+/** Internal function that runs every {@link Oversimplified.Frame|Frame} after {@link Oversimplified.GameObject#Update}
+ * that handles drawing and animating the GameObject's sprite (if it is within the {@link Oversimplified.camera}'s boundaries)
+ * as well as its {@link Oversimplified.GameObject#DrawBelow|DrawBelow()} and {@link Oversimplified.GameObject#DrawAbove|DrawAbove()}
+ * methods, if any are specified.
+ * @instance
+ * @function
+ * @restricted
+ */
+Oversimplified.GameObject.prototype.Draw = function () {
+    this.DrawBelow();
+
+    var self = this;
+    var animation = self.sprite.currentAnimation;
+    if (self.sprite.animations[animation]) {
+        if (Oversimplified.IsOnCamera(self)) {
+            var animationWidth = self.sprite.animations[animation].width;
+            var animationHeight = self.sprite.animations[animation].height;
+            var width = self.sprite.animations[animation].width * self.sprite.xScale;
+            var height = self.sprite.animations[animation].height * self.sprite.yScale;
+            var columns = self.sprite.animations[animation].columns;
+            var rows = self.sprite.animations[animation].rows;
+            var xOffset = self.sprite.animations[animation].xOffset;
+            var yOffset = self.sprite.animations[animation].yOffset;
+            var animationSpeed = self.sprite.animations[animation].speed;
+
+            if (self.sprite.frameColumn < columns) {
+                self.sprite.frameColumn += animationSpeed;
+            }
+            if (self.sprite.frameColumn >= columns) {
+                self.sprite.frameColumn = 0;
+                self.sprite.frameRow++;
+            }
+            if (self.sprite.frameRow > rows - 1) {
+                self.sprite.frameRow = 0;
+            }
+
+            var adjustedColumn = Math.floor(self.sprite.frameColumn);
+            var adjustedRow = Math.floor(self.sprite.frameRow);
+
+            Oversimplified.context.translate(self.x - Oversimplified.camera.x, self.y - Oversimplified.camera.y);
+            var angleInRadians = self.sprite.rotation * (Math.PI / 180);
+            Oversimplified.context.rotate(angleInRadians);
+            Oversimplified.context.drawImage(self.image, (animationWidth * adjustedColumn) + xOffset, (animationHeight * adjustedRow) + yOffset, animationWidth, animationHeight, -(width / 2), -(height / 2), width, height);
+            Oversimplified.context.rotate(-angleInRadians);
+            Oversimplified.context.translate(-(self.x - Oversimplified.camera.x), -(self.y - Oversimplified.camera.y));
+
+            Oversimplified.DEBUG.objectsOnScreen++;
+        }
+    } else {
+        if (Oversimplified.DEBUG.showMessages) console.log("No animation at " + animation);
+    }
+
+    this.DrawAbove();
+}
+
+/** Internal function that runs when the GameObject is destroyed.
+ * 
+ * Runs the {@link Oversimplified.GameObject#DoLast} method if one has been specified.
+ * @instance
+ * @function
+ * @restricted
+ */
 Oversimplified.GameObject.prototype.End = function () {
     this.DoLast();
     if (this) this.hasRunStart = false;
 }
 
-// Move toward the given point at the given speed.
-// Imprecise and only moves at 90° and 45° angles, but gets the job done.
+/** Move directly toward a given point at the given speed at 90° and 45° angles. Inefficient and does not take collision into
+ * consideration, but it gets the job done.
+ * @instance
+ * @function
+ * @param {number} x - The target `x` coordinate to move toward.
+ * @param {number} y - The target `y` coordinate to move toward.
+ * @param {number} [speed=1] - The number of pixels to advance each time it moves.
+ */
 Oversimplified.GameObject.prototype.MoveTo = function (x, y, speed) {
     speed = typeof speed !== 'undefined' ? speed : 1;
-    if (this.x < x) {
-        this.x += speed;
-    }
-    if (this.x > x) {
-        this.x -= speed;
-    }
-    if (this.y < y) {
-        this.y += speed;
-    }
-    if (this.y > y) {
-        this.y -= speed;
-    }
+    this.x += speed * Math.sign(x - this.x);
+    this.y += speed * Math.sign(y - this.y);
 }
 
-// Check if the given point is within the object's bounds.
+/** Check if the given point is within the GameObject's bounds.
+ * @instance
+ * @function
+ * @param {number} x - The `x` coordinate to check.
+ * @param {number} y - The `y` coordinate to check.
+ * @returns {boolean}
+ */
 Oversimplified.GameObject.prototype.PointOverlaps = function (x, y) {
-    if (x > this.x - this.xBound
-        && x < this.x + this.xBound
-        && y > this.y - this.yBound
-        && y < this.y + this.yBound)
-    {
-        return true;
-    } else {
-        return false;
-    }
+    return x > this.x - this.xBound && x < this.x + this.xBound
+        && y > this.y - this.yBound && y < this.y + this.yBound;
 }
 
-// Check if object is overlapping any other object in the room
-//
-// Accepts true, false, or no value.
+/** Check if the GameObject is overlapping any other GameObject in the current Room
+ * @instance
+ * @function
+ * @param {boolean} [doSimple=false] - If false or not set, all pixels in the GameObject's boundaries will be scanned to check for overlaps.
+ * 
+ * If true, it will only check the corners and centerpoints at the boundaries of the GameObject against the other GameObjects in the Room.
+ * @returns {(Oversimplified.GameObject|false)} If no GameObject is overlapping, it will return false, otherwise, it will return the firstoverlapping GameObject that it finds.
+ */
 Oversimplified.GameObject.prototype.IsOverlapping = function (doSimple) {
     doSimple = (typeof doSimple !== 'undefined') ? doSimple : false;
     
     for (var obj in Oversimplified.O) {
         var object = Oversimplified.O[obj];
-        if (object != this) {
+        if (object.id != this.id) {
             // If doSimple is false or not set, then scan all pixels in object boundaries.
-            if (!doSimple)
-            {
+            if (!doSimple) {
                 for (var i = 0; i < 2 * object.xBound; i++) {
                     for (var j = 0; j < 2 * object.yBound; j++) {
                         var xToCheck = (object.x - object.xBound) + i;
                         var yToCheck = (object.y - object.yBound) + j;
                         
-                        if (xToCheck > this.x - this.xBound &&
-                            xToCheck < this.x + this.xBound &&
-                            yToCheck > this.y - this.yBound &&
-                            yToCheck < this.y + this.yBound)
-                        {    //Check if the point lies inside the bounds of ANY object in the room.
+                        if (this.PointOverlaps(xToCheck, yToCheck)){
+                            //Check if the point lies inside the bounds of ANY object in the room.
                             return object;
                         }
                     }
@@ -1758,29 +2111,44 @@ Oversimplified.GameObject.prototype.IsOverlapping = function (doSimple) {
     return false;
 }
 
-// Move the object away from any overlapping objects.
-//
-// Accepts true, false, or no value.
+/** Run inside of the {@link Oversimplified.GameObject#Do}, {@link Oversimplified.GameObject#BeforeDo}, or {@link Oversimplified.GameObject#AfterDo}
+ * methods (choose one) to move the GameObject away from any overlapping GameObjects 1 pixel at a time.
+ * 
+ * Uses {@link Oversimplified.GameObject#IsOverlapping} to find overlapping GameObjects.
+ * @instance
+ * @function
+ * @param {boolean} [doSimple=false] - If false or not set, all pixels in the GameObject's boundaries will be scanned to check for overlaps.
+ *
+ * If true, it will only check the corners and centerpoints at the boundaries of the GameObject against the other GameObjects in the Room.
+ * @returns {boolean} If overlapping a GameObject, it will return `true` after moving away. If not overlapping, it will return `false`.
+ */
 Oversimplified.GameObject.prototype.IfOverlappingThenMove = function (doSimple) {
     var overlappingObject = this.IsOverlapping(doSimple);
     
     if (overlappingObject != false) {
-        if (this.x < overlappingObject.x)
-            this.x--;
-        if (this.x >= overlappingObject.x)
-            this.x++;
-        if (this.y < overlappingObject.y)
-            this.y--;
-        if (this.y >= overlappingObject.y)
-            this.y++;
+        this.x += Math.sign(this.x - overlappingObject.x);
+        this.y += Math.sign(this.y - overlappingObject.y);
 
         return true;
-    } else {
-        return false;
     }
+    return false;
 }
 
-// Prevents the object from moving outside of the room's boundaries.
+/** Run inside of the {@link Oversimplified.GameObject#Do}, {@link Oversimplified.GameObject#BeforeDo}, or {@link Oversimplified.GameObject#AfterDo}
+ * methods (choose one) to prevents the GameObject from moving outside of the current {@link Oversimplified.Room|Room}'s boundaries,
+ * keeping the full {@link Oversimplified.GameObject#image} visible.
+ * @instance
+ * @function
+ * @example
+ * // The following will cause the `obj_player` GameObject to move right every frame,
+ * // but it will stop once it reaches the Room's boundary.
+ * obj_player.Do = function () {
+ *     this.x++;
+ * }
+ * obj_player.AfterDo = function () {
+ *     this.KeepInsideRoom();
+ * }
+ */
 Oversimplified.GameObject.prototype.KeepInsideRoom = function () {
     var currentRoom = Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName];
     if (this.x < this.xBound || this.x > currentRoom.width - this.xBound)
@@ -1793,35 +2161,46 @@ Oversimplified.GameObject.prototype.KeepInsideRoom = function () {
     }
 }
 
-// Returns true if the mouse is within the object's bounding box.
+/** Checks if the mouse is within the GameObject's bounding box.
+ * @instance
+ * @function
+ * @returns {boolean} Returns `true` if the mouse is over the GameObject or `false` if not.
+ */
 Oversimplified.GameObject.prototype.MouseIsOver = function () {
-    if (this.PointOverlaps(Oversimplified.mouse.x, Oversimplified.mouse.y))
-    {
-        return true;
-    } else {
-        return false;
-    }
+    return this.PointOverlaps(Oversimplified.mouse.x, Oversimplified.mouse.y);
 }
 
-
-// Returns true if the object is clicked with the given mouse click, eg. Oversimplified.mouse.leftDown, Oversimplified.mouse.rightUp, etc.
-//
-// If no click is specified, it defaults to left down
+/** Checks if the GameObject is clicked with the given mouse click, eg. {@link Oversimplified.mouse}.leftDown, {@link Oversimplified.mouse}.rightUp, etc.
+ * @instance
+ * @function
+ * @param {boolean} [mouseClick={@link Oversimplified.mouse}.leftDown] - Accepts any `boolean` value, but prefers one of the {@link Oversimplified.mouse} click values.
+ * @returns {boolean}
+ */
 Oversimplified.GameObject.prototype.Clicked = function (mouseClick) {
     mouseClick = typeof mouseClick !== 'undefined' ? mouseClick : Oversimplified.mouse.leftDown;
-    if (this.MouseIsOver() && mouseClick)
-    {
-        return true;
-    } else {
-        return false;
-    }
+    return this.MouseIsOver() && mouseClick;
 }
 
-// Move the object based upon xSpeed and ySpeed, stopping if colliding with solid objects
-//
-// xSpeed and ySpeed are numbers, checkCollisions is true or false, and checkEveryXPixels is a number.
-//
-// Returns true if successfully moved and false if not.
+/** Move the object based upon xSpeed and ySpeed, stopping if the position it would move to would overlap with GameObjects that have
+ * their `solid` flag set to `true`.
+ * @instance
+ * @function
+ * @param {number} xSpeed - The number of pixels to move horizontally each frame. Positive numbers will move the GameObject right and negative will move it left.
+ * @param {number} ySpeed - The number of pixels to move vertically each frame. Positive numbers will move the GameObject down and negative will move it up.
+ * @param {boolean} [checkCollisions] - Whether or not to check for collisions at the point the GameObject would land on.
+ * @param {number} [checkEveryXPixels=2] - What pixels around the GameObject's border to check for collisions. Starts at the top left and skips every other pixel until the number is reached.
+ * 
+ * Helpful for large sprites because checking more pixels each frame means an exponential slowdown.
+ * @returns {boolean} `true` if the GameObject successfully moved and `false` if not.
+ * @example
+ * // Creating a `solid` GameObject will allow objects to collide with it.
+ * var obj_wall = OS.Create('wall', { x: 500, y: 0, imageSrc: 'a/50/pixel/tall/image.png', solid: true });
+ * // Setting the `obj_player`'s `Do()` method to use `SimpleMove()` will cause `obj_player` to move 5 pixels to the right each Frame
+ * obj_player.Do = function () {
+ *   this.SimpleMove(5, 0, true);
+ * }
+ * // But after 100 Frames, it will reach `x = 500` and stop moving because it is colliding with the `solid` wall!
+ */
 Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, checkCollisions, checkEveryXPixels) {
     checkEveryXPixels = (typeof checkEveryXPixels !== 'undefined') ? checkEveryXPixels : 2;
     var collisionLeft = false,
@@ -1831,21 +2210,17 @@ Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, check
     if (checkCollisions) {
         for (var vert = 0; vert < this.yBound * 2; vert += checkEveryXPixels) {
             var yToCheck = (this.y - this.yBound + vert);
-            if (!collisionLeft) {
-                collisionLeft = xSpeed < 0 && Oversimplified.CollisionAtPoint((this.x - this.xBound) + xSpeed, yToCheck);
-            }
-            if (!collisionRight) {
-                collisionRight = xSpeed > 0 && Oversimplified.CollisionAtPoint((this.x + this.xBound) + xSpeed, yToCheck);
-            }
+            collisionLeft = xSpeed < 0 && Oversimplified.CollisionAtPoint((this.x - this.xBound) + xSpeed, yToCheck);
+            collisionRight = xSpeed > 0 && Oversimplified.CollisionAtPoint((this.x + this.xBound) + xSpeed, yToCheck);
+
+            if (collisionLeft || collisionRight) break;
         }
         for (var hor = 0; hor < this.xBound * 2; hor += checkEveryXPixels) {
             var xToCheck = (this.x - this.xBound + hor);
-            if (!collisionUp) {
-                collisionUp = ySpeed < 0 && Oversimplified.CollisionAtPoint(xToCheck, (this.y - this.yBound) + ySpeed);
-            }
-            if (!collisionDown) {
-                collisionDown = ySpeed > 0 && Oversimplified.CollisionAtPoint(xToCheck, (this.y + this.yBound) + ySpeed);
-            }
+            collisionUp = ySpeed < 0 && Oversimplified.CollisionAtPoint(xToCheck, (this.y - this.yBound) + ySpeed);
+            collisionDown = ySpeed > 0 && Oversimplified.CollisionAtPoint(xToCheck, (this.y + this.yBound) + ySpeed);
+
+            if (collisionUp || collisionDown) break;
         }
     }
     if (!checkCollisions || (!collisionLeft && !collisionRight && !collisionUp && !collisionDown)) {
@@ -1857,21 +2232,27 @@ Oversimplified.GameObject.prototype.SimpleMove = function (xSpeed, ySpeed, check
     }
 }
 
-// Removes the specified object from memory.
+/** Runs the GameObject's {@link Oversimplified.GameObject#End} method and removes it from memory. Destroyed GameObjects are irretrievable.
+ * @instance
+ * @function
+ */
 Oversimplified.GameObject.prototype.Destroy = function () {
     this.End();
     delete Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName].objects[this.name];
 }
 
-// Check if the point (x, y) lies inside the bounds of ANY object in the room.
-// If yes and if that object is flagged as solid, then there is a collision.
+/** Check if the point lies inside the bounds of ANY {@link Oversimplified.GameObject} in the current {@link Oversimplified.Room}.
+ * @function
+ * @param {number} x - The `x` position to check.
+ * @param {number} y - The `y` position to check.
+ * @returns {(Oversimplified.GameObject[]|false)} If the point falls within any GameObjects, an array containing those
+ * GameObjects will be returned. If no GameObjects overlap that point, then `false` will be returned.
+ */
 Oversimplified.GameObjectsAtPoint = function (x, y) {
     var objectsAtPoint = [];
     for (var obj in Oversimplified.O) {
         var object = Oversimplified.O[obj];
-        if (x <= object.x + object.xBound && x >= object.x - object.xBound &&
-            y <= object.y + object.yBound && y >= object.y - object.yBound)
-        {
+        if (object.PointOverlaps(x, y)) {
             objectsAtPoint.push(object);
         }
     }
@@ -1883,16 +2264,24 @@ Oversimplified.GameObjectsAtPoint = function (x, y) {
     }
 }
 
-// Check if the point (x, y) lies inside the bounds of ANY object in the room.
-// If yes and if that object is flagged as solid, then there is a collision.
+/** Check if the point lies inside the bounds of ANY {@link Oversimplified.GameObject} in the current {@link Oversimplified.Room} that
+ * has its `solid` flag set to `true`.
+ * @function
+ * @param {number} x - The `x` position to check.
+ * @param {number} y - The `y` position to check.
+ * @returns {boolean} Whether a `solid` object overlaps with the specified point.
+ */
 Oversimplified.CollisionAtPoint = function (x, y) {
     var objectsAtPoint = Oversimplified.GameObjectsAtPoint(x, y);
 
-    for (var i = 0; i < objectsAtPoint.length; i++) {
-        if (objectsAtPoint[i].solid == true) {
-            return true;
+    if (objectsAtPoint !== false) {
+        for (var i = 0; i < objectsAtPoint.length; i++) {
+            if (objectsAtPoint[i].solid == true) {
+                return true;
+            }
         }
     }
+
     return false;
 }
 
@@ -1904,7 +2293,7 @@ Oversimplified.Animations.Add = function (animationName, animationWidth, animati
         Oversimplified.Animations[animationName] = new Oversimplified.Animation(animationName, animationWidth, animationHeight, animationOptions);
         return Oversimplified.Animations[animationName];
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("An animation with the name \"" + animationName + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.error("An animation with the name \"" + animationName + "\" already exists!");
         return false;
     }
 };
@@ -1951,7 +2340,7 @@ Oversimplified.Effects.AddSound = function (soundName, soundSources) {
         Oversimplified.Effects.Sounds[soundName] = new Oversimplified.Sound(soundName, soundSources);
         return Oversimplified.Effects.Sounds[soundName];
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("A Sound with the name \"" + soundName + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.error("A Sound with the name \"" + soundName + "\" already exists!");
         return false;
     }
 }
@@ -1962,7 +2351,7 @@ Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
         Oversimplified.Effects.Tunes[tuneName] = new Oversimplified.Sound(tuneName, tuneSources);
         return Oversimplified.Effects.Tunes[tuneName];
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("A Tune with the name \"" + tuneName + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.error("A Tune with the name \"" + tuneName + "\" already exists!");
         return false;
     }
 }
