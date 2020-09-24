@@ -2560,12 +2560,13 @@ Oversimplified.Effects.Tunes.CheckLoops = function () {
  * @classdesc A sound effect that plays once each time {@link Oversimplified.Sound#Play} is called. All Sounds created reference an HTML5 audio element contained in
  * an element with an `id` of `audio`. If using the default `index.html` file included with OversimplifiedJS, you do not need to add this yourself.
  * @param {string} name - The name of the created Sound.
- * @param {Object} sources - At least one source type needs to be provided or else no sound will play and the browser may throw errors.
- * @param {string} [sources.wav] - The path to a `.wav` sound file.
- * @param {string} [sources.mp3] - The path to a `.mp3` sound file.
- * @param {string} [sources.ogg] - The path to a `.ogg` sound file.
+ * @param {Object} options - At least one source type needs to be provided or else no sound will play and the browser may throw errors.
+ * @param {(string|boolean)} [options.wav=false] - The path to a `.wav` sound file.
+ * @param {(string|boolean)} [options.mp3=false] - The path to a `.mp3` sound file.
+ * @param {(string|boolean)} [options.ogg=false] - The path to a `.ogg` sound file.
+ * @param {number} [options.start=0] - The number of seconds into the audio to start playing the the audio file. Useful for if your audio starts a number of seconds after 0.
  */
-Oversimplified.Sound = function (name, sources) {
+Oversimplified.Sound = function (name, options) {
     /** The internal ID of this Sound.
      * @instance
      * @type {number}
@@ -2573,7 +2574,7 @@ Oversimplified.Sound = function (name, sources) {
      */
     this.id = Oversimplified.nextID++;
 
-    sources = typeof sources !== 'undefined' ? sources : {};
+    options = typeof options !== 'undefined' ? options : {};
 
     /** The name given to the Sound at creation.
      * @instance
@@ -2589,10 +2590,17 @@ Oversimplified.Sound = function (name, sources) {
      * @param {string} [ogg=false] - The path to the `.ogg` audio file for this Sound.
      */
     this.source = {
-        mp3: (typeof sources.mp3 !== 'undefined' && sources.mp3.length > 0) ? sources.mp3 : false,
-        wav: (typeof sources.wav !== 'undefined' && sources.wav.length > 0) ? sources.wav : false,
-        ogg: (typeof sources.ogg !== 'undefined' && sources.ogg.length > 0) ? sources.ogg : false
+        mp3: (typeof options.mp3 !== 'undefined' && options.mp3.length > 0) ? options.mp3 : false,
+        wav: (typeof options.wav !== 'undefined' && options.wav.length > 0) ? options.wav : false,
+        ogg: (typeof options.ogg !== 'undefined' && options.ogg.length > 0) ? options.ogg : false
     };
+
+    /** The second to start playing the audio file at.
+     * @instance
+     * @type {number}
+     * @default 0
+     */
+    this.start = (typeof options.start !== 'undefined') ? options.start : 0;
 
     /** The reference to the HTMLAudioElement that is added to the HTML to embed the audio.
      * 
@@ -2631,7 +2639,7 @@ Oversimplified.Sound.prototype.type = "Sound";
  * @function
  */
 Oversimplified.Sound.prototype.Play = function () {
-    this.audioElement.currentTime = 0;
+    this.audioElement.currentTime = this.start;
     this.audioElement.volume = Oversimplified.Settings.soundVolume;
     this.audioElement.play();
 }
@@ -2642,7 +2650,7 @@ Oversimplified.Sound.prototype.Play = function () {
  */
 Oversimplified.Sound.prototype.Stop = function () {
     this.audioElement.pause();
-    this.audioElement.currentTime = 0;
+    this.audioElement.currentTime = this.start;
 }
 
 /** Returns whether the audio file connected to this Sound is playing.
@@ -2668,10 +2676,11 @@ Oversimplified.Sound.prototype.IsPlaying = function () {
  * an element with an `id` of `audio`. If using the default `index.html` file included with OversimplifiedJS, you do not need to add this yourself.
  * @param {string} name - The name of the created Tune.
  * @param {Object} options - At least one source type needs to be provided or else no sound will play and the browser may throw errors.
- * @param {string} [options.wav] - The path to a `.wav` sound file.
- * @param {string} [options.mp3] - The path to a `.mp3` sound file.
- * @param {string} [options.ogg] - The path to a `.ogg` sound file.
- * @param {number} [options.duration] - The length of time in seconds to play the audio file before looping. This will only cause an early loop if the duration
+ * @param {(string|boolean)} [options.wav=false] - The path to a `.wav` sound file.
+ * @param {(string|boolean)} [options.mp3=false] - The path to a `.mp3` sound file.
+ * @param {(string|boolean)} [options.ogg=false] - The path to a `.ogg` sound file.
+ * @param {number} [options.start=0] - The number of seconds into the audio to start playing the the audio file. Useful for if your audio starts a number of seconds after 0.
+ * @param {(number|boolean)} [options.duration=false] - The length of time in seconds to play the audio file before looping. This will only cause an early loop if the duration
  * specified here is shorter than the actual duration of the audio file.
  */
 Oversimplified.Tune = function (name, options) {
@@ -2702,6 +2711,13 @@ Oversimplified.Tune = function (name, options) {
         wav: (typeof options.wav !== 'undefined' && options.wav.length > 0) ? options.wav : false,
         ogg: (typeof options.ogg !== 'undefined' && options.ogg.length > 0) ? options.ogg : false
     };
+
+    /** The second to start playing the audio file at.
+     * @instance
+     * @type {number}
+     * @default 0
+     */
+    this.start = (typeof options.start !== 'undefined') ? options.start : 0;
 
     /** The length of time in seconds to play the audio file before looping.
      * @instance
@@ -2751,7 +2767,7 @@ Oversimplified.Tune.prototype.type = "Tune";
  * @function
  */
 Oversimplified.Tune.prototype.Play = function () {
-    this.audioElement.currentTime = 0;
+    this.audioElement.currentTime = this.start;
     this.audioElement.volume = Oversimplified.Settings.musicVolume;
     this.audioElement.loop = true;
     this.audioElement.play();
@@ -2763,7 +2779,7 @@ Oversimplified.Tune.prototype.Play = function () {
  */
 Oversimplified.Tune.prototype.Stop = function () {
     this.audioElement.pause();
-    this.audioElement.currentTime = 0;
+    this.audioElement.currentTime = this.start;
 }
 
 /** Internal function that checks whether the audio should loop. If its `duration` is less than the actual duration, it will loop when it has played for that long.
@@ -2774,7 +2790,7 @@ Oversimplified.Tune.prototype.Stop = function () {
 Oversimplified.Tune.prototype.CheckLoop = function () {
     if (this.duration < this.audioElement.duration) {
         if (this.audioElement.currentTime > this.duration) {
-            this.audioElement.currentTime = 0;
+            this.audioElement.currentTime = this.start;
         }
     }
 }
