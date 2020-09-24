@@ -1031,7 +1031,7 @@ Oversimplified.Rooms.Current = function () {
  * @param {number} [options.stepSpeed={@link Oversimplified.Settings}.defaultStep] - The step speed for the Room. If excluded or set to 0, the default is used.
  * @param {boolean} [options.backgroundSize] - When `true`, sets the room size to whatever the backgroundSrc image size is, ignoring anything specified in `width` and `height`.
  * @param {string} [options.backgrounColor] - Any hex color value. Sets the far background color (behind the background image, visible only if transparent or excluded). A JavaScript alternative to setting the HTML5 canvas's background color CSS.
- * @param {string} [optoins.foreground] - Path to any image file, though `.png` or `.gif` file with transparency is ideal. Sets the foreground image that displays over the background and all objects in the room. Appears below the Room's {@link Oversimplified.Room#DrawAbove|DrawAbove()} function but above any GameObject's {@link Oversimplified.GameObject#DrawAbove|DrawAbove()} function.
+ * @param {string} [options.foreground] - Path to any image file, though `.png` or `.gif` file with transparency is ideal. Sets the foreground image that displays over the background and all objects in the room. Appears below the Room's {@link Oversimplified.Room#DrawAbove|DrawAbove()} function but above any GameObject's {@link Oversimplified.GameObject#DrawAbove|DrawAbove()} function.
  */
 Oversimplified.Rooms.Add = function (name, options) {
     if (typeof Oversimplified.Rooms[name] === 'undefined') {
@@ -1271,6 +1271,7 @@ Oversimplified.Room = function (name, options) {
  * @instance
  * @type {string}
  * @readonly
+ * @default "Room"
  */
 Oversimplified.Room.prototype.type = "Room";
 
@@ -1850,6 +1851,7 @@ Oversimplified.GameObject = function (name, options) {
  * @instance
  * @type {string}
  * @readonly
+ * @default "GameObject"
  */
 Oversimplified.GameObject.prototype.type = "GameObject";
 
@@ -1860,19 +1862,25 @@ Oversimplified.GameObject.prototype.type = "GameObject";
  * container with the Animation's name.
  * 
  * If given a `string`, then that value will be used as the name of the Animation that will be created.
- * @param {number} animationWidth - The width of a single frame on the sprite sheet the Animation will cycle through. Ignored if using a pre-created Animation.
- * @param {number} animationHeight - The height of a single frame on the sprite sheet the Animation will cycle through. Ignored if using a pre-created Animation.
- * @param {Object} animationOptions - The setup options for creating a new {@link Oversimplified.Animation}. Ignored if using a pre-created Animation.
- * @todo Add option properties when they're set up on Animation class!
+ * @param {number} frameWidth - The width of a single animation frame on the sprite sheet.
+ * @param {number} frameHeight - The height of a single animation frame on the sprite sheet.
+ * @param {Object} options
+ * @param {number} [options.columns=1] - The number of frames in the sprite sheet horizontally.
+ * @param {number} [options.rows=1] - The number of frames in the sprite sheet vertically. Each row must have the same number of columns.
+ * @param {number} [options.speed=1] - A number between 0 and 1 where 1 is the speed of the room and 0 is stopped. For example, using `0.5`
+ * on a room with a step of `1/30` will make 2 {@link Oversimplified.Frame|Frames} pass for each animation frame, effectively making it animate
+ * half as fast.
+ * @param {number} [options.xOffset=0] - The horizontal pixel where the animation set starts on the image. This can be useful if your sprite sheet contains multiple animations.
+ * @param {number} [options.yOffset=0] - The vertical pixel where the animation set starts on the image. This can be useful if your sprite sheet contains multiple animations.
  * @returns {(Oversimplified.Animation|false)}
  */
-Oversimplified.GameObject.prototype.AddAnimation = function (animation, animationWidth, animationHeight, animationOptions) {
+Oversimplified.GameObject.prototype.AddAnimation = function (animation, frameWidth, frameHeight, options) {
     //Takes either an animation or the name of an animation in the Animations namespace and adds it to the object.
     if (typeof animation.name !== 'undefined') {
-        this.sprite.animations[animationOptions.name] = animation;
+        this.sprite.animations[options.name] = animation;
     } else {
         if (typeof Oversimplified.Animations[animation] === 'undefined') {
-            Oversimplified.Animations.Add(animation, animationWidth, animationHeight, animationOptions);
+            Oversimplified.Animations.Add(animation, frameWidth, frameHeight, options);
         }
         this.sprite.animations[Oversimplified.Animations[animation].name] = Oversimplified.Animations[animation];
     }
@@ -2286,55 +2294,214 @@ Oversimplified.CollisionAtPoint = function (x, y) {
 }
 
 // Animations Namespace
+/** Contains all of the animations used in {@link Oversimplified.GameObjects}.
+ *
+ * Conveniently aliased with `{@link OS.A}`, for example
+ *
+ * ```
+ * var ani_walk = {@link OS.A}.Add('player_walk', 32, 48);
+ * ```
+ * is the same as
+ *
+ * ```
+ * var ani_walk = {@link Oversimplified.Animations}.Add('player_walk', 32, 48);
+ * ```
+ * @namespace
+ * 
+ */
 Oversimplified.Animations = {};
+
+/** A convenient alias for {@link Oversimplified.Animations}.
+ *
+ * _Anywhere_ you might type `Oversimplified.Animations`, you can substitute `OS.A` instead to save some typing.
+ * @namespace
+ * @alias OS.A
+ * @see {@link Oversimplified.Animations}
+ */
 Oversimplified.A = Oversimplified.Animations;
-Oversimplified.Animations.Add = function (animationName, animationWidth, animationHeight, animationOptions) {
-    if (typeof Oversimplified.Animations[animationName] === 'undefined') {
-        Oversimplified.Animations[animationName] = new Oversimplified.Animation(animationName, animationWidth, animationHeight, animationOptions);
-        return Oversimplified.Animations[animationName];
+
+/** Add a {@link Oversimplified.Animation|Animation} to the collection of Animations with the name `name`.
+ *
+ * This function is also available as `Oversimplified.Animations.New`, so you can use whichever you prefer.
+ * @function
+ * @param {string} name - The name that will be used to store and access the created animation.
+ * @param {number} frameWidth - The width of a single animation frame on the sprite sheet.
+ * @param {number} frameHeight - The height of a single animation frame on the sprite sheet.
+ * @param {Object} options
+ * @param {number} [options.columns=1] - The number of frames in the sprite sheet horizontally.
+ * @param {number} [options.rows=1] - The number of frames in the sprite sheet vertically. Each row must have the same number of columns.
+ * @param {number} [options.speed=1] - A number between 0 and 1 where 1 is the speed of the room and 0 is stopped. For example, using `0.5`
+ * on a room with a step of `1/30` will make 2 {@link Oversimplified.Frame|Frames} pass for each animation frame, effectively making it animate
+ * half as fast.
+ * @param {number} [options.xOffset=0] - The horizontal pixel where the animation set starts on the image. This can be useful if your sprite sheet contains multiple animations.
+ * @param {number} [options.yOffset=0] - The vertical pixel where the animation set starts on the image. This can be useful if your sprite sheet contains multiple animations.
+ */
+Oversimplified.Animations.Add = function (name, frameWidth, frameHeight, options) {
+    if (typeof Oversimplified.Animations[name] === 'undefined') {
+        Oversimplified.Animations[name] = new Oversimplified.Animation(name, frameWidth, frameHeight, options);
+        return Oversimplified.Animations[name];
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.error("An animation with the name \"" + animationName + "\" already exists!");
+        if (Oversimplified.DEBUG.showMessages) console.error("An animation with the name \"" + name + "\" already exists!");
         return false;
     }
 };
+
+// Optional alias for Oversimplified.Animations.Add()
 Oversimplified.Animations.New = Oversimplified.Animations.Add;
 
 // Animation class (for use with sprite sheets)
 //
 // Prevents animation mess-ups by preventing speeds higher than one with Oversimplified.Math.clamp01.
-Oversimplified.Animation = function (name, width, height, options) {
+/** Create an Animation specification for using on {@link Oversimplified.GameObject}
+ * @class
+ * @classdesc Stores information about how to animate a sprite sheet, given that the source image has frames of equal size and spacing.
+ * The source image _can_ be a single frame.
+ * 
+ * Access using {@link Oversimplified.Animations.Add}.
+ * @param {string} name - The name that will be used to store and access the created animation.
+ * @param {number} frameWidth - The width of a single animation frame on the sprite sheet in pixels.
+ * @param {number} frameHeight - The height of a single animation frame on the sprite sheet in pixels.
+ * @param {Object} options
+ * @param {number} [options.columns=1] - The number of frames in the sprite sheet horizontally.
+ * @param {number} [options.rows=1] - The number of frames in the sprite sheet vertically. Each row must have the same number of columns.
+ * @param {number} [options.speed=1] - A number between 0 and 1 where 1 is the speed of the room and 0 is stopped. For example, using `0.5`
+ * on a room with a step of `1/30` will make 2 {@link Oversimplified.Frame|Frames} pass for each animation frame, effectively making it animate
+ * half as fast.
+ * @param {number} [options.xOffset=0] - The horizontal pixel where the animation set starts on the image. This can be useful if your sprite sheet contains multiple animations.
+ * @param {number} [options.yOffset=0] - The vertical pixel where the animation set starts on the image. This can be useful if your sprite sheet contains multiple animations.
+ */
+Oversimplified.Animation = function (name, frameWidth, frameHeight, options) {
     options = typeof options !== 'undefined' ? options : {};
-    
+
+    /** The internal ID of this Animation.
+     * @instance
+     * @type {number}
+     * @readonly
+     */
     this.id = Oversimplified.nextID++;
 
     //Required Options
+    /** The name given to the Animation at creation.
+     * @instance
+     * @type {string}
+     */
     this.name = name;
-    this.width = width;
-    this.height = height;
+
+    /** The width of a single frame of animation on the sprite sheet in pixels.
+     * @instance
+     * @type {number}
+     */
+    this.width = frameWidth;
+
+    /** The height of a single frame of animation on the sprite sheet in pixels.
+     * @instance
+     * @type {number}
+     */
+    this.height = frameHeight;
 
     //Optional Options
+    /** The number of frames in the sprite sheet horizontally.
+     * @instance
+     * @type {number}
+     */
     this.columns = typeof options.columns !== 'undefined' ? options.columns : 1;
+
+    /** The number of frames in the sprite sheet vertically. Each row must have the same number of columns.
+     * @instance
+     * @type {number}
+     */
     this.rows = typeof options.rows !== 'undefined' ? options.rows : 1;
+
+    /** A number between 0 and 1 where 1 is the speed of the room and 0 is stopped. For example, `0.5` in a Room with a step
+     * of `1/30` will make 2 {@link Oversimplified.Frame|Frames} pass for each animation frame, effectively making it animate
+     * half as fast.
+     * @instance
+     * @type {number}
+     */
     this.speed = typeof options.speed !== 'undefined' ? Oversimplified.Math.clamp01(options.speed) : 1;
+
+    /** The horizontal pixel where the animation set starts on the image. This can be useful if your sprite sheet contains multiple animations.
+     * @instance
+     * @type {number}
+     */
     this.xOffset = typeof options.xOffset !== 'undefined' ? options.xOffset : 0;
+
+    /** The vertical pixel where the animation set starts on the image. This can be useful if your sprite sheet contains multiple animations.
+     * @instance
+     * @type {number}
+     */
     this.yOffset = typeof options.yOffset !== 'undefined' ? options.yOffset : 0;
 }
+
+/** Identifies this object as an Animation
+ * @instance
+ * @type {string}
+ * @readonly
+ * @default "Animation"
+ */
 Oversimplified.Animation.prototype.type = "Animation";
 
-/*  Effects namespace
-*/
+
+
+//  Effects namespace
+/** A container for sound effects and music, called `Sounds` and `Tunes`, respectively.
+ * @namespace
+ */
 Oversimplified.Effects = {
+    /** Contains any sound effects created using {@link Oversimplified.Effects.AddSound}.
+     * @namespace
+     * @memberof Oversimplified.Effects
+     */
     Sounds: {},
-    Tunes: {}
+    /** Contains any music created using {@link Oversimplified.Effects.AddTune}.
+     * 
+     * This namespace is also available as `Oversimplified.Effects.Music`, so you can use whichever you prefer.
+     * @namespace
+     * @memberof Oversimplified.Effects
+     */
+    Tunes: {},
 }
 
-// Alias for Effects
+/** A convenient alias for {@link Oversimplified.Effects}.
+ *
+ * _Anywhere_ you might type `Oversimplified.Effects`, you can substitute `OS.E` instead to save some typing.
+ * @namespace
+ * @alias OS.E
+ * @see {@link Oversimplified.Effects}
+ */
 Oversimplified.E = Oversimplified.Effects;
 
-// Aliases for Sounds and Tunes
+/** A convenient alias for {@link Oversimplified.Effects.Sounds}.
+ *
+ * _Anywhere_ you might type `Oversimplified.Effects.Sounds`, you can substitute `OS.E.S` instead to save some typing.
+ * @namespace
+ * @alias OS.E.S
+ * @see {@link Oversimplified.Effects.Sounds}
+ */
 Oversimplified.Effects.S = Oversimplified.Effects.Sounds;
+
+/** A convenient alias for {@link Oversimplified.Effects.Tunes}.
+ *
+ * _Anywhere_ you might type `Oversimplified.Effects.Tunes`, you can substitute `OS.E.T` instead to save some typing.
+ * 
+ * Likewise, you can also use `OS.E.M` as an alias that references the `Oversimplified.Effects.Music` alias instead
+ * if you prefer that terminology. Either way, it all points back to `Oversimplified.Effects.Tunes`.
+ * @namespace
+ * @alias OS.E.T
+ * @see {@link Oversimplified.Effects.Tunes}
+ */
 Oversimplified.Effects.T = Oversimplified.Effects.Music = Oversimplified.Effects.M = Oversimplified.Effects.Tunes;
 
+/** Creates a new {@link Oversimplified.Sound} in the {@link Oversimplified.Effects.Sounds} namespace.
+ * 
+ * This function is also available as `Oversimplified.Effects.NewSound`, so you can use whichever you prefer.
+ * @function
+ * @param {string} soundName - A unique name for the sound effect that will be created.
+ * @param {Object} soundSources - At least one source type needs to be provided or else no sound will play and the browser may throw errors.
+ * @param {string} [soundSources.wav] - The path to a `.wav` sound file.
+ * @param {string} [soundSources.mp3] - The path to a `.mp3` sound file.
+ * @param {string} [soundSources.ogg] - The path to a `.ogg` sound file.
+ */
 Oversimplified.Effects.AddSound = function (soundName, soundSources) {
     if (typeof Oversimplified.Effects.Sounds[soundName] === 'undefined') {
         Oversimplified.Effects.Sounds[soundName] = new Oversimplified.Sound(soundName, soundSources);
@@ -2346,6 +2513,16 @@ Oversimplified.Effects.AddSound = function (soundName, soundSources) {
 }
 Oversimplified.Effects.NewSound = Oversimplified.Effects.AddSound;
 
+/** Creates a new {@link Oversimplified.Tune} in the {@link Oversimplified.Effects.Tunes} namespace.
+ *
+ * This function is also available as `Oversimplified.Effects.NewTune`, so you can use whichever you prefer.
+ * 
+ * Or if you prefer the terminology of `Oversimplified.Effects.Music`, you can instead use `Oversimplified.Effects.AddMusic`
+ * or `Oversimplified.Effects.NewMusic`. It all points to the same function.
+ * @function
+ * @param {string} tuneName - A unique name for the Tune that will be created.
+ * @todo Update this when Tune class is created
+ */
 Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
     if (typeof Oversimplified.Effects.Tunes[tuneName] === 'undefined') {
         Oversimplified.Effects.Tunes[tuneName] = new Oversimplified.Sound(tuneName, tuneSources);
@@ -2357,6 +2534,11 @@ Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
 }
 Oversimplified.Effects.AddMusic = Oversimplified.Effects.NewTune = Oversimplified.Effects.NewMusic = Oversimplified.Effects.AddTune;
 
+/** Checks every {@link Oversimplified.Tune} to see if it needs to loop.
+ * @todo Put this in the game or something! What are you doing??
+ * @function
+ * @restricted
+ */
 Oversimplified.Effects.Tunes.CheckLoops = function () {
     for (var tune in Oversimplified.Effects.Tunes) {
         if (Oversimplified.Effects.Tunes[tune].type == "Tune" && Oversimplified.Effects.Tunes[tune].IsPlaying()) {
@@ -2370,18 +2552,56 @@ Oversimplified.Effects.Tunes.CheckLoops = function () {
     Plays a sound effect once.    
     Preferably source should be a .wav file and secondarySource should be a .mp3 file.
 */
-Oversimplified.Sound = function (name, sourcesObject) {
+/** Create a new sound effect. A `.wav` file would be the ideal format for a sound effect with `.mp3` as a secondary source.
+ * Unless you are specifically targeting one browser, it is best to provide the audio file in all 3 file formats so the browser can use the best one.
+ * 
+ * Adds an HTML5 Audio element to an element with an `id` of `audio`.
+ * @class
+ * @classdesc A sound effect that plays once each time {@link Oversimplified.Sound#Play} is called. All Sounds created reference an HTML5 audio element contained in
+ * an element with an `id` of `audio`. If using the default `index.html` file included with OversimplifiedJS, you do not need to add this yourself.
+ * @param {string} name - The name of the created Sound.
+ * @param {Object} sources - At least one source type needs to be provided or else no sound will play and the browser may throw errors.
+ * @param {string} [sources.wav] - The path to a `.wav` sound file.
+ * @param {string} [sources.mp3] - The path to a `.mp3` sound file.
+ * @param {string} [sources.ogg] - The path to a `.ogg` sound file.
+ */
+Oversimplified.Sound = function (name, sources) {
+    /** The internal ID of this Sound.
+     * @instance
+     * @type {number}
+     * @readonly
+     */
     this.id = Oversimplified.nextID++;
-    
-    sourcesObject = typeof sourcesObject !== 'undefined' ? sourcesObject : {};
-    
+
+    sources = typeof sources !== 'undefined' ? sources : {};
+
+    /** The name given to the Sound at creation.
+     * @instance
+     * @type {string}
+     */
     this.name = name;
+
+    /** The file paths of each provided audio file source.
+     * @instance
+     * @type {Object}
+     * @param {string} [wav=false] - The path to the `.wav` audio file for this Sound.
+     * @param {string} [mp3=false] - The path to the `.mp3` audio file for this Sound.
+     * @param {string} [ogg=false] - The path to the `.ogg` audio file for this Sound.
+     */
     this.source = {
-        mp3: (typeof sourcesObject.mp3 !== 'undefined' && sourcesObject.mp3.length > 0) ? sourcesObject.mp3 : false,
-        wav: (typeof sourcesObject.wav !== 'undefined' && sourcesObject.wav.length > 0) ? sourcesObject.wav : false,
-        ogg: (typeof sourcesObject.ogg !== 'undefined' && sourcesObject.ogg.length > 0) ? sourcesObject.ogg : false
+        mp3: (typeof sources.mp3 !== 'undefined' && sources.mp3.length > 0) ? sources.mp3 : false,
+        wav: (typeof sources.wav !== 'undefined' && sources.wav.length > 0) ? sources.wav : false,
+        ogg: (typeof sources.ogg !== 'undefined' && sources.ogg.length > 0) ? sources.ogg : false
     };
-    
+
+    /** The reference to the HTMLAudioElement that is added to the HTML to embed the audio.
+     * 
+     * This property is also available as `Sound.element`, so you can use whichever you prefer.
+     * @instance
+     * @type {HTMLAudioElement}
+     * @readonly
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement|HTMLAudioElement}
+     */
     this.audioElement = document.createElement("audio");
     this.audioElement.id = this.name + this.id.toString();
     // Alias for this.audioElement
@@ -2398,19 +2618,40 @@ Oversimplified.Sound = function (name, sourcesObject) {
     document.getElementById("audio").appendChild(this.audioElement);
     this.audioElement.load();
 }
+
+/** Identifies that this object is a `Sound`
+ * @type {string}
+ * @readonly
+ * @default "Sound"
+ */
 Oversimplified.Sound.prototype.type = "Sound";
 
+/** Plays the audio file connected to this Sound at the volume specified in {@link Oversimplified.Settings}.soundVolume.
+ * @instance
+ * @function
+ */
 Oversimplified.Sound.prototype.Play = function () {
-    this.element.currentTime = 0;
-    this.element.volume = Oversimplified.Settings.soundVolume;
-    this.element.play();
+    this.audioElement.currentTime = 0;
+    this.audioElement.volume = Oversimplified.Settings.soundVolume;
+    this.audioElement.play();
 }
+
+/** Stops the audio file connected to this Sound from playing.
+ * @instance
+ * @function
+ */
 Oversimplified.Sound.prototype.Stop = function () {
-    this.element.pause();
-    this.element.currentTime = 0;
+    this.audioElement.pause();
+    this.audioElement.currentTime = 0;
 }
+
+/** Returns whether the audio file connected to this Sound is playing.
+ * @instance
+ * @function
+ * @returns {boolean}
+ */
 Oversimplified.Sound.prototype.IsPlaying = function () {
-    return !this.element.paused && !this.element.ended && 0 < this.element.currentTime;
+    return !this.audioElement.paused && !this.audioElement.ended && 0 < this.audioElement.currentTime;
 }
 
 /*  Tune Class
@@ -2418,19 +2659,65 @@ Oversimplified.Sound.prototype.IsPlaying = function () {
     Preferably source should be a .mp3 file and secondarySource should be a .ogg file.    
     If duration is specified, loop when duration is reached.
 */
-Oversimplified.Tune = function (name, tuneOptions) {
+/** Create a new piece of music to loop. A `.mp3` file would be the ideal format for a sound effect with `.ogg` as a secondary source.
+ * Unless you are specifically targeting one browser, it is best to provide the audio file in all 3 file formats so the browser can use the best one.
+ *
+ * Adds an HTML5 Audio element to an element with an `id` of `audio`.
+ * @class
+ * @classdesc A piece of music that plays continuously when {@link Oversimplified.Tune#Play} is called. All Tunes created reference an HTML5 audio element contained in
+ * an element with an `id` of `audio`. If using the default `index.html` file included with OversimplifiedJS, you do not need to add this yourself.
+ * @param {string} name - The name of the created Tune.
+ * @param {Object} options - At least one source type needs to be provided or else no sound will play and the browser may throw errors.
+ * @param {string} [options.wav] - The path to a `.wav` sound file.
+ * @param {string} [options.mp3] - The path to a `.mp3` sound file.
+ * @param {string} [options.ogg] - The path to a `.ogg` sound file.
+ * @param {number} [options.duration] - The length of time in seconds to play the audio file before looping. This will only cause an early loop if the duration
+ * specified here is shorter than the actual duration of the audio file.
+ */
+Oversimplified.Tune = function (name, options) {
+    /** The internal ID of this Sound.
+     * @instance
+     * @type {number}
+     * @readonly
+     */
     this.id = Oversimplified.nextID++;
-    
-    tuneOptions = (typeof tuneOptions !== 'undefined') ? tuneOptions : {};
-    
+
+    sources = typeof sources !== 'undefined' ? sources : {};
+
+    /** The name given to the Sound at creation.
+     * @instance
+     * @type {string}
+     */
     this.name = name;
+
+    /** The file paths of each provided audio file source.
+     * @instance
+     * @type {Object}
+     * @param {string} [wav=false] - The path to the `.wav` audio file for this Sound.
+     * @param {string} [mp3=false] - The path to the `.mp3` audio file for this Sound.
+     * @param {string} [ogg=false] - The path to the `.ogg` audio file for this Sound.
+     */
     this.source = {
-        mp3: (typeof tuneOptions.mp3 !== 'undefined' && tuneOptions.mp3.length > 0) ? tuneOptions.mp3 : false,
-        wav: (typeof tuneOptions.wav !== 'undefined' && tuneOptions.wav.length > 0) ? tuneOptions.wav : false,
-        ogg: (typeof tuneOptions.ogg !== 'undefined' && tuneOptions.ogg.length > 0) ? tuneOptions.ogg : false
+        mp3: (typeof options.mp3 !== 'undefined' && options.mp3.length > 0) ? options.mp3 : false,
+        wav: (typeof options.wav !== 'undefined' && options.wav.length > 0) ? options.wav : false,
+        ogg: (typeof options.ogg !== 'undefined' && options.ogg.length > 0) ? options.ogg : false
     };
-    this.duration = (typeof tuneOptions.duration !== 'undefined') ? tuneOptions.duration : false;
-    
+
+    /** The length of time in seconds to play the audio file before looping.
+     * @instance
+     * @type {number}
+     * @default false
+     */
+    this.duration = (typeof options.duration !== 'undefined') ? options.duration : false;
+
+    /** The reference to the HTMLAudioElement that is added to the HTML to embed the audio.
+     * 
+     * This property is also available as `Tune.element`, so you can use whichever you prefer.
+     * @instance
+     * @type {HTMLAudioElement}
+     * @readonly
+     * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLAudioElement|HTMLAudioElement}
+     */
     this.audioElement = document.createElement("audio");
     this.audioElement.id = this.name + this.id.toString();
     // Alias for this.audioElement
@@ -2447,27 +2734,58 @@ Oversimplified.Tune = function (name, tuneOptions) {
     document.getElementById("audio").appendChild(this.audioElement);
     this.audioElement.load();
 }
+
+/** Identifies that this object is a `Tune`
+ * @type {string}
+ * @readonly
+ * @default "Tune"
+ */
 Oversimplified.Tune.prototype.type = "Tune";
 
+/** Plays the audio file connected to this Tune at the volume specified in {@link Oversimplified.Settings}.musicVolume.
+ * 
+ * Please note that changing the volume in the `Oversimplified.Settings` after a Tune is already playing will not automatically adjust
+ * its volume.
+ * @todo Add a `SetVolume` function in Settings that dynamically adjusts the volume of any playing Tune's element.
+ * @instance
+ * @function
+ */
 Oversimplified.Tune.prototype.Play = function () {
-    this.element.currentTime = 0;
-    this.element.volume = Oversimplified.Settings.musicVolume;
-    this.element.loop = true;
-    this.element.play();
+    this.audioElement.currentTime = 0;
+    this.audioElement.volume = Oversimplified.Settings.musicVolume;
+    this.audioElement.loop = true;
+    this.audioElement.play();
 }
+
+/** Stops the audio file connected to this Tune from playing.
+ * @instance
+ * @function
+ */
 Oversimplified.Tune.prototype.Stop = function () {
-    this.element.pause();
-    this.element.currentTime = 0;
+    this.audioElement.pause();
+    this.audioElement.currentTime = 0;
 }
+
+/** Internal function that checks whether the audio should loop. If its `duration` is less than the actual duration, it will loop when it has played for that long.
+ * @instance
+ * @function
+ * @restricted
+ */
 Oversimplified.Tune.prototype.CheckLoop = function () {
-    if (this.duration < this.element.duration) {
-        if (this.element.currentTime > this.duration) {
-            this.element.currentTime = 0;
+    if (this.duration < this.audioElement.duration) {
+        if (this.audioElement.currentTime > this.duration) {
+            this.audioElement.currentTime = 0;
         }
     }
 }
+
+/** Returns whether the audio file connected to this Tune is playing.
+ * @instance
+ * @function
+ * @returns {boolean}
+ */
 Oversimplified.Tune.prototype.IsPlaying = function () {
-    return !this.element.paused && !this.element.ended && 0 < this.element.currentTime;
+    return !this.audioElement.paused && !this.audioElement.ended && 0 < this.audioElement.currentTime;
 }
 
 /* Copy a GameObject
