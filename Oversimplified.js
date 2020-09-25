@@ -2521,7 +2521,13 @@ Oversimplified.Effects.NewSound = Oversimplified.Effects.AddSound;
  * or `Oversimplified.Effects.NewMusic`. It all points to the same function.
  * @function
  * @param {string} tuneName - A unique name for the Tune that will be created.
- * @todo Update this when Tune class is created
+ * @param {Object} options - At least one source type needs to be provided or else no sound will play and the browser may throw errors.
+ * @param {(string|boolean)} [options.wav=false] - The path to a `.wav` sound file.
+ * @param {(string|boolean)} [options.mp3=false] - The path to a `.mp3` sound file.
+ * @param {(string|boolean)} [options.ogg=false] - The path to a `.ogg` sound file.
+ * @param {number} [options.start=0] - The number of seconds into the audio to start playing the the audio file. Useful for if your audio starts a number of seconds after 0.
+ * @param {(number|boolean)} [options.duration=false] - The length of time in seconds to play the audio file before looping. This will only cause an early loop if the duration
+ * specified here is shorter than the actual duration of the audio file.
  */
 Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
     if (typeof Oversimplified.Effects.Tunes[tuneName] === 'undefined') {
@@ -2804,7 +2810,15 @@ Oversimplified.Tune.prototype.IsPlaying = function () {
     return !this.audioElement.paused && !this.audioElement.ended && 0 < this.audioElement.currentTime;
 }
 
-/* Copy a GameObject
+/** Internal function used by {@link Oversimplified.PremadeObject} to copy an {@link Oversimplified.GameObject}.
+ * 
+ * It is recommended that you not use this to copy objects.
+ * @function
+ * @restricted
+ * @param {Oversimplified.GameObject} object - The GameObject to copy.
+ * @param {Object} objectOptions
+ * @param {any} [options....] - Any additional parameter passed in the `options` will be added directly to the resulting GameObject,
+ * overwriting if they are existing properties.
 */
 Oversimplified.CopyObject = function (object, objectOptions) {
     var resultingCopy = {};
@@ -2858,63 +2872,105 @@ Oversimplified.CopyObject = function (object, objectOptions) {
     return resultingCopy;
 }
 
+
+/** Save a specific value to the browser's `{@link https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage|localStorage}`, if it exists.
+ * Overwrites any data that was previously set at the same location.
+ * @function
+ * @param {string} location - The key used to store the data. This can be anything, but it can be helpful to use an identifier like "level1/goals/enemiesToDefeat".
+ * @param {(string|number|boolean)} data - The data to store. Must be a basic value type, but you can use `{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify|JSON.stringify()}`
+ * to turn any basic JavaScript Object (i.e. _not_ a GameObject or other class) into a `string`.
+ * @returns {boolean} Returns `true` if the value is saved successfully or `false` if not saved. Set `{@link Oversimplified.DEBUG}.showMessages = true` to see console messages about what went wrong.
+ * @see {@link Oversimplified.Load}
+ * @see {@link Oversimplified.Erase}
+ */
 Oversimplified.Save = function (location, data) {
     // Set and overwrite data at specified location in browser's Local Storage
     if(typeof(Storage) !== "undefined") {
-        localStorage.setItem(location, data);
-        if (localStorage.getItem(location) == data) {
+        window.localStorage.setItem(location, data);
+        if (window.localStorage.getItem(location) == data) {
             if (Oversimplified.DEBUG.showMessages) console.log("Successfully saved " + data + " to localStorage[\"" + location + "\"].");
             return true;
         } else {
-            if (Oversimplified.DEBUG.showMessages) console.log("Could not save " + data + " to localStorage[\"" + location + "\"].");
+            if (Oversimplified.DEBUG.showMessages) console.error("Could not save " + data + " to localStorage[\"" + location + "\"].");
         }
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("This browser does not support saving to localStorage.");
+        if (Oversimplified.DEBUG.showMessages) console.error("This browser does not support saving to localStorage.");
     }
     return false;
 }
 
+/** Load a previously-saved value from the browser's `{@link https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage|localStorage}`, if it exists.
+ * @function
+ * @param {string} location - The key where the data is was previously stored using {@link Oversimplified.Save}.
+ * @returns {(string|number|boolean|undefined)} Returns the value of the stored data found at `location` or `undefined` if nothing is found at that location. Set `{@link Oversimplified.DEBUG}.showMessages = true` to see console messages about what went wrong.
+ * 
+ * Remember: If you previously used `{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify|JSON.stringify()}` to save the data, be sure to
+ * use `{@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse|JSON.parse()}` to turn it back into a JavaScript Object before trying to use the data!
+ * @see {@link Oversimplified.Save}
+ * @see {@link Oversimplified.Erase}
+ */
 Oversimplified.Load = function (location) {
     // Load data from specified location in browser's Local Storage
     if(typeof(Storage) !== "undefined") {
-        if (localStorage.getItem(location)) {
+        if (window.localStorage.getItem(location)) {
             if (Oversimplified.DEBUG.showMessages) console.log("Successfully loaded from localStorage[\"" + location + "\"].");
-            return localStorage.getItem(location);
+            return window.localStorage.getItem(location);
         } else {
-            if (Oversimplified.DEBUG.showMessages) console.log("No data saved in localStorage[\"" + location + "\"].");
+            if (Oversimplified.DEBUG.showMessages) console.error("No data saved in localStorage[\"" + location + "\"].");
         }
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("This browser does not support loading from localStorage.");
+        if (Oversimplified.DEBUG.showMessages) console.error("This browser does not support loading from localStorage.");
     }
-    return false;
+    return undefined;
 }
 
+/** Delete a previously-saved value from the browser's `{@link https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage|localStorage}`, if it exists.
+ * @function
+ * @param {string} location - The key where the data is was previously stored using {@link Oversimplified.Save}.
+ * @returns {boolean} Returns `true` if the value is erased successfully or `false` if not erased. Note that `false` will be returned if the location specified does not exist in `localStorage`,
+ * so if you have already deleted the value, it will return `false` if you try to delete it again. Set `{@link Oversimplified.DEBUG}.showMessages = true` to see console messages about what went wrong.
+ * @see {@link Oversimplified.Save}
+ * @see {@link Oversimplified.Load}
+ */
 Oversimplified.Erase = function (location) {
     // Remove data at specified location in browser's Local Storage
     if(typeof(Storage) !== "undefined") {
-        if (localStorage.getItem(location)) {
-            localStorage.removeItem(location);
-            if (!localStorage.getItem(location)) {
+        if (window.localStorage.getItem(location)) {
+            window.localStorage.removeItem(location);
+            if (!window.localStorage.getItem(location)) {
                 if (Oversimplified.DEBUG.showMessages) console.log("Successfully erased localStorage[\"" + location + "\"].");
                 return true;
             } else {
-                if (Oversimplified.DEBUG.showMessages) console.log("Could not erase localStorage[\"" + location + "\"].");
+                if (Oversimplified.DEBUG.showMessages) console.error("Could not erase localStorage[\"" + location + "\"].");
             }
         } else {
-            if (Oversimplified.DEBUG.showMessages) console.log("There is no data to remove from localStorage[\"" + location + "\"].");
+            if (Oversimplified.DEBUG.showMessages) console.warn("There is no data to remove from localStorage[\"" + location + "\"].");
         }
     } else {
-        if (Oversimplified.DEBUG.showMessages) console.log("This browser does not support manipulating localStorage.");
+        if (Oversimplified.DEBUG.showMessages) console.error("This browser does not support manipulating localStorage.");
     }
     return false;
 }
 
-// DEBUG object
+
+
+// DEBUG namespace
+/** A collection of tools to help you as you develop.
+ * @namespace
+ */
 Oversimplified.DEBUG = {
-    // Show console.log messages.
+    /** Whether or not to show console messages from various Oversimplified objects.
+     * @type {boolean}
+     * @default true
+     */
     showMessages: true,
     
-    // Draw a magenta bounding box around the specified object representing the object's collision extents.
+    /** Draw a magenta bounding box around the specified {@link Oversimplified.GameObject} representing the object's collision extents.
+     * 
+     * Run this in the GameObject's {@link Oversimplified.GameObject#DrawAbove|DrawAbove()} method to ensure it is drawn every frame.
+     * @function
+     * @param {Oversimplified.GameObject} object
+     */
     DrawBoundingBox: function (object) {
         var fillStyle = Oversimplified.context.fillStyle;
         Oversimplified.context.fillStyle = "rgba(255, 0, 255, 0.5)";
@@ -2922,7 +2978,11 @@ Oversimplified.DEBUG = {
         Oversimplified.context.fillStyle = fillStyle;
     },
     
-    // Return the number of objects currently in the room.
+    /** Return the number of {@link Oversimplified.GameObject} currently in the {@link Oversimplified.Room}.
+     * @function
+     * @param {string} [roomName] - The `name` of the {@link Oversimplified.Room} to check. If excluded, the {@link Oversimplified.Rooms.currentRoomName|current room} will be used instead.
+     * @returns {number} The number of objects in the 
+     */
     CountObjectsInRoom: function (roomName) {
         var roomInQuestion;
         var count = 0;
@@ -2941,12 +3001,15 @@ Oversimplified.DEBUG = {
         return count;
     },
     
+    /** The number of objects currently being drawn on the canvas.
+     * @type {number}
+     * @readonly
+     */
     objectsOnScreen: 0,
     
-    // Return the number of objects currently being drawn on the canvas.
-    CountObjectsOnScreen: function () {return Oversimplified.DEBUG.objectsOnScreen;},
-    
-    // List all current controls to the console.
+    /** List all current controls to the console.
+     * @function
+     */
     ListControls: function () {
         var numControls = 0;
         var numAxes = 0;
@@ -2974,13 +3037,16 @@ Oversimplified.DEBUG = {
     },
 };
 
-/* window.onload call
-
-If there is another place that sets window.onload, then Oversimplified.Initialize() will need to be manually called!
+/*
+window.onload call
 */
 window.onload = function () {Oversimplified.Initialize();};
 
-// Set up important engine pieces.
+/** Set up important engine pieces. This is automatically run during `{@link https://developer.mozilla.org/en-US/docs/Web/API/Window/load_event|window.onload}`, but if
+ * there is another place in your code that sets `window.onload`, then Oversimplified.Initialize() will need to be manually called!
+ * @function
+ * @restricted
+ */
 Oversimplified.Initialize = function () {
     Oversimplified.SetupCanvas();
     
@@ -2993,6 +3059,12 @@ Oversimplified.Initialize = function () {
     });
 }
 
+/** Set up the {@link Oversimplified.canvas} and {@link Oversimplified.context}. This is automatically run during `{@link Oversimplified.Initialize}` and should only be run once.
+ * 
+ * Requires that an HTML5 canvas element with an `id` of `game` exists in the HTML. If using the default `index.html` file included with OversimplifiedJS, you do not need to add this yourself.
+ * @function
+ * @restricted
+ */
 Oversimplified.SetupCanvas = function () {
     Oversimplified.canvas = document.getElementById("game");
     if (Oversimplified.canvas.getContext) {
@@ -3005,11 +3077,19 @@ Oversimplified.SetupCanvas = function () {
     if (Oversimplified.Settings.preventRightClick) Oversimplified.canvas.oncontextmenu = function() {return false;};
 }
 
+/** Set up the {@link Oversimplified.Controls}. This is automatically run during `{@link Oversimplified.Initialize}` and should only be run once.
+ * @function
+ * @restricted
+ */
 Oversimplified.SetupControls = function () {
     Oversimplified.SetupMouseListeners();
     Oversimplified.SetupKeyboardListeners();
 }
 
+/** Set up the {@link Oversimplified.mouse}. This is automatically run during `{@link Oversimplified.Initialize}` and should only be run once.
+ * @function
+ * @restricted
+ */
 Oversimplified.SetupMouseListeners = function () {
     Oversimplified.canvas.addEventListener('mousemove', function (e) {
             var rect = Oversimplified.canvas.getBoundingClientRect();
@@ -3109,6 +3189,15 @@ Oversimplified.SetupMouseListeners = function () {
         }, false);
 }
 
+/** Set up listeners for {@link Oversimplified.pressedKeys}, {@link Oversimplified.heldKeys}, and {@link Oversimplified.releasedKeys}.
+ * This is automatically run during `{@link Oversimplified.Initialize}` and should only be run once.
+ * 
+ * Disables keyboard browser navigation with arrow keys, space, and tab.
+ * @function
+ * @restricted
+ * @todo Change `which` and `keyCode` to `key` since they are both deprecated. Also update the use of {@link Oversimplified.Key} and {@link Oversimplified.Keycode} to just use values
+ * directly from {@link https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key} to save some space. This will set a hard browser version limit, however.
+ */
 Oversimplified.SetupKeyboardListeners = function () {
     //Prevent scrolling with keys
     window.addEventListener("keydown", function(e) {
@@ -3143,6 +3232,11 @@ Oversimplified.SetupKeyboardListeners = function () {
     }, false);
 }
 
+/** Change the size of the {@link Oversimplified.canvas} to match the height and width of {@link Oversimplified.camera}. This is automatically run during `{@link Oversimplified.Initialize}`,
+ * after the `start.js` script is run and each time {@link Oversimplified.SetCamera} is used.
+ * @function
+ * @restricted
+ */
 Oversimplified.SetCanvasToCameraSize = function () {
     if (Oversimplified.canvas.width != Oversimplified.camera.width) {
         if (Oversimplified.DEBUG.showMessages) console.log("Adjusting Camera Width from " + Oversimplified.canvas.width + " to " + Oversimplified.camera.width);
@@ -3156,7 +3250,11 @@ Oversimplified.SetCanvasToCameraSize = function () {
     }
 }
 
-// Defines the order of operations for the Frame.
+/** Defines the order of operations for everything that is run each frame.
+ * @todo Fully explain the full cycle of the Frame.
+ * @function
+ * @restricted
+ */
 Oversimplified.Frame = function () {
     if (Oversimplified.loadedScripts.length >= Oversimplified.numberOfScriptsToLoad
         || Oversimplified.loadingScripts.length == 0)
@@ -3206,7 +3304,11 @@ Oversimplified.Frame = function () {
     requestAnimationFrame(Oversimplified.Frame);
 }
 
-// Mechanical/action-based/calculation functions
+/** Runs all mechanical/action-based/calculation functions in order each {@link Oversimplified.Frame}.
+ * @todo Fully explain the full cycle of Update.
+ * @function
+ * @restricted
+ */
 Oversimplified.Update = function () {
     Oversimplified.Controls.CheckAll();
     
@@ -3250,7 +3352,11 @@ Oversimplified.Update = function () {
     }
 }
 
-// Drawing functions
+/** Runs all drawing functions in order each {@link Oversimplified.Frame}.
+ * @todo Fully explain the full cycle of Draw.
+ * @function
+ * @restricted
+ */
 Oversimplified.Draw = function () {
     Oversimplified.context.clearRect(0, 0, Oversimplified.canvas.width, Oversimplified.canvas.height);
     Oversimplified.DEBUG.objectsOnScreen = 0;
@@ -3262,7 +3368,10 @@ Oversimplified.Draw = function () {
     }
 }
 
-// Anything left over/resetting the mouse and keys.
+/** Resets the status of mouse and keys each {@link Oversimplified.Frame}.
+ * @function
+ * @restricted
+ */
 Oversimplified.EndFrame = function () {
     Oversimplified.mouse.wheel = 0;
     
@@ -3278,14 +3387,22 @@ Oversimplified.EndFrame = function () {
     
 }
 
-// Prevent scrolling page when scrolling inside canvas.
+/** Prevent scrolling page when scrolling inside canvas. This is used within `{@link Oversimplified.SetupMouseListeners}` and should not be run separately.
+ * @function
+ * @restricted
+ */
 Oversimplified.MouseWheelHandler = function (e) {
     e.preventDefault();
     
-    Oversimplified.mouse.wheel = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));    //reverse Firefoxs detail value and return either 1 for up or -1 for down
+    Oversimplified.mouse.wheel = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));    //reverse Firefox's detail value and return either 1 for up or -1 for down
 }
 
-// Check if the defined point (x, y) or object x is currently visible on the canvas.
+/** Check if the defined point (x, y) or object x is currently visible on the canvas.
+ * @function
+ * @param {number} x - The x value to check.
+ * @param {number} y - The y value to check.
+ * @returns {boolean}
+ */
 Oversimplified.IsOnCamera = function (x, y) {
     var cameraLeft = Oversimplified.camera.x,
         cameraRight = Oversimplified.camera.x + Oversimplified.camera.width,
@@ -3299,10 +3416,14 @@ Oversimplified.IsOnCamera = function (x, y) {
         && y >= cameraTop && y <= cameraBottom;
 }
 
-/* Dynamically add a source script to the page.
-
-You can either specify a main function or just make the main function within the script the same as the script's name (minus ".js")
-*/
+/** Dynamically add a source script to the page.
+ * 
+ * You can either specify a main function or just make the main function within the script the same as the script's name (minus `.js`).
+ * @todo Explain the process of adding a script.
+ * @function
+ * @param {string} pathToScript - The path to the JavaScript file to load and run.
+ * @param {string} [mainFunction=filename] - The name of the function to run once the script has been loaded. Defaults to the name of the JavaScript file without `.js`.
+ */
 Oversimplified.AddScript = function (pathToScript, mainFunction) {
     mainFunction = typeof mainFunction !== 'undefined'
         ? mainFunction
@@ -3332,7 +3453,10 @@ Oversimplified.AddScript = function (pathToScript, mainFunction) {
     document.body.appendChild(script);
 }
 
-// Callback function that prevents any added scripts from executing until all scripts are loaded.
+/** Callback function that prevents any added scripts from executing until all scripts are loaded.
+ * @function
+ * @restricted
+ */
 Oversimplified.WaitForScriptsToLoad = function (Function) {
     if (Oversimplified.DEBUG.showMessages && Oversimplified.loadingScripts.length > 0) console.log("Waiting for " + (Oversimplified.numberOfScriptsToLoad - Oversimplified.loadedScripts.length).toString() + " scripts to load");
 
@@ -3343,7 +3467,10 @@ Oversimplified.WaitForScriptsToLoad = function (Function) {
     }
 }
 
-// Global function to detect Internet Explorer
+/** Global function to detect Internet Explorer
+ * @function
+ * @returns {boolean}
+ */
 function IsInternetExplorer () {
     var ua = window.navigator.userAgent;
     var msie = ua.indexOf("MSIE ");
@@ -3356,12 +3483,22 @@ function IsInternetExplorer () {
 }
 
 // Oversimplified.Math namespace
+/** Where useful number-related functions are stored.
+ * @namespace
+ */
 Oversimplified.Math = {};
 
-/* Make sure the value does not fall outide the min-max range
-
-Usage: numberValue = Oversimplified.Math.clamp(numberValue, 3, 10);
-*/
+/** Make sure the value does not fall outide a min-max range.
+ * @function
+ * @param {number} value - The number to check.
+ * @param {number} min - The lowest number to return.
+ * @param {number} max - The highest number to return.
+ * @returns {number}
+ * @example
+ * var numberValue = 11;
+ * numberValue = Oversimplified.Math.clamp(numberValue, 3, 10);
+ * // numberValue === 10
+ */
 Oversimplified.Math.clamp = function (value, min, max) {
     if (min == max) {
         if (Oversimplified.DEBUG.showMessages) console.log("Min and Max cannot be the same number!");
@@ -3382,10 +3519,14 @@ Oversimplified.Math.clamp = function (value, min, max) {
 };
 
 
-/* Make sure the given value does not fall outide the 0-1 range
-
-Usage: numberValue = Oversimplified.Math.clamp01(numberValue);
-*/
+/** Make sure the given value does not fall outide the 0-1 range.
+ * @function
+ * @param {number} value - The value to check.
+ * @example
+ * var numberValue = 1.325;
+ * numberValue = Oversimplified.Math.clamp01(numberValue);
+ * // numberValue === 1
+ */
 Oversimplified.Math.clamp01 = function (value) {
     if (value < 0) {
         value = 0;
@@ -3397,13 +3538,23 @@ Oversimplified.Math.clamp01 = function (value) {
 };
 
 
-/* Return the given numberValue as a clamped angle between 0 and 360
-
-Usage: numberValue = Oversimplified.Math.clampAngle(numberValue, 0, 180);
-
-Alternate: numberValue = Oversimplified.Math.clampAngle(numberValue);
-*/
+/** Return the given value as a clamped angle between 0 and 359.
+ * @function
+ * @param {number} value - The number to check
+ * @param {number} [min=0] - The lowest number to return. Will always be a positive number greater than or equal to 0.
+ * @param {number} [max=0] - The highest number to return. Will always be a positive number less than 360.
+ * @example
+ * var numberValue = 380;
+ * numberValue = Oversimplified.Math.clampAngle(numberValue, 0, 180);
+ * // numberValue === 20
+ * // OR
+ * var numberValue2 = 365;
+ * numberValue2 = Oversimplified.Math.clampAngle(numberValue2);
+ * // numberValue2 === 5
+ */
 Oversimplified.Math.clampAngle = function (value, min, max) {
+    min = typeof min !== 'undefined' ? min : 0;
+    max = typeof max !== 'undefined' ? max : 359;
     // Make sure angle is between 0 and 360
     while (value >= 360) {
         value -= 360;
@@ -3412,77 +3563,88 @@ Oversimplified.Math.clampAngle = function (value, min, max) {
         value += 360;
     }
     
-    if (typeof min !== 'undefined' && typeof max !== 'undefined') {
-        // Adjust min and max values to be between 0 and 360
-        while (min >= 360) {
-            min -= 360;
-        }
-        while (min < 0) {
-            min += 360;
-        }
-        while (max >= 360) {
-            max -= 360;
-        }
-        while (max < 0) {
-            max += 360;
-        }
-        
-        if (min == max) {
-            if (Oversimplified.DEBUG.showMessages) console.log("Min and Max cannot be the same number!");
-            return false;
-        }
-        if (min > max) {
-            if (Oversimplified.DEBUG.showMessages) console.log("Min must be less than Max!");
-            return false;
-        }
-        
-        if (value < min) {
-            value = min;
-        }
-        if (value > max) {
-            value = max;
-        }
+    // Adjust min and max values to be between 0 and 360
+    while (min >= 360) {
+        min -= 360;
     }
+    while (min < 0) {
+        min += 360;
+    }
+    while (max >= 360) {
+        max -= 360;
+    }
+    while (max < 0) {
+        max += 360;
+    }
+    
+    if (min == max) {
+        if (Oversimplified.DEBUG.showMessages) console.log("Min and Max cannot be the same number!");
+        return false;
+    }
+    if (min > max) {
+        if (Oversimplified.DEBUG.showMessages) console.log("Min must be less than Max!");
+        return false;
+    }
+    
+    if (value < min) {
+        value = min;
+    }
+    if (value > max) {
+        value = max;
+    }
+
     return value;
 };
 
 
-/* Convert a radian value to degrees
-
-Usage: degreeValue = Oversimplified.Math.radToDeg(radianValue);
-*/
+/** Convert a {@link https://en.wikipedia.org/wiki/Radian|radian} value to degrees.
+ * @function
+ * @param {number} radians - The value in radians to convert to degrees in an angle.
+ * @example
+ * var radianValue = 0.7853981633974483;
+ * var degreeValue = Oversimplified.Math.radToDeg(radianValue);
+ * // degreeValue should be reliably close to 45
+ */
 Oversimplified.Math.radToDeg = function (radians) {
     return radians / (Math.PI / 180);
 };
 
-/* Convert a degree value to radians
-
-Usage: radianValue = Oversimplified.Math.degToRad(degreeValue);
-*/
+/** Convert a degree value to {@link https://en.wikipedia.org/wiki/Radian|radians}.
+ * @function
+ * @param {number} radians - The value in radians to convert to degrees in an angle.
+ * @example
+ * var degreeValue = 45;
+ * var radianValue = Oversimplified.Math.degToRad(degreeValue);
+ * // radianValue should be reliably close to 0.7853981633974483
+ */
 Oversimplified.Math.degToRad = function (degrees) {
     return degrees * (Math.PI / 180);
 };
 
-/* Get the cosine of an angle given in degrees
-
-Usage: cosine = Oversimplified.Math.getCos(angleInDegrees);
-*/
+/** Get the cosine of an angle given in degrees.
+ * @function
+ * @param {number} angle - The angle to get the cosine of in degrees.
+ * @example
+ * var cosine = Oversimplified.Math.getCos(angleInDegrees);
+ */
 Oversimplified.Math.getCos = function (angle) {
     return Math.cos(Oversimplified.Math.degToRad(angle));
 };
 
-/* Get the sine of an angle given in degrees
-
-Usage: sine = Oversimplified.Math.getSin(angleInDegrees);
-*/
+/** Get the sine of an angle given in degrees.
+ * @function
+ * @param {number} angle - The angle to get the sine of in degrees.
+ * @example
+ * var sine = Oversimplified.Math.getSin(angleInDegrees);
+ */
 Oversimplified.Math.getSin = function (angle) {
     return Math.sin(Oversimplified.Math.degToRad(angle));
 };
 
-/* Return true or false based on a 50% chance
-
-Usage: flippedHeads = Oversimplified.Math.coinFlip();
-*/
+/** Return `true` or `false` based on a 50% chance.
+ * @function
+ * @returns {boolean}
+ */
 Oversimplified.Math.coinFlip = function () {
     if (Math.random() >= 0.5) {
         return true;
@@ -3491,10 +3653,12 @@ Oversimplified.Math.coinFlip = function () {
     }
 };
 
-/* Return a random number between min and max (inclusive)
-
-Usage: numberBetween3And15 = Oversimplified.Math.randomRange(3, 15);
-*/
+/** Return a random number between min and max (inclusive).
+ * @function
+ * @param {number} min - The lowest possible number to return.
+ * @param {number} max - The highest possible number to return.
+ * @returns {number} The number returned will always have a decimal value. Use `Math.floor()`, `Math.ceil()`, or `Math.round()` to get whole numbers as needed.
+ */
 Oversimplified.Math.randomRange = function (min, max) {
     return Math.random() * (max - min) + min;
 };
