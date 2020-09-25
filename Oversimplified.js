@@ -1041,6 +1041,7 @@ Oversimplified.O = null;
 
 /** Returns the current {@link Oversimplified.Room|Room}.
  * @function
+ * @returns {Oversimplified.Room}
  */
 Oversimplified.Rooms.Current = function () {
     return Oversimplified.Rooms[Oversimplified.Rooms.currentRoomName];
@@ -1159,7 +1160,7 @@ Oversimplified.Room = function (name, options) {
      * @property {boolean} loaded - If {@link Oversimplified.Room#bg} was not set to the empty image, this will update to `true` when the `Image.src` file has been loaded.
      * @property {number} [width] - The width of the loaded Image file.
      * @property {number} [height] - The height of the loaded Image file.
-     * @property {string} [backgroundColor] - A hex string representing the color that appears behind the background Image, if any.
+     * @property {string} [color] - A hex string representing the color that appears behind the background Image, if any.
      */
     this.background = {};
     this.background.loaded = false;
@@ -3276,10 +3277,14 @@ Oversimplified.SetCanvasToCameraSize = function () {
     }
 }
 
-/** Defines the order of operations for everything that is run each frame.
- * @todo Fully explain the full cycle of the Frame.
+/** Defines the order of operations for everything that is run each frame. This function checks loading scripts, and when everything is loaded,
+ * it runs {@link Oversimplified.Update}, then {@link Oversimplified.Draw}, then {@link Oversimplified.EndFrame} in that order before calling
+ * itself again. It also keeps track of its own timing data to ensure that frames are run as close as possible to the desired step speed.
+ * 
+ * See the linked Tutorial for a full explanation of the frame and its flow.
  * @function
  * @restricted
+ * @tutorial Understanding the Frame
  */
 Oversimplified.Frame = function () {
     if (Oversimplified.loadedScripts.length >= Oversimplified.numberOfScriptsToLoad
@@ -3330,8 +3335,9 @@ Oversimplified.Frame = function () {
     requestAnimationFrame(Oversimplified.Frame);
 }
 
-/** Runs all mechanical/action-based/calculation functions in order each {@link Oversimplified.Frame}.
- * @todo Fully explain the full cycle of Update.
+/** Runs all mechanical/action-based/calculation functions in order every time {@link Oversimplified.Frame} is run.
+ * 
+ * See {@tutorial Understanding the Frame} for the specific sequence of events that occurs each time this method is run.
  * @function
  * @restricted
  */
@@ -3378,8 +3384,9 @@ Oversimplified.Update = function () {
     }
 }
 
-/** Runs all drawing functions in order each {@link Oversimplified.Frame}.
- * @todo Fully explain the full cycle of Draw.
+/** Runs all drawing functions in order every time {@link Oversimplified.Frame} is run.
+ *
+ * See {@tutorial Understanding the Frame} for the specific sequence of events that occurs each time this method is run.
  * @function
  * @restricted
  */
