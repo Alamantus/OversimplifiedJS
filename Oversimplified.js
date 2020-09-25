@@ -3452,10 +3452,10 @@ Oversimplified.IsOnCamera = function (x, y) {
 /** Dynamically add a source script to the page.
  * 
  * You can either specify a main function or just make the main function within the script the same as the script's name (minus `.js`).
- * @todo Explain the process of adding a script.
  * @function
  * @param {string} pathToScript - The path to the JavaScript file to load and run.
  * @param {string} [mainFunction=filename] - The name of the function to run once the script has been loaded. Defaults to the name of the JavaScript file without `.js`.
+ * @tutorial Adding Scripts
  */
 Oversimplified.AddScript = function (pathToScript, mainFunction) {
     mainFunction = typeof mainFunction !== 'undefined'

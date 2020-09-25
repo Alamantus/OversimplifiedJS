@@ -1,17 +1,17 @@
-/** Add `makeDraggable()` as a prototype method on the GameObject class to enable interactive clicking and dragging.
+/** Add `MakeDraggable()` as a prototype method on the GameObject class to enable interactive clicking and dragging.
  * @function
  * @example
  * // Add the script
- * OS.AddScript('./modules/Add_GameObject_makeDraggable.js');
+ * OS.AddScript('./modules/Add_GameObject_MakeDraggable.js');
  * // Create a GameObject in the current room
  * var obj_someObject = OS.Create('someGameObject', { x: 0, y: 0, imageSrc: 'path/to/image' });
- * // Do whatever setup you need first (particularly `BeforeDo()` if you are using it), then call `makeDraggable()`
- * obj_someObject.makeDraggable();
+ * // Do whatever setup you need first (particularly `BeforeDo()` if you are using it), then call `MakeDraggable()`
+ * obj_someObject.MakeDraggable();
  */
-function Add_GameObject_makeDraggable() {
-  // To make the GameObject draggable, call GameObject.makeDraggable() at the end of its setup
+function Add_GameObject_MakeDraggable() {
+  // To make the GameObject draggable, call GameObject.MakeDraggable() at the end of its setup
   // (or at least after declaring its BeforeDo() method)
-  OS.GameObject.prototype.makeDraggable = function(onGrab, onDrop, onMove) {
+  OS.GameObject.prototype.MakeDraggable = function(onGrab, onDrop, onMove) {
     if (OS.DEBUG.showMessages) console.log('making ' + this.name + ' draggable.');
     onGrab = typeof onGrab === 'function' ? onGrab : function() {};
     onDrop = typeof onDrop === 'function' ? onDrop : function() {};
