@@ -98,7 +98,7 @@ Oversimplified.emptyImage.height = 1;
  * {@link Oversimplified.Settings}.loadingBar = false;
  * ```
  * @namespace
- * @property {number} defaultStep=1/3 - The default frame speed for {@link Oversimplified.Room|Rooms}. Represents the number of seconds that pass before the next frame plays.
+ * @property {number} defaultStep=1/30 - The default frame speed for {@link Oversimplified.Room|Rooms}. Represents the number of seconds that pass before the next {@link Oversimplified.Frame} plays.
  * @property {(Object|false)} loadingBar - The style values for the loading bar that appears when scripts are being loaded.
  * 
  * Can be set to `false` to disable the loading bar completely and just show a blank screen when loading is happening instead.
@@ -106,7 +106,7 @@ Oversimplified.emptyImage.height = 1;
  * @property {string} loadingBar.outlineColor="#882200" - The color hex (including `#`) of the outline that surrounds the loading bar.
  * @property {number} loadingBar.outlineWidth=5 - The number of pixels that the loading bar's outline has.
  * @property {number} soundVolume=0.75 - The level of volume between 0 and 1 that {@link Oversimplified.Sound|Sounds} play at.
- * @property {number} musicVolume=0.75 - The level of volume between 0 and 1 that {@link Oversimplified.Tune|Tunes} play at.
+ * @property {number} tuneVolume=0.75 - The level of volume between 0 and 1 that {@link Oversimplified.Tune|Tunes} play at.
  * @property {boolean} preventRightClick=true - Whether or not to allow people viewing your game to right click the canvas.
  */
 Oversimplified.Settings = {
@@ -117,9 +117,9 @@ Oversimplified.Settings = {
         outlineWidth: 5,
     },
     soundVolume: 0.75,
-    musicVolume: 0.75,
-    preventRightClick: true
-}
+    tuneVolume: 0.75,
+    preventRightClick: true,
+};
 
 /** A convenient alias for {@link Oversimplified.Settings}.
  * 
@@ -129,6 +129,33 @@ Oversimplified.Settings = {
  * @see {@link Oversimplified.Settings}
  */
 Oversimplified.S = Oversimplified.Settings;
+
+/** Adjust the volume for {@link Oversimplified.Sound|Sounds} and {@link Oversimplified.Tune|Music}. This function ensures that
+ * any Tunes currently playing also have their volume adjusted.
+ * @function
+ * @param {number} soundVolume - A number between 0 and 1 that represents the volume percentage for sound effects.
+ * @param {number} [tuneVolume=soundVolume] - A number between 0 and 1 that represents the volume percentage for music ({@link Oversimplified.Tune|Tunes}).
+ * 
+ * If excluded, it will default to whatever was entered for the `soundVolume` parameter.
+ * @example
+ * // This is a pretty straightforward function, but if you want to
+ * // set just one volume and not the other, you can use the existing
+ * // Oversimplified.Settings value like so:
+ * Oversimplified.Settings.SetVolume(OS.S.soundVolume, 0.5);    // Keeps the Sound volume the same and changes Tune volume to 50%
+ * Oversimplified.Settings.SetVolume(0.75, OS.S.tuneVolume);    // Keeps the Tune volume the same and changes only the Sound volume to 75%
+ */
+Oversimplified.Settings.SetVolume = function (soundVolume, tuneVolume) {
+    soundVolume = Oversimplified.Math.clamp01(soundVolume);
+    tuneVolume = typeof tuneVolume !== 'undefined' ? Oversimplified.Math.clamp01(tuneVolume) : soundVolume;
+    Oversimplified.Settings.soundVolume = soundVolume;
+    Oversimplified.Settings.tuneVolume = tuneVolume;
+    // Sounds and Tunes have their volume adjusted on Play, but playing Tunes need to be adjusted.
+    for (var tune in Oversimplified.Effects.Tunes) {
+        if (Oversimplified.Effects.Tunes[tune].type == "Tune" && Oversimplified.Effects.Tunes[tune].IsPlaying()) {
+            Oversimplified.Effects.Tunes[tune].audioElement.volume = Oversimplified.Settings.tuneVolume;
+        }
+    }
+}
 
 
 
@@ -2764,17 +2791,16 @@ Oversimplified.Tune = function (name, options) {
  */
 Oversimplified.Tune.prototype.type = "Tune";
 
-/** Plays the audio file connected to this Tune at the volume specified in {@link Oversimplified.Settings}.musicVolume.
+/** Plays the audio file connected to this Tune at the volume specified in {@link Oversimplified.Settings}.tuneVolume.
  * 
- * Please note that changing the volume in the `Oversimplified.Settings` after a Tune is already playing will not automatically adjust
- * its volume.
- * @todo Add a `SetVolume` function in Settings that dynamically adjusts the volume of any playing Tune's element.
+ * Please note that changing the volume directly in the `Oversimplified.Settings` after a Tune is already playing will not automatically adjust
+ * its volume. Use {@link Oversimplified.Settings.SetVolume} to ensure that any playing Tunes get their volume adjusted while playing.
  * @instance
  * @function
  */
 Oversimplified.Tune.prototype.Play = function () {
     this.audioElement.currentTime = this.start;
-    this.audioElement.volume = Oversimplified.Settings.musicVolume;
+    this.audioElement.volume = Oversimplified.Settings.tuneVolume;
     this.audioElement.loop = true;
     this.audioElement.play();
 }
