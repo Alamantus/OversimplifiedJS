@@ -100,7 +100,7 @@ Oversimplified.emptyImage.height = 1;
  * @namespace
  * @property {number} defaultStep=1/30 - The default frame speed for {@link Oversimplified.Room|Rooms}. Represents the number of seconds that pass before the next {@link Oversimplified.Frame} plays.
  * @property {(Object|false)} loadingBar - The style values for the loading bar that appears when scripts are being loaded.
- * 
+ *
  * Can be set to `false` to disable the loading bar completely and just show a blank screen when loading is happening instead.
  * @property {string} loadingBar.fillColor="#DD5511" - The color hex (including `#`) of the loading bar that fills in the outlined space.
  * @property {string} loadingBar.outlineColor="#882200" - The color hex (including `#`) of the outline that surrounds the loading bar.
@@ -1081,7 +1081,7 @@ Oversimplified.Rooms.New = Oversimplified.Rooms.Add;
  * @class
  * @classdesc Rooms are important containers that store, process, and display {@link Oversimplified.GameObject|GameObjects}. Each
  * Room has its own size (defaults to the size of {@link Oversimplified.camera} if none is specified) and process within {@link Oversimplified.Frame},
- * and only the Room that it identified within `{@link Oversimplified.Rooms}.currentRoom` has its process run.
+ * and only the Room that it identified within `{@link Oversimplified.Rooms}.currentRoomName` has its process run.
  * 
  * Access using {@link Oversimplified.Rooms.Add}.
  * @param {string} name - The name of the room that will be used to store and access the created room.
@@ -1383,7 +1383,7 @@ Oversimplified.Room.prototype.Draw = function () {
 
     this.drawOrder = Object.keys(this.objects);    // Determine draw order every frame to account for any new or removed objects. Object.keys support is IE9+
     this.drawOrder.sort(function (a, b) {
-        var objA = this.objects[a], objB = this.objects[b];
+        var objA = self.objects[a], objB = self.objects[b];
         if (objA.depth == objB.depth) return 0; // Do not sort/use created order.
         return objA.depth < objB.depth ? 1 : -1;    // Put objA after objB so it is drawn above.
     });
