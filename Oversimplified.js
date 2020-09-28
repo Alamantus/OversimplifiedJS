@@ -3455,7 +3455,6 @@ Oversimplified.IsOnCamera = function (x, y) {
  * @param {string} pathToScript - The path to the JavaScript file to load and run.
  * @param {string} [mainFunction=filename] - The name of the function to run once the script has been loaded. Defaults to the name of the JavaScript file without `.js`.
  * @tutorial Adding Scripts
- * @todo Add a section that fully explains creating scripts to add
  */
 Oversimplified.AddScript = function (pathToScript, mainFunction) {
     mainFunction = typeof mainFunction !== 'undefined'
