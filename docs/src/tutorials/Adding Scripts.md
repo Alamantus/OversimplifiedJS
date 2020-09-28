@@ -6,6 +6,21 @@ Whenever you use {@link Oversimplified.AddScript} to add a JavaScript file, it a
 
 You can either disable the loading bar or edit its color and appearance by modifying the values in `{@link Oversimplified.Settings}.loadingBar`. Setting `Oversimplified.Settings.loadingBar = false` will disable it altogether, but if you keep the original object, you can modify its `fillColor`, `outlineColor`, and `outlineWidth` to fit your needs.
 
+```
+// start.js
+function start() {
+  OS.Settings.loadingBar.fillColor = '#00ff00';  // Set the loading bar to bright green
+  OS.Settings.loadingBar.outlineColor = '#000000'; // Set outline color to black
+  OS.Settings.loadingBar.outlineWidth = 1; // Make outline just 1 pixel wide
+
+  // OR
+
+  OS.Settings.loadingBar = false; // Disables loading bar completely
+
+  OS.AddScript('SomeScript.js');
+}
+```
+
 ## Loaded Scripts
 
 When all scripts have finished loading, it will start calling the script's primary function. This function must be unique from the other scripts that have been loaded because they are added to the global `window` space. By default, the primary function for a loaded script should be exactly the same as the file's name without `.js`, but you can specify a different method to use instead.

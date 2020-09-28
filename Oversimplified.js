@@ -99,9 +99,9 @@ Oversimplified.emptyImage.height = 1;
  * ```
  * @namespace
  * @property {number} defaultStep=1/30 - The default frame speed for {@link Oversimplified.Room|Rooms}. Represents the number of seconds that pass before the next {@link Oversimplified.Frame} plays.
- * @property {(Object|false)} loadingBar - The style values for the loading bar that appears when scripts are being loaded.
- *
- * Can be set to `false` to disable the loading bar completely and just show a blank screen when loading is happening instead.
+ * @property {(Object|false)} loadingBar - The style values for the loading bar that appears when scripts are being loaded. Can be set to `false` to disable the loading bar completely and just show a blank screen when loading is happening instead.
+ * 
+ * See {@tutorial Adding Scripts} for more details about when the loading bar appears and how specifically to style it.
  * @property {string} loadingBar.fillColor="#DD5511" - The color hex (including `#`) of the loading bar that fills in the outlined space.
  * @property {string} loadingBar.outlineColor="#882200" - The color hex (including `#`) of the outline that surrounds the loading bar.
  * @property {number} loadingBar.outlineWidth=5 - The number of pixels that the loading bar's outline has.
@@ -3455,6 +3455,7 @@ Oversimplified.IsOnCamera = function (x, y) {
  * @param {string} pathToScript - The path to the JavaScript file to load and run.
  * @param {string} [mainFunction=filename] - The name of the function to run once the script has been loaded. Defaults to the name of the JavaScript file without `.js`.
  * @tutorial Adding Scripts
+ * @todo Add a section that fully explains creating scripts to add
  */
 Oversimplified.AddScript = function (pathToScript, mainFunction) {
     mainFunction = typeof mainFunction !== 'undefined'
