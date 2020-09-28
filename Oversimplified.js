@@ -2569,7 +2569,6 @@ Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
 Oversimplified.Effects.AddMusic = Oversimplified.Effects.NewTune = Oversimplified.Effects.NewMusic = Oversimplified.Effects.AddTune;
 
 /** Checks every {@link Oversimplified.Tune} to see if it needs to loop.
- * @todo Put this in the game or something! What are you doing??
  * @function
  * @restricted
  */
@@ -3401,7 +3400,7 @@ Oversimplified.Draw = function () {
     }
 }
 
-/** Resets the status of mouse and keys each {@link Oversimplified.Frame}.
+/** Resets the status of mouse and keys and checks if any Tunes need to loop each {@link Oversimplified.Frame}.
  * @function
  * @restricted
  */
@@ -3417,7 +3416,7 @@ Oversimplified.EndFrame = function () {
     Oversimplified.pressedKeys = [];
     Oversimplified.releasedKeys = [];
     
-    
+    Oversimplified.Effects.Tunes.CheckLoops();
 }
 
 /** Prevent scrolling page when scrolling inside canvas. This is used within `{@link Oversimplified.SetupMouseListeners}` and should not be run separately.
