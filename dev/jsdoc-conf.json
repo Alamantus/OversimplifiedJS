@@ -13,7 +13,7 @@
     }
   },
   "opts": {
-    "template": "node_modules/docdash",
+    "template": "docs/src/template",
     "tutorials": "docs/src/tutorials"
   }
 }
