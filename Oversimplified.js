@@ -2529,6 +2529,7 @@ Oversimplified.Effects.T = Oversimplified.Effects.Music = Oversimplified.Effects
  * @param {string} [soundSources.wav] - The path to a `.wav` sound file.
  * @param {string} [soundSources.mp3] - The path to a `.mp3` sound file.
  * @param {string} [soundSources.ogg] - The path to a `.ogg` sound file.
+ * @returns {Oversimplified.Sound}
  */
 Oversimplified.Effects.AddSound = function (soundName, soundSources) {
     if (typeof Oversimplified.Effects.Sounds[soundName] === 'undefined') {
@@ -2556,6 +2557,7 @@ Oversimplified.Effects.NewSound = Oversimplified.Effects.AddSound;
  * @param {number} [options.start=0] - The number of seconds into the audio to start playing the the audio file. Useful for if your audio starts a number of seconds after 0.
  * @param {(number|boolean)} [options.duration=false] - The length of time in seconds to play the audio file before looping. This will only cause an early loop if the duration
  * specified here is shorter than the actual duration of the audio file.
+ * @returns {Oversimplified.Tune}
  */
 Oversimplified.Effects.AddTune = function (tuneName, tuneSources) {
     if (typeof Oversimplified.Effects.Tunes[tuneName] === 'undefined') {
