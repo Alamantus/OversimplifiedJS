@@ -4,64 +4,64 @@
 /* SPAN elements with the classes below are added by prettyprint. */
 /* plain text */
 .pln {
-  color: #4d4d4c; }
+  color: #000; }
 
 @media screen {
   /* string content */
   .str {
-    color: #718c00; }
+    color: #084; }
 
   /* a keyword */
   .kwd {
-    color: #8959a8; }
+    color: #a0c; }
 
   /* a comment */
   .com {
-    color: #8e908c; }
+    color: #888; }
 
   /* a type name */
   .typ {
-    color: #4271ae; }
+    color: #09d; }
 
   /* a literal value */
   .lit {
-    color: #f5871f; }
+    color: #7f3; }
 
   /* punctuation */
   .pun {
-    color: #4d4d4c; }
+    color: #000; }
 
   /* lisp open bracket */
   .opn {
-    color: #4d4d4c; }
+    color: #000; }
 
   /* lisp close bracket */
   .clo {
-    color: #4d4d4c; }
+    color: #000; }
 
   /* a markup tag name */
   .tag {
-    color: #c82829; }
+    color: #c33; }
 
   /* a markup attribute name */
   .atn {
-    color: #f5871f; }
+    color: #fc5; }
 
   /* a markup attribute value */
   .atv {
-    color: #3e999f; }
+    color: #09d; }
 
   /* a declaration */
   .dec {
-    color: #f5871f; }
+    color: #fc5; }
 
   /* a variable name */
   .var {
-    color: #c82829; }
+    color: #c33; }
 
   /* a function name */
   .fun {
-    color: #4271ae; } }
+    color: #09d; } }
 /* Use higher contrast and text-weight for printable form. */
 @media print, projection {
   .str {
@@ -95,15 +95,13 @@
   .atv {
     color: #060; } }
 /* Style */
-/*
 pre.prettyprint {
-  background: white;
-  font-family: Consolas, Monaco, 'Andale Mono', monospace;
-  font-size: 12px;
   line-height: 1.5;
-  border: 1px solid #ccc;
-  padding: 10px; }
-*/
+  padding: 10px;
+}
+pre.prettyprint * {
+  font-family: 'Courier New', Courier, monospace !important;
+}
 
 /* Specify class=linenums on a pre to get line numbering */
 ol.linenums {
