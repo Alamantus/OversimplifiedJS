@@ -4,8 +4,8 @@
   "description": "A lightweight, modular 2-D game engine for HTML5 canvas & JavaScript",
   "main": "Oversimplified.js",
   "scripts": {
-    "docs": "jsdoc -c ./dev/jsdoc-conf.json ./Oversimplified.js ./README.md",
-    "clear-docs": "rimraf ./out ./docs",
+    "docs": "jsdoc -c ./dev/jsdoc-conf.json ./Oversimplified.js ./modules/*.js ./README.md",
+    "clear-docs": "rimraf ./out ./docs/*.html",
     "clear-dist": "rimraf ./dist",
     "build": "node ./dev/build.js && npm run docs -- -d ./docs"
   },

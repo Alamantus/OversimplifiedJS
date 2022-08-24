@@ -1,5 +1,6 @@
-/** Add `MakeDraggable()` as a prototype method on the GameObject class to enable interactive clicking and dragging.
- * @function
+/** # modules/Add_GameObject_MakeDraggable.js
+ * Add `MakeDraggable()` as a prototype method on the GameObject class to enable interactive clicking and dragging.
+ * @module
  * @example
  * // Add the script
  * OS.AddScript('./modules/Add_GameObject_MakeDraggable.js');
