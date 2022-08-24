@@ -28,9 +28,8 @@
   },
   "homepage": "https://Alamantus.github.io/OversimplifiedJS",
   "devDependencies": {
-    "docdash": "^1.2.0",
-    "jsdoc": "^3.6.5",
+    "jsdoc": "^3.6.11",
     "rimraf": "^3.0.2",
-    "terser": "^5.3.0"
+    "terser": "^5.15.0"
   }
 }
