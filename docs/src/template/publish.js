@@ -345,7 +345,7 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
             }
 
             classes = classes ? ' ' + classes : '';
-            itemsNav +=  '<li class="card'+ classes +'">';
+            itemsNav +=  '<li class="card p1 mr1 mb0'+ classes +'">';
             if ( !hasOwnProp.call(item, 'longname') ) {
                 itemsNav += linktoFn('', item.name);
             } else if ( !hasOwnProp.call(itemsSeen, item.longname) ) {
@@ -396,7 +396,7 @@ function buildMemberNav(items, itemHeading, itemsSeen, linktoFn) {
         });
 
         if (itemsNav !== '') {
-            nav += '<nav><h3 class="mb0">' + itemHeading + '</h3><ul>' + itemsNav + '</ul></nav>';
+            nav += '<nav><h3 class="large mb0">' + itemHeading + '</h3><ul>' + itemsNav + '</ul></nav>';
         }
     }
 
@@ -576,14 +576,14 @@ exports.publish = function(taffyData, opts, tutorials) {
     fs.mkPath(outdir);
 
     // copy the template's static files to outdir
-    // var fromDir = path.join(templatePath, 'static');
-    // var staticFiles = [];
+    var fromDir = path.join(templatePath, 'static');
+    var staticFiles = fs.ls(fromDir, 3);
 
-    // staticFiles.forEach(function(fileName) {
-    //     var toDir = fs.toDir( fileName.replace(fromDir, outdir) );
-    //     fs.mkPath(toDir);
-    //     copyFile(fileName, path.join(toDir, path.basename(fileName)), function(err){if(err) console.err(err);});
-    // });
+    staticFiles.forEach(function(fileName) {
+        var toDir = fs.toDir( fileName.replace(fromDir, outdir) );
+        fs.mkPath(toDir);
+        copyFile(fileName, path.join(toDir, path.basename(fileName)), function(err){if(err) console.err(err);});
+    });
 
     // copy user-specified static files to outdir
     var staticFilePaths;

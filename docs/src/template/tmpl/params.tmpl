@@ -116,7 +116,7 @@
             <?js if (params.hasDefault) {?>
                 <td class="default">
                 <?js if (typeof param.defaultvalue !== 'undefined') { ?>
-                    <code><?js= self.htmlsafe(param.defaultvalue) ?></code>
+                    <code><?js= self.htmlsafe(param.defaultvalue).replace(/\./g, '.<wbr>') ?></code>
                 <?js } ?>
                 </td>
             <?js } ?>

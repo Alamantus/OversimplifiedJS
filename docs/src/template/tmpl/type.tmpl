@@ -1,7 +1,11 @@
 <?js
     var data = obj;
     var self = this;
-    data.forEach(function(name, i) { ?>
-<span class="param-type"><?js= self.linkto(name, self.htmlsafe(name)) ?></span>
+    data.forEach(function(name, i) {
+        var link = self.linkto(name, self.htmlsafe(name).replace(/\./g, '.<wbr>'));
+        if (link.includes('.&lt;')) {
+            link = link.substring(0, link.indexOf('">')) + link.substring(link.indexOf('">'), link.length).replace(/\./g, '.<wbr>');
+        }?>
+<span class="param-type"><?js= link ?></span>
 <?js if (i < data.length-1) { ?>|<?js } ?>
 <?js }); ?>
