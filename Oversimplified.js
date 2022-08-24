@@ -3285,7 +3285,7 @@ Oversimplified.SetCanvasToCameraSize = function () {
  * See the linked Tutorial for a full explanation of the frame and its flow.
  * @function
  * @restricted
- * @tutorial Understanding the Frame
+ * @tutorial understandingTheFrame
  */
 Oversimplified.Frame = function () {
     if (Oversimplified.loadedScripts.length >= Oversimplified.numberOfScriptsToLoad
@@ -3338,7 +3338,7 @@ Oversimplified.Frame = function () {
 
 /** Runs all mechanical/action-based/calculation functions in order every time {@link Oversimplified.Frame} is run.
  * 
- * See {@tutorial Understanding the Frame} for the specific sequence of events that occurs each time this method is run.
+ * See {@tutorial understandingTheFrame} for the specific sequence of events that occurs each time this method is run.
  * @function
  * @restricted
  */
@@ -3387,7 +3387,7 @@ Oversimplified.Update = function () {
 
 /** Runs all drawing functions in order every time {@link Oversimplified.Frame} is run.
  *
- * See {@tutorial Understanding the Frame} for the specific sequence of events that occurs each time this method is run.
+ * See {@tutorial understandingTheFrame} for the specific sequence of events that occurs each time this method is run.
  * @function
  * @restricted
  */
