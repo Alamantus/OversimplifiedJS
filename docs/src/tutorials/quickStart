@@ -1,0 +1,111 @@
+This guide will go over how to create an extremely simple game from scratch with OversimplifiedJS.
+
+## First things first
+
+Get a copy of the [most recent version of OversimplifiedJS](https://github.com/Alamantus/OversimplifiedJS/releases/latest). Then create a file with the name `start.js` and make sure it contains a function called `start()` like this:
+
+```javascript
+// start.js
+function start() {
+  // Our game code will start here!
+}
+```
+
+Finally, create an HTML file that includes
+
+1. A reference to your `Oversimplified.js` file,
+1. a `canvas` element with `id="game"`, and
+1. a `div` element with `id="audio"`
+
+Like this:
+
+```javascript
+// index.html
+&lt;!DOCTYPE HTML&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;Game&lt;/title&gt;
+  &lt;script src="Oversimplified.js"&gt;&lt;/script&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;canvas id="game"&gt;&lt;/canvas&gt;
+  &lt;div id="audio"&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+```
+
+Put all 3 of your files into the same directory, and you're just about ready to go!
+
+### The importance of a web server
+
+Web browsers have gotten more and more stringent with their requirements regarding HTML files and have thus gotten more uncomfortable with running certain kinds of JavaScript from your computer's local file system. As such, it may save some unnecessary frustration to set up a simple web server to test your game from instead of simply loading the HTML file you created directly from your file system. There are many different options for this, but two of my personal favorites are 1) [XAMPP](https://www.apachefriends.org/index.html) and 2) [Node](https://nodejs.org).
+
+XAMPP is a GUI-based web server for web development on your local computer that provides extremely easy setup for basic things. You won't really need any of it aside from the Apache server, but if you ever want to write PHP server code for your game and store game data in a MySQL database at some point, XAMPP will also allow you to do that. For this, we just need to put your 3 files into the `htdocs` folder, start up the server, and visit `http://localhost/` in your browser!
+
+Node is a command-line based tool that many web developers will already know. Using Node, you can write a very simple web server that can serve the contents of a particular folder on your computer just by running `node serve.js`. Here is a _very_ simple example of how you can do this:
+
+```javascript
+// serve.js
+var fs = require('fs'),
+    http = require('http');
+
+http.createServer(function (req, res) {
+  fs.readFile(__dirname + req.url, function (err,data) {
+    if (err) {
+      res.writeHead(404);
+      res.end(JSON.stringify(err));
+      return;
+    }
+    res.writeHead(200);
+    res.end(data);
+  });
+}).listen(8080);
+```
+
+_(This was copied unchanged from [https://nodejs.org/en/knowledge/HTTP/servers/how-to-serve-static-files/](https://nodejs.org/en/knowledge/HTTP/servers/how-to-serve-static-files/))_
+
+Running that node script from the same directory as your 3 OversimplifiedJS files should let you visit `http://localhost:8080/` and view your (currently empty) game. When you're finished, you can use <kbd>Ctrl+C</kbd> to stop serving the files.
+
+## Make a game
+
+Now that you're all set up, you're ready to start making a game! Please note that OversimplifiedJS requires prior knowledge of JavaScript, and the better you know it, the better time you'll have using it. OversimplifiedJS provides a comparatively barebones collection of tools that's just enough to get you past some of the more annoying bits of setting up a game from scratch.
+
+Anyway, enough about that, let's dive in!
+
+### Set up a Room
+
+Every game requires a space to play, and OversimplifiedJS uses "{@link Oversimplified.Room|Rooms}." Create your first room by adding this to the `start()` function in your `start.js` file:
+
+```javascript
+var rm_DefaultRoom = {@link Oversimplified.Rooms#Add|OS.R.Add}("Default");
+```
+
+This will create a `Room` with the same width and height of the {@link Oversimplified.camera|camera}, which defaults to 640 pixels wide and 480 pixels high.
+
+### Add a GameObject
+
+The next thing you need to have in a game is something to interact with, and OversimplifiedJS uses "{@link Oversimplified.GameObject|GameObjects}." Each `Room` has its own collection of `GameObjects`, and to create them you simply call a given `Room`'s {@link Oversimplified.Room#AddObject|AddObject} method. Since we only have one `Room` and the room named "Default" is always the first `Room` selected, we can use {@link Oversimplified.Create|OS.Create} instead to just create a `GameObject` in the current room:
+
+```javascript
+var ob_Player = {@link Oversimplified.Create|OS.Create}("Player", {
+  x: 20,
+  y: 20,
+  imgSrc: 'images/player.png',
+});
+```
+
+Notice that this newly-created `ob_Player` `GameObject` references an `images/player.png` file that doesn't yet exist. That's simple enough to fix—just create any old image, call it `player.png`, create an `images` folder in the same folder as your OversimplifiedJS files, and put your `player.png` file there.
+
+Now that your `GameObject` named "Player" has been created in your room, it will display your image at a point 20 pixels from the top left of the `canvas` when you load your HTML.
+
+### Make your GameObject move
+
+Displaying an image is all well and good, but we want to make a _game_, so we want our image to interact with things. OversimplifiedJS has special {@link Oversimplified.Control|Control} and {@link Oversimplified.Axis|Axis} classes that track the state of specific keys on your keyboard, but we'll use the mouse cursor as the primary controller to keep things simple for this guide. You can make your `ob_player` move toward the mouse every frame:
+
+```javascript
+ob_Player.Do = function() {
+  this.MoveTo(OS.mouse.x, OS.mouse.y, 2);
+}
+```
+
+This will cause your `ob_Player` to move toward the mouse's position at 2 pixels per frame.

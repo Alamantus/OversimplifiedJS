@@ -1,11 +1,14 @@
 {
   "gettingStarted": {
-      "title": "Getting Started"
+    "title": "Getting Started"
+  },
+  "quickStart": {
+    "title": "Quick Start"
   },
   "understandingTheFrame": {
-      "title": "Understanding the Frame"
+    "title": "Understanding the Frame"
   },
   "addingScripts": {
-      "title": "Adding Scripts"
+    "title": "Adding Scripts"
   }
 }

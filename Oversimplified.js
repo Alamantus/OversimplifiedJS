@@ -1579,7 +1579,7 @@ Oversimplified.PremadeObjects.New = Oversimplified.PremadeObjects.Add;
 // GameObject class
 /** Creates a new GameObject with the name `name` and the specified options.
  * 
- * Accesed via {@link Oversimplified.Room#Addobject} or {@link Oversimplified.Create}.
+ * Accesed via {@link Oversimplified.Room#AddObject} or {@link Oversimplified.Create}.
  * @class
  * @classdesc The objects that actually do things in your game. GameObjects are stored within a {@link Oversimplified.Room|Room}'s
  * {@link Oversimplified.Room#objects|objects} container, and are processed and displayed automatically by the Room.
